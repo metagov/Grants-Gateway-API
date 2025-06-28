@@ -51,39 +51,54 @@ export class OctantAdapter extends BaseAdapter {
   async getPools(filters?: QueryFilters): Promise<DAOIP5GrantPool[]> {
     try {
       const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
+      if (!currentEpochResponse.ok) {
+        throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
+      }
       const currentEpochData = await currentEpochResponse.json();
       const currentEpoch = currentEpochData.currentEpoch;
 
       const pools: DAOIP5GrantPool[] = [];
+      
+      // Process epochs based on filters or default range
+      const epochRange = filters?.limit ? Math.min(filters.limit, 5) : 5;
+      const startEpoch = Math.max(1, currentEpoch - epochRange + 1);
 
-      // Create pools for recent epochs (current and past few)
-      for (let epoch = Math.max(1, currentEpoch - 2); epoch <= currentEpoch; epoch++) {
+      for (let epoch = startEpoch; epoch <= currentEpoch; epoch++) {
         try {
           const epochInfoResponse = await fetch(`${this.baseUrl}/epochs/info/${epoch}`);
           if (!epochInfoResponse.ok) continue;
           
           const epochInfo = await epochInfoResponse.json();
           
+          // Calculate epoch dates (90-day epochs starting from Oct 1, 2023)
+          const epoch0Start = new Date('2023-10-01');
+          const epochStart = new Date(epoch0Start.getTime() + (epoch * 90 * 24 * 60 * 60 * 1000));
+          const epochEnd = new Date(epochStart.getTime() + (90 * 24 * 60 * 60 * 1000));
+          
           const pool: DAOIP5GrantPool = {
             type: "GrantPool",
             id: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
             name: `Octant Epoch ${epoch}`,
-            description: `Quadratic funding round for Ethereum public goods - Epoch ${epoch}`,
+            description: `Quadratic funding round for Ethereum public goods - Epoch ${epoch}. Duration: 90 days`,
             grantFundingMechanism: "Quadratic Funding",
-            isOpen: epoch === currentEpoch && epochInfo.status === "current",
-            closeDate: epochInfo.endDate ? this.formatDate(epochInfo.endDate) : undefined,
+            isOpen: epoch === currentEpoch,
+            closeDate: epochEnd.toISOString(),
             applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`)}`,
             governanceURI: "https://octant.app/",
-            totalGrantPoolSize: epochInfo.budget ? [{
-              amount: this.formatAmount(epochInfo.budget, "ETH", "USD"),
-              denomination: "USD"
+            totalGrantPoolSize: epochInfo.leftover ? [{
+              amount: String(parseInt(epochInfo.leftover) / 1e18), // Convert wei to ETH
+              denomination: "ETH"
             }] : undefined,
             email: "hello@octant.app",
-            image: "https://octant.app/logo.png"
+            image: "https://octant.app/favicon.ico"
           };
 
           // Apply filters
           if (filters?.isOpen !== undefined && pool.isOpen !== filters.isOpen) {
+            continue;
+          }
+          
+          if (filters?.mechanism && pool.grantFundingMechanism !== filters.mechanism) {
             continue;
           }
 
@@ -93,7 +108,7 @@ export class OctantAdapter extends BaseAdapter {
         }
       }
 
-      return pools.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 10));
+      return pools.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || pools.length));
     } catch (error) {
       console.error("Error fetching Octant pools:", error);
       return [];
@@ -108,48 +123,69 @@ export class OctantAdapter extends BaseAdapter {
   async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
     try {
       const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
+      if (!currentEpochResponse.ok) {
+        throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
+      }
       const currentEpochData = await currentEpochResponse.json();
       const currentEpoch = currentEpochData.currentEpoch;
 
-      const projectsResponse = await fetch(`${this.baseUrl}/projects/epoch/${currentEpoch}`);
-      if (!projectsResponse.ok) {
-        throw new Error(`HTTP error! status: ${projectsResponse.status}`);
+      // Fetch projects from multiple epochs for comprehensive data
+      const epochsToQuery = [currentEpoch];
+      if (currentEpoch > 1) epochsToQuery.push(currentEpoch - 1);
+      
+      const allProjects = new Map<string, any>(); // Use Map to deduplicate by address
+
+      for (const epoch of epochsToQuery) {
+        try {
+          const projectsResponse = await fetch(`${this.baseUrl}/projects/epoch/${epoch}`);
+          if (!projectsResponse.ok) continue;
+
+          const projectsData = await projectsResponse.json();
+          
+          for (const project of projectsData.projects || []) {
+            if (!allProjects.has(project.address)) {
+              allProjects.set(project.address, project);
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching projects for epoch ${epoch}:`, error);
+        }
       }
 
-      const projectsData = await projectsResponse.json();
       const projects: DAOIP5Project[] = [];
 
-      for (const project of projectsData.projects || []) {
+      for (const project of Array.from(allProjects.values())) {
         const socials: Array<{ name: string; value: string }> = [];
         
-        if (project.socials) {
-          if (project.socials.twitter) {
-            socials.push({ name: "twitter", value: project.socials.twitter });
-          }
-          if (project.socials.github) {
-            socials.push({ name: "github", value: project.socials.github });
-          }
-          if (project.socials.discord) {
-            socials.push({ name: "discord", value: project.socials.discord });
-          }
+        // Transform social media data
+        if (project.profileImageSmall?.includes('twitter')) {
+          socials.push({ name: "twitter", value: project.website || "" });
+        }
+        if (project.profileImageSmall?.includes('github')) {
+          socials.push({ name: "github", value: project.website || "" });
+        }
+        if (project.website) {
+          socials.push({ name: "website", value: project.website });
         }
 
         const daoip5Project: DAOIP5Project = {
           type: "Project",
           id: this.toCaip10(project.address),
-          name: project.name || "",
-          description: project.description || "",
-          contentURI: project.website || "",
-          image: project.profileImageSmall || project.profileImageMedium || "",
+          name: project.name || `Project ${project.address.slice(-8)}`,
+          description: project.description || "Ethereum public goods project funded through Octant",
+          contentURI: project.website || `https://octant.app/project/${project.address}`,
+          image: project.profileImageSmall || "",
           coverImage: project.profileImageMedium || project.profileImageSmall || "",
-          socials: socials.length > 0 ? socials : undefined
+          socials: socials.length > 0 ? socials : undefined,
+          relevantTo: [`octant-epoch-${currentEpoch}`]
         };
 
         // Apply search filter
         if (filters?.search) {
           const searchTerm = filters.search.toLowerCase();
           if (!daoip5Project.name.toLowerCase().includes(searchTerm) &&
-              !daoip5Project.description.toLowerCase().includes(searchTerm)) {
+              !daoip5Project.description.toLowerCase().includes(searchTerm) &&
+              !project.address.toLowerCase().includes(searchTerm)) {
             continue;
           }
         }
@@ -157,7 +193,10 @@ export class OctantAdapter extends BaseAdapter {
         projects.push(daoip5Project);
       }
 
-      return projects.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 10));
+      // Sort by name for consistent ordering
+      projects.sort((a, b) => a.name.localeCompare(b.name));
+
+      return projects.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
     } catch (error) {
       console.error("Error fetching Octant projects:", error);
       return [];
@@ -172,44 +211,93 @@ export class OctantAdapter extends BaseAdapter {
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
       const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
+      if (!currentEpochResponse.ok) {
+        throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
+      }
       const currentEpochData = await currentEpochResponse.json();
       const currentEpoch = currentEpochData.currentEpoch;
 
-      const epoch = filters?.poolId ? 
-        parseInt(filters.poolId.split(':')[2]?.replace(/^0+/, '') || '0') : 
-        currentEpoch;
-
-      const allocationsResponse = await fetch(`${this.baseUrl}/allocations/epoch/${epoch}`);
-      if (!allocationsResponse.ok) {
-        return [];
+      // Determine which epoch to query based on filters
+      let epoch = currentEpoch;
+      if (filters?.poolId) {
+        const poolIdMatch = filters.poolId.match(/0x0*(\d+)/);
+        if (poolIdMatch) {
+          epoch = parseInt(poolIdMatch[1]) || currentEpoch;
+        }
       }
 
-      const allocationsData = await allocationsResponse.json();
       const applications: DAOIP5Application[] = [];
 
-      for (const allocation of allocationsData.allocations || []) {
-        const application: DAOIP5Application = {
-          type: "Application",
-          id: `${this.toCaip10(allocation.projectAddress)}-${epoch}`,
-          projectId: this.toCaip10(allocation.projectAddress),
-          poolId: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
-          status: "approved",
-          submissionDate: new Date().toISOString(), // Octant doesn't provide submission dates
-          approvedAmount: [{
-            amount: this.formatAmount(allocation.amount, "ETH", "USD"),
-            denomination: "USD"
-          }]
-        };
+      try {
+        // Fetch allocations for the epoch
+        const allocationsResponse = await fetch(`${this.baseUrl}/allocations/epoch/${epoch}?includeZeroAllocations=false`);
+        
+        if (allocationsResponse.ok) {
+          const allocationsData = await allocationsResponse.json();
+          
+          for (const allocation of allocationsData.allocations || []) {
+            const amountInEth = parseInt(allocation.amount) / 1e18; // Convert wei to ETH
+            
+            const application: DAOIP5Application = {
+              type: "Application",
+              id: `${this.toCaip10(allocation.projectAddress)}-epoch-${epoch}`,
+              projectId: this.toCaip10(allocation.projectAddress),
+              poolId: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
+              status: amountInEth > 0 ? "approved" : "pending",
+              submissionDate: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(), // Approximate epoch start
+              approvedAmount: amountInEth > 0 ? [{
+                amount: amountInEth.toFixed(6),
+                denomination: "ETH"
+              }] : undefined
+            };
 
-        // Apply filters
-        if (filters?.poolId && application.poolId !== filters.poolId) continue;
-        if (filters?.projectId && application.projectId !== filters.projectId) continue;
-        if (filters?.status && application.status !== filters.status) continue;
+            // Apply filters
+            if (filters?.poolId && application.poolId !== filters.poolId) continue;
+            if (filters?.projectId && application.projectId !== filters.projectId) continue;
+            if (filters?.status && application.status !== filters.status) continue;
 
-        applications.push(application);
+            applications.push(application);
+          }
+        }
+
+        // Also try to fetch project rewards for more complete data
+        try {
+          const rewardsResponse = await fetch(`${this.baseUrl}/rewards/projects/epoch/${epoch}`);
+          if (rewardsResponse.ok) {
+            const rewardsData = await rewardsResponse.json();
+            
+            for (const reward of rewardsData.rewards || []) {
+              const existingApp = applications.find(app => 
+                app.projectId === this.toCaip10(reward.address)
+              );
+              
+              if (existingApp && reward.allocated) {
+                const rewardInEth = parseInt(reward.allocated) / 1e18;
+                existingApp.approvedAmount = [{
+                  amount: rewardInEth.toFixed(6),
+                  denomination: "ETH"
+                }];
+                existingApp.status = "approved";
+              }
+            }
+          }
+        } catch (rewardError) {
+          // Rewards endpoint might not be available for all epochs
+          console.log(`Rewards not available for epoch ${epoch}`);
+        }
+
+      } catch (error) {
+        console.error(`Error fetching data for epoch ${epoch}:`, error);
       }
 
-      return applications.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 10));
+      // Sort by approved amount (highest first)
+      applications.sort((a, b) => {
+        const amountA = parseFloat(a.approvedAmount?.[0]?.amount || '0');
+        const amountB = parseFloat(b.approvedAmount?.[0]?.amount || '0');
+        return amountB - amountA;
+      });
+
+      return applications.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
     } catch (error) {
       console.error("Error fetching Octant applications:", error);
       return [];

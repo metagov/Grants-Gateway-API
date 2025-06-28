@@ -415,14 +415,14 @@ export default function LandingPage() {
                     <div>
                       <Label htmlFor="system">Grant System</Label>
                       <Select 
-                        value={queryFilters.system || ""} 
-                        onValueChange={(value) => setQueryFilters(prev => ({ ...prev, system: value || undefined }))}
+                        value={queryFilters.system || "all"} 
+                        onValueChange={(value) => setQueryFilters(prev => ({ ...prev, system: value === "all" ? undefined : value }))}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="All Systems" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Systems</SelectItem>
+                          <SelectItem value="all">All Systems</SelectItem>
                           <SelectItem value="octant">Octant</SelectItem>
                           <SelectItem value="giveth">Giveth</SelectItem>
                         </SelectContent>
@@ -433,17 +433,17 @@ export default function LandingPage() {
                       <div>
                         <Label htmlFor="isOpen">Pool Status</Label>
                         <Select 
-                          value={queryFilters.isOpen !== undefined ? String(queryFilters.isOpen) : ""} 
+                          value={queryFilters.isOpen !== undefined ? String(queryFilters.isOpen) : "all"} 
                           onValueChange={(value) => setQueryFilters(prev => ({ 
                             ...prev, 
-                            isOpen: value === "" ? undefined : value === "true" 
+                            isOpen: value === "all" ? undefined : value === "true" 
                           }))}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="All Pools" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All Pools</SelectItem>
+                            <SelectItem value="all">All Pools</SelectItem>
                             <SelectItem value="true">Open</SelectItem>
                             <SelectItem value="false">Closed</SelectItem>
                           </SelectContent>
@@ -466,14 +466,14 @@ export default function LandingPage() {
                       <div>
                         <Label htmlFor="status">Application Status</Label>
                         <Select 
-                          value={queryFilters.status || ""} 
-                          onValueChange={(value) => setQueryFilters(prev => ({ ...prev, status: value || undefined }))}
+                          value={queryFilters.status || "all"} 
+                          onValueChange={(value) => setQueryFilters(prev => ({ ...prev, status: value === "all" ? undefined : value }))}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="All Applications" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All Applications</SelectItem>
+                            <SelectItem value="all">All Applications</SelectItem>
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="approved">Approved</SelectItem>
                             <SelectItem value="rejected">Rejected</SelectItem>
