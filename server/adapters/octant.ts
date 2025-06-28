@@ -85,10 +85,16 @@ export class OctantAdapter extends BaseAdapter {
             closeDate: epochEnd.toISOString(),
             applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`)}`,
             governanceURI: "https://octant.app/",
-            totalGrantPoolSize: epochInfo.leftover ? [{
-              amount: String(parseInt(epochInfo.leftover) / 1e18), // Convert wei to ETH
-              denomination: "ETH"
-            }] : undefined,
+            totalGrantPoolSize: (() => {
+              const poolSize = epochInfo.leftover || epochInfo.communityFund || epochInfo.ppf;
+              if (poolSize) {
+                return [{
+                  amount: String(parseInt(poolSize) / 1e18), // Convert wei to ETH
+                  denomination: "ETH"
+                }];
+              }
+              return [];
+            })(),
             email: "hello@octant.app",
             image: "https://octant.app/favicon.ico"
           };

@@ -87,25 +87,21 @@ export class GivethAdapter extends BaseAdapter {
     try {
       const query = `
         query GetQFRounds {
-          qfArchivedRounds {
-            qfRounds {
-              id
-              name
-              slug
-              description
-              isActive
-              beginDate
-              endDate
-              allocatedFund
-              roundUSDCapPerProject
-              network
-            }
+          qfRounds {
+            id
+            name
+            slug
+            description
+            isActive
+            beginDate
+            endDate
+            allocatedFund
           }
         }
       `;
 
       const data = await this.executeGraphQL(query);
-      const qfRounds = data.qfArchivedRounds?.qfRounds || [];
+      const qfRounds = data.qfRounds || [];
       const pools: DAOIP5GrantPool[] = [];
 
       for (const round of qfRounds) {
