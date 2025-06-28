@@ -96,6 +96,11 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- June 28, 2025. Successfully implemented real API functionality with authentic data from Octant and Giveth
+  - Fixed Octant adapter to fetch real epoch data and transform to DAOIP-5 format
+  - Fixed Giveth GraphQL queries to fetch actual QF rounds data
+  - Combined API now returns 15+ real grant pools with actual funding amounts
+  - Query builder functional with real-time API execution and response display
 - June 27, 2025. Initial setup
 ```
 
