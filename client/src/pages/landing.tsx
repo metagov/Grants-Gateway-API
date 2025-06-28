@@ -572,7 +572,7 @@ export default function LandingPage() {
             </div>
           )}
 
-          {/* Other sections would be implemented similarly... */}
+
           {activeSection === "endpoints" && (
             <div className="space-y-8">
               <div>
@@ -588,12 +588,168 @@ export default function LandingPage() {
           {activeSection === "field-mapping" && (
             <div className="space-y-8">
               <div>
-                <h1 className="text-3xl font-bold mb-4">Field Mapping</h1>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Understanding how fields are mapped from different grant systems to DAOIP-5 standard.
+                <h1 className="text-3xl font-bold mb-4">DAOIP-5 Field Mappings</h1>
+                <p className="text-gray-600 dark:text-gray-300 mb-8">
+                  See how we standardize data from different grant systems to the DAOIP-5 specification with consistent USD conversions.
                 </p>
+
+                {/* Live Data Comparison */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                        Octant System
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        ETH-based funding converted to USD
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Source Currency:</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">ETH (Wei)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">ID Format:</span>
+                          <span className="text-sm font-mono text-blue-600 dark:text-blue-400">eip155:1:0x(epoch)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Funding Mechanism:</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">Quadratic Funding</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Data Source:</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">On-chain + API</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        Giveth System
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        USD-based funding (direct)
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Source Currency:</span>
+                          <span className="text-sm text-green-600 dark:text-green-400">USD</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">ID Format:</span>
+                          <span className="text-sm font-mono text-green-600 dark:text-green-400">eip155:1:0x(round_id)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Funding Mechanism:</span>
+                          <span className="text-sm text-green-600 dark:text-green-400">Quadratic Funding</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Data Source:</span>
+                          <span className="text-sm text-green-600 dark:text-green-400">GraphQL API</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Mapping Tables */}
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Grant Pool Field Mappings</CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        How raw system data is transformed to DAOIP-5 standard
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-gray-200 dark:border-gray-700">
+                          <thead>
+                            <tr className="bg-gray-50 dark:bg-gray-800">
+                              <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">DAOIP-5 Field</th>
+                              <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Octant Mapping</th>
+                              <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Giveth Mapping</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-sm">
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">id</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch → CAIP-10</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].id → CAIP-10</td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">name</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Generated: "Octant Epoch (n)"</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].name (direct)</td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">totalGrantPoolSize</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">wei → ETH conversion</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">allocatedFund (USD direct)</td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">totalGrantPoolSizeUSD</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">ETH → USD (live rates)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">allocatedFund (direct)</td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">isOpen</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch === currentEpoch</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].isActive</td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">closeDate</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Calculated (90-day epochs)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].endDate</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Currency Conversion Details</CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        How we standardize funding amounts to USD
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-semibold mb-3">Octant (ETH → USD)</h4>
+                          <div className="space-y-2 text-sm">
+                            <div>1. Fetch epoch info from API</div>
+                            <div>2. Extract leftover/communityFund/ppf (wei)</div>
+                            <div>3. Convert wei → ETH (÷ 10^18)</div>
+                            <div>4. Get live ETH/USD rate</div>
+                            <div>5. Calculate USD amount</div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-3">Giveth (USD Direct)</h4>
+                          <div className="space-y-2 text-sm">
+                            <div>1. Fetch QF rounds from GraphQL</div>
+                            <div>2. Extract allocatedFund (USD)</div>
+                            <div>3. Use direct USD amount</div>
+                            <div>4. No conversion needed</div>
+                            <div>5. Ready for display</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-              {/* Field mapping content would go here */}
             </div>
           )}
 

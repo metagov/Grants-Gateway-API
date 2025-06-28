@@ -1,4 +1,5 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters } from "./base";
+import { currencyService } from "../services/currency";
 
 interface OctantProject {
   address: string;
@@ -75,28 +76,38 @@ export class OctantAdapter extends BaseAdapter {
           const epochStart = new Date(epoch0Start.getTime() + (epoch * 90 * 24 * 60 * 60 * 1000));
           const epochEnd = new Date(epochStart.getTime() + (90 * 24 * 60 * 60 * 1000));
           
+          // Calculate pool funding in ETH and USD
+          const poolSize = epochInfo.leftover || epochInfo.communityFund || epochInfo.ppf;
+          let totalGrantPoolSize: Array<{ amount: string; denomination: string }> = [];
+          let totalGrantPoolSizeUSD: string | undefined;
+
+          if (poolSize) {
+            const ethAmount = String(parseInt(poolSize) / 1e18); // Convert wei to ETH
+            totalGrantPoolSize = [{
+              amount: ethAmount,
+              denomination: "ETH"
+            }];
+            // Convert to USD for standardization
+            totalGrantPoolSizeUSD = await currencyService.convertETHToUSD(ethAmount);
+          }
+
           const pool: DAOIP5GrantPool = {
             type: "GrantPool",
             id: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
             name: `Octant Epoch ${epoch}`,
-            description: `Quadratic funding round for Ethereum public goods - Epoch ${epoch}. Duration: 90 days`,
+            description: `Quadratic funding round for Ethereum public goods - Epoch ${epoch}. Funds are allocated through Quadratic Funding mechanisms to maximize public goods impact. Duration: 90 days.`,
             grantFundingMechanism: "Quadratic Funding",
             isOpen: epoch === currentEpoch,
             closeDate: epochEnd.toISOString(),
             applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`)}`,
             governanceURI: "https://octant.app/",
-            totalGrantPoolSize: (() => {
-              const poolSize = epochInfo.leftover || epochInfo.communityFund || epochInfo.ppf;
-              if (poolSize) {
-                return [{
-                  amount: String(parseInt(poolSize) / 1e18), // Convert wei to ETH
-                  denomination: "ETH"
-                }];
-              }
-              return [];
-            })(),
+            attestationIssuersURI: "https://octant.app/attestations",
+            requiredCredentials: ["EthereumAddress"],
+            totalGrantPoolSize,
+            totalGrantPoolSizeUSD,
             email: "hello@octant.app",
-            image: "https://octant.app/favicon.ico"
+            image: "https://octant.app/favicon.ico",
+            coverImage: "https://octant.app/og-image.png"
           };
 
           // Apply filters
