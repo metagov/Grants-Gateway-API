@@ -16,10 +16,13 @@ export interface DAOIP5GrantPool {
   closeDate?: string;
   applicationsURI?: string;
   governanceURI?: string;
+  attestationIssuersURI?: string;
+  requiredCredentials?: string[];
   totalGrantPoolSize?: Array<{
     amount: string;
     denomination: string;
   }>;
+  totalGrantPoolSizeUSD?: string;
   email?: string;
   image?: string;
   coverImage?: string;

@@ -11,15 +11,49 @@ export interface DAOIP5GrantPool {
   id: string;
   name: string;
   description: string;
-  grantFundingMechanism: string;
+  grantFundingMechanism: 
+    | "Direct Grants"
+    | "Quadratic Funding" 
+    | "Streaming Quadratic Funding"
+    | "Retro Funding"
+    | "Conviction Voting"
+    | "Self-Curated Registries"
+    | "Gift Circles"
+    | "Social Media-Based Capital Allocation"
+    | "Futarchy"
+    | "Assurance Contracts"
+    | "Cookie Jar"
+    | "Impact Attestations"
+    | "Stokvel"
+    | "Request for Proposal (RFP)"
+    | "Delegated Domain Allocation"
+    | "Evolutionary Grants Games"
+    | "Direct to Contract Incentives"
+    | "Angel Investment"
+    | "Dominant Assurance Contracts"
+    | "Community Currencies"
+    | "Universal Basic Income (UBI)"
+    | "Bounties"
+    | "Gnosis Safe"
+    | "Waqf"
+    | "Ranked Choice Voting"
+    | "Honour"
+    | "Mutual Aid Networks"
+    | "Bonding Curves"
+    | "Zakat"
+    | "Decentralized Validators"
+    | "Revnets";
   isOpen: boolean;
   closeDate?: string;
   applicationsURI?: string;
   governanceURI?: string;
+  attestationIssuersURI?: string;
+  requiredCredentials?: string[];
   totalGrantPoolSize?: Array<{
     amount: string;
     denomination: string;
   }>;
+  totalGrantPoolSizeUSD?: string; // Standardized USD conversion
   email?: string;
   image?: string;
   coverImage?: string;

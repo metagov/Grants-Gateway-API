@@ -1,4 +1,5 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters } from "./base";
+import { currencyService } from "../services/currency";
 
 interface GivethProject {
   id: string;
@@ -105,22 +106,36 @@ export class GivethAdapter extends BaseAdapter {
       const pools: DAOIP5GrantPool[] = [];
 
       for (const round of qfRounds) {
+        // Calculate pool funding with proper USD standardization
+        let totalGrantPoolSize: Array<{ amount: string; denomination: string }> = [];
+        let totalGrantPoolSizeUSD: string | undefined;
+
+        if (round.allocatedFund) {
+          const usdAmount = String(round.allocatedFund);
+          totalGrantPoolSize = [{
+            amount: usdAmount,
+            denomination: "USD"
+          }];
+          totalGrantPoolSizeUSD = usdAmount; // Already in USD
+        }
+
         const pool: DAOIP5GrantPool = {
           type: "GrantPool",
-          id: this.toCaip10(`0x${round.id}`, round.network || "1"),
+          id: this.toCaip10(`0x${round.id}`, "1"), // Ethereum mainnet
           name: round.name || "",
-          description: round.description || "",
+          description: round.description || `Quadratic Funding round on Giveth platform. ${round.name} provides funding for public goods projects through community-driven quadratic funding mechanisms.`,
           grantFundingMechanism: "Quadratic Funding",
           isOpen: round.isActive || false,
           closeDate: round.endDate ? this.formatDate(round.endDate) : undefined,
-          applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${round.id}`, round.network || "1")}`,
+          applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${round.id}`, "1")}`,
           governanceURI: `https://giveth.io/qf/${round.slug}`,
-          totalGrantPoolSize: round.allocatedFund ? [{
-            amount: String(round.allocatedFund),
-            denomination: "USD"
-          }] : undefined,
+          attestationIssuersURI: "https://giveth.io/attestations",
+          requiredCredentials: ["EthereumAddress", "GivethProfile"],
+          totalGrantPoolSize,
+          totalGrantPoolSizeUSD,
           email: "info@giveth.io",
-          image: "https://giveth.io/images/logo.png"
+          image: "https://giveth.io/images/logo.png",
+          coverImage: "https://giveth.io/images/banner.jpg"
         };
 
         // Apply filters
