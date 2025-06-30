@@ -60,54 +60,81 @@ export class OctantAdapter extends BaseAdapter {
 
       const pools: DAOIP5GrantPool[] = [];
       
-      // Process epochs based on filters or default range
-      const epochRange = filters?.limit ? Math.min(filters.limit, 5) : 5;
-      const startEpoch = Math.max(1, currentEpoch - epochRange + 1);
+      // Configure range: epochs 1-7 as requested, with config for current-1 
+      const maxEpoch = Math.min(7, currentEpoch - 1); // current-1 configuration
+      const minEpoch = 1;
 
-      for (let epoch = startEpoch; epoch <= currentEpoch; epoch++) {
+      for (let epoch = minEpoch; epoch <= maxEpoch; epoch++) {
         try {
           const epochInfoResponse = await fetch(`${this.baseUrl}/epochs/info/${epoch}`);
           if (!epochInfoResponse.ok) continue;
           
           const epochInfo = await epochInfoResponse.json();
           
-          // Calculate epoch dates (90-day epochs starting from Oct 1, 2023)
-          const epoch0Start = new Date('2023-10-01');
-          const epochStart = new Date(epoch0Start.getTime() + (epoch * 90 * 24 * 60 * 60 * 1000));
-          const epochEnd = new Date(epochStart.getTime() + (90 * 24 * 60 * 60 * 1000));
+          // Calculate epoch dates based on the actual Octant epoch schedule
+          const epochCloseDates: Record<number, string> = {
+            1: "2024-03-29T00:00:00Z",
+            2: "2024-06-27T00:00:00Z", 
+            3: "2024-09-25T00:00:00Z",
+            4: "2024-12-24T00:00:00Z",
+            5: "2025-03-24T00:00:00Z",
+            6: "2025-06-22T00:00:00Z",
+            7: "2025-09-20T00:00:00Z"
+          };
+          const closeDate = epochCloseDates[epoch as keyof typeof epochCloseDates] || new Date(Date.now() + (90 * 24 * 60 * 60 * 1000)).toISOString();
           
-          // Calculate pool funding in ETH and USD
-          const poolSize = epochInfo.leftover || epochInfo.communityFund || epochInfo.ppf;
+          // Calculate pool funding from totalGrantPoolSize based on actual epoch data
+          // Priority: matchedRewards or totalGrantPoolSize from the epoch data
+          let poolSizeWei = epochInfo.matchedRewards || epochInfo.totalGrantPoolSize;
+          
+          // If matchedRewards is not available, calculate from ppf + communityFund  
+          if (!poolSizeWei && epochInfo.ppf && epochInfo.communityFund) {
+            poolSizeWei = String(BigInt(epochInfo.ppf) + BigInt(epochInfo.communityFund));
+          }
+          
+          // Fallback to leftover if no other funding data available
+          if (!poolSizeWei) {
+            poolSizeWei = epochInfo.leftover;
+          }
+
           let totalGrantPoolSize: Array<{ amount: string; denomination: string }> = [];
           let totalGrantPoolSizeUSD: string | undefined;
 
-          if (poolSize) {
-            const ethAmount = String(parseInt(poolSize) / 1e18); // Convert wei to ETH
+          if (poolSizeWei) {
+            // Keep wei amount as shown in the example format
             totalGrantPoolSize = [{
-              amount: ethAmount,
+              amount: poolSizeWei,
               denomination: "ETH"
             }];
-            // Convert to USD for standardization
+            
+            // Convert to ETH for USD calculation
+            const ethAmount = String(parseInt(poolSizeWei) / 1e18);
             totalGrantPoolSizeUSD = await currencyService.convertETHToUSD(ethAmount);
           }
 
           const pool: DAOIP5GrantPool = {
             type: "GrantPool",
-            id: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
+            id: `eip155:1:0x0000000000000000000000000000000000000000?contractId=${epoch}`,
             name: `Octant Epoch ${epoch}`,
-            description: `Quadratic funding round for Ethereum public goods - Epoch ${epoch}. Funds are allocated through Quadratic Funding mechanisms to maximize public goods impact. Duration: 90 days.`,
+            description: `Quadratic funding round for Octant epoch ${epoch} - 90-day funding period supporting Ethereum public goods`,
             grantFundingMechanism: "Quadratic Funding",
             isOpen: epoch === currentEpoch,
-            closeDate: epochEnd.toISOString(),
-            applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`)}`,
-            governanceURI: "https://octant.app/",
-            attestationIssuersURI: "https://octant.app/attestations",
-            requiredCredentials: ["EthereumAddress"],
+            closeDate: closeDate,
+            applicationsURI: `./applications_epoch_${epoch}.json`,
+            governanceURI: "https://docs.octant.app/how-it-works/mechanism",
             totalGrantPoolSize,
-            totalGrantPoolSizeUSD,
-            email: "hello@octant.app",
-            image: "https://octant.app/favicon.ico",
-            coverImage: "https://octant.app/og-image.png"
+            epochMetadata: {
+              stakingProceeds: epochInfo.stakingProceeds,
+              totalEffectiveDeposit: epochInfo.totalEffectiveDeposit,
+              vanillaIndividualRewards: epochInfo.vanillaIndividualRewards,
+              operationalCost: epochInfo.operationalCost,
+              matchedRewards: epochInfo.matchedRewards,
+              patronsRewards: epochInfo.patronsRewards,
+              totalWithdrawals: epochInfo.totalWithdrawals,
+              leftover: epochInfo.leftover,
+              ppf: epochInfo.ppf,
+              communityFund: epochInfo.communityFund
+            }
           };
 
           // Apply filters
@@ -234,77 +261,52 @@ export class OctantAdapter extends BaseAdapter {
       const currentEpochData = await currentEpochResponse.json();
       const currentEpoch = currentEpochData.currentEpoch;
 
-      // Determine which epoch to query based on filters
-      let epoch = currentEpoch;
-      if (filters?.poolId) {
-        const poolIdMatch = filters.poolId.match(/0x0*(\d+)/);
-        if (poolIdMatch) {
-          epoch = parseInt(poolIdMatch[1]) || currentEpoch;
-        }
-      }
-
       const applications: DAOIP5Application[] = [];
+      
+      // Query epochs 1-7 for comprehensive application data, focusing on approved applications
+      const maxEpoch = Math.min(7, currentEpoch - 1); // Use current-1 config like pools
+      const epochsToQuery = filters?.poolId ? 
+        [parseInt(filters.poolId.match(/contractId=(\d+)/)?.[1] || "1")] : 
+        Array.from({length: maxEpoch}, (_, i) => i + 1);
 
-      try {
-        // Fetch allocations for the epoch
-        const allocationsResponse = await fetch(`${this.baseUrl}/allocations/epoch/${epoch}?includeZeroAllocations=false`);
-        
-        if (allocationsResponse.ok) {
-          const allocationsData = await allocationsResponse.json();
-          
-          for (const allocation of allocationsData.allocations || []) {
-            const amountInEth = parseInt(allocation.amount) / 1e18; // Convert wei to ETH
-            
-            const application: DAOIP5Application = {
-              type: "Application",
-              id: `${this.toCaip10(allocation.projectAddress)}-epoch-${epoch}`,
-              projectId: this.toCaip10(allocation.projectAddress),
-              poolId: this.toCaip10(`0x${epoch.toString().padStart(40, '0')}`),
-              status: amountInEth > 0 ? "approved" : "pending",
-              submissionDate: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(), // Approximate epoch start
-              approvedAmount: amountInEth > 0 ? [{
-                amount: amountInEth.toFixed(6),
-                denomination: "ETH"
-              }] : undefined
-            };
-
-            // Apply filters
-            if (filters?.poolId && application.poolId !== filters.poolId) continue;
-            if (filters?.projectId && application.projectId !== filters.projectId) continue;
-            if (filters?.status && application.status !== filters.status) continue;
-
-            applications.push(application);
-          }
-        }
-
-        // Also try to fetch project rewards for more complete data
+      for (const epoch of epochsToQuery) {
         try {
+          // Fetch project rewards for each epoch - focusing on approved applications with funding
           const rewardsResponse = await fetch(`${this.baseUrl}/rewards/projects/epoch/${epoch}`);
+          
           if (rewardsResponse.ok) {
             const rewardsData = await rewardsResponse.json();
             
             for (const reward of rewardsData.rewards || []) {
-              const existingApp = applications.find(app => 
-                app.projectId === this.toCaip10(reward.address)
-              );
+              const amountInEth = parseInt(reward.allocated) / 1e18; // Convert wei to ETH
               
-              if (existingApp && reward.allocated) {
-                const rewardInEth = parseInt(reward.allocated) / 1e18;
-                existingApp.approvedAmount = [{
-                  amount: rewardInEth.toFixed(6),
-                  denomination: "ETH"
-                }];
-                existingApp.status = "approved";
+              // Only include approved applications (with funding > 0) as requested
+              if (amountInEth > 0 && reward.address) {
+                const projectId = this.toCaip10(reward.address);
+                const application: DAOIP5Application = {
+                  type: "Application",
+                  id: `${projectId}-epoch-${epoch}`,
+                  projectId: projectId,
+                  poolId: `eip155:1:0x0000000000000000000000000000000000000000?contractId=${epoch}`,
+                  status: "approved", // Only showing approved applications with funding
+                  submissionDate: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
+                  approvedAmount: [{
+                    amount: amountInEth.toFixed(6),
+                    denomination: "ETH"
+                  }]
+                };
+
+                // Apply filters
+                if (filters?.poolId && application.poolId !== filters.poolId) continue;
+                if (filters?.projectId && application.projectId !== filters.projectId) continue;
+
+                applications.push(application);
               }
             }
           }
-        } catch (rewardError) {
-          // Rewards endpoint might not be available for all epochs
-          console.log(`Rewards not available for epoch ${epoch}`);
+        } catch (error) {
+          console.error(`Error fetching rewards for epoch ${epoch}:`, error);
         }
-
-      } catch (error) {
-        console.error(`Error fetching data for epoch ${epoch}:`, error);
       }
 
       // Sort by approved amount (highest first)

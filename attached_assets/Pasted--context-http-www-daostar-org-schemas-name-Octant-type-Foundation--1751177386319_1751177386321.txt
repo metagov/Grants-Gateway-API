@@ -1,0 +1,239 @@
+{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Octant",
+  "type": "Foundation",
+  "grantPools": [
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=1",
+      "name": "Octant Epoch 1",
+      "description": "Quadratic funding round for Octant epoch 1 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-03-29T00:00:00Z",
+      "applicationsURI": "./applications_epoch_1.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "329633639265156268032",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "412042049081445321216",
+        "totalEffectiveDeposit": "94755727584613854218098688",
+        "vanillaIndividualRewards": "101469205666663117330",
+        "operationalCost": "82408409816289053184",
+        "matchedRewards": "244214657536017016006",
+        "patronsRewards": "16050223937523865304",
+        "totalWithdrawals": "320096281600650694595",
+        "leftover": "9537357664505573437",
+        "ppf": null,
+        "communityFund": null
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=2",
+      "name": "Octant Epoch 2",
+      "description": "Quadratic funding round for Octant epoch 2 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-06-27T00:00:00Z",
+      "applicationsURI": "./applications_epoch_2.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "365545462174813064230",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "966657119479408821563",
+        "totalEffectiveDeposit": "143000608744890669292589348",
+        "vanillaIndividualRewards": "138232556533137973669",
+        "operationalCost": "241664279869852205390",
+        "matchedRewards": "227321601501076836083",
+        "patronsRewards": "8695859401745522",
+        "totalWithdrawals": "365233091278490434580",
+        "leftover": "359759748331066181593",
+        "ppf": null,
+        "communityFund": null
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=3",
+      "name": "Octant Epoch 3",
+      "description": "Quadratic funding round for Octant epoch 3 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-09-25T00:00:00Z",
+      "applicationsURI": "./applications_epoch_3.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "671894037381285340472",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "959848624830407629247",
+        "totalEffectiveDeposit": "152790615666562307080359072",
+        "vanillaIndividualRewards": "146655862334541166188",
+        "operationalCost": "239962156207601907311",
+        "matchedRewards": "335972908582654967824",
+        "patronsRewards": "25889892012297588",
+        "totalWithdrawals": "573393994156646120813",
+        "leftover": "3854465046588467390",
+        "ppf": "189291156356101504048",
+        "communityFund": "47992431241520381462"
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=4",
+      "name": "Octant Epoch 4",
+      "description": "Quadratic funding round for Octant epoch 4 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-12-24T00:00:00Z",
+      "applicationsURI": "./applications_epoch_4.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "595093742153317232079",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "850133917361881760113",
+        "totalEffectiveDeposit": "155200359957012122820085802",
+        "vanillaIndividualRewards": "131941089986228847020",
+        "operationalCost": "212533479340470440028",
+        "matchedRewards": "297573603050286675673",
+        "patronsRewards": "26731973628059634",
+        "totalWithdrawals": "500760688881717127330",
+        "leftover": "11530162726385222972",
+        "ppf": "165605781090429769019",
+        "communityFund": "42506695868094088005"
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=5",
+      "name": "Octant Epoch 5",
+      "description": "Quadratic funding round for Octant epoch 5 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2025-03-24T00:00:00Z",
+      "applicationsURI": "./applications_epoch_5.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "609891877462701268988",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "871274110661001812840",
+        "totalEffectiveDeposit": "155606859009446118940834080",
+        "vanillaIndividualRewards": "135576227696207064768",
+        "operationalCost": "217818527665250453210",
+        "matchedRewards": "304977728421505197417",
+        "patronsRewards": "31789690154562923",
+        "totalWithdrawals": "510275206446477182948",
+        "leftover": "14931815498652293159",
+        "ppf": "169369711035143569726",
+        "communityFund": "43563705533050090642"
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=6",
+      "name": "Octant Epoch 6",
+      "description": "Quadratic funding round for Octant epoch 6 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2025-06-22T00:00:00Z",
+      "applicationsURI": "./applications_epoch_6.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "547699678376174399528",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "782428111965963427898",
+        "totalEffectiveDeposit": "155567189131950855073503748",
+        "vanillaIndividualRewards": "121720142076364252562",
+        "operationalCost": "195607027991490856974",
+        "matchedRewards": "273885463004349881487",
+        "patronsRewards": "35623816262681723",
+        "totalWithdrawals": "469645299406604713280",
+        "leftover": "1989530413708210939",
+        "ppf": "152129697111722947202",
+        "communityFund": "39121405598298171394"
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=7",
+      "name": "Octant Epoch 7",
+      "description": "Quadratic funding round for Octant epoch 7 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2025-09-20T00:00:00Z",
+      "applicationsURI": "./applications_epoch_7.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "588197024731959080886",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "840281463902798686981",
+        "totalEffectiveDeposit": "154369664059719091056170360",
+        "vanillaIndividualRewards": "129713967298284007224",
+        "operationalCost": "210070365975699671745",
+        "matchedRewards": "294141401626745672494",
+        "patronsRewards": "42889260766132051",
+        "totalWithdrawals": "502547944619799981141",
+        "leftover": "3456807578311330671",
+        "ppf": "164384545067695533219",
+        "communityFund": "42014073195139934349"
+      }
+    },
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=8",
+      "name": "Octant Epoch 8",
+      "description": "Quadratic funding round for Octant epoch 8 - 90-day funding period supporting Ethereum public goods",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": true,
+      "closeDate": "2025-12-19T00:00:00Z",
+      "applicationsURI": "./applications_epoch_8.json",
+      "governanceURI": "https://docs.octant.app/how-it-works/mechanism",
+      "totalGrantPoolSize": [
+        {
+          "amount": "655890410958903993958",
+          "denomination": "ETH"
+        }
+      ],
+      "epochMetadata": {
+        "stakingProceeds": "936986301369862848512",
+        "totalEffectiveDeposit": "154641429838086447831801113",
+        "vanillaIndividualRewards": "144896901382535769410",
+        "operationalCost": "234246575342465712128",
+        "matchedRewards": null,
+        "patronsRewards": null,
+        "totalWithdrawals": null,
+        "leftover": null,
+        "ppf": "183048304096916227569",
+        "communityFund": "46849315068493142425"
+      }
+    }
+  ]
+}

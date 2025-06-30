@@ -406,7 +406,6 @@ export default function LandingPage() {
                         <SelectContent>
                           <SelectItem value="systems">Grant Systems</SelectItem>
                           <SelectItem value="pools">Grant Pools</SelectItem>
-                          <SelectItem value="projects">Projects</SelectItem>
                           <SelectItem value="applications">Applications</SelectItem>
                         </SelectContent>
                       </Select>
@@ -429,27 +428,7 @@ export default function LandingPage() {
                       </Select>
                     </div>
 
-                    {entityType === "pools" && (
-                      <div>
-                        <Label htmlFor="isOpen">Pool Status</Label>
-                        <Select 
-                          value={queryFilters.isOpen !== undefined ? String(queryFilters.isOpen) : "all"} 
-                          onValueChange={(value) => setQueryFilters(prev => ({ 
-                            ...prev, 
-                            isOpen: value === "all" ? undefined : value === "true" 
-                          }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Pools" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Pools</SelectItem>
-                            <SelectItem value="true">Open</SelectItem>
-                            <SelectItem value="false">Closed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+
 
                     {entityType === "projects" && (
                       <div>
@@ -462,25 +441,7 @@ export default function LandingPage() {
                       </div>
                     )}
 
-                    {entityType === "applications" && (
-                      <div>
-                        <Label htmlFor="status">Application Status</Label>
-                        <Select 
-                          value={queryFilters.status || "all"} 
-                          onValueChange={(value) => setQueryFilters(prev => ({ ...prev, status: value === "all" ? undefined : value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Applications" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Applications</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="approved">Approved</SelectItem>
-                            <SelectItem value="rejected">Rejected</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+
 
                     <Button 
                       onClick={handleExecuteQuery} 
