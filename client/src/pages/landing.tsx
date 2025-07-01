@@ -200,7 +200,7 @@ export default function LandingPage() {
                 <div className="max-w-4xl">
                   <h1 className="text-4xl font-bold mb-4">OpenGrants Gateway API</h1>
                   <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
-                    A unified interface for accessing grant data across multiple blockchain ecosystems using the DAOIP-5 metadata standard.
+                    A unified interface for accessing grant data across Ethereum Ecosystem using the DAOIP-5 metadata standard.
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button onClick={() => setActiveSection("query-builder")}>
