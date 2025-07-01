@@ -26,6 +26,18 @@ export interface DAOIP5GrantPool {
   email?: string;
   image?: string;
   coverImage?: string;
+  epochMetadata?: {
+    stakingProceeds?: string;
+    totalEffectiveDeposit?: string;
+    vanillaIndividualRewards?: string;
+    operationalCost?: string;
+    matchedRewards?: string;
+    patronsRewards?: string;
+    totalWithdrawals?: string;
+    leftover?: string;
+    ppf?: string;
+    communityFund?: string;
+  };
 }
 
 export interface DAOIP5Project {
