@@ -1,0 +1,185 @@
+API Endpoints
+Grant Systems
+GET /api/v1/systems
+Retrieve all available grant systems following DAOIP-5 specification.
+
+cURL
+curl -X GET \
+  "https://opengrants.replit.app/api/v1/systems" \
+  -H "Accept: application/json"
+
+JavaScript
+const response = await fetch(
+  '/api/v1/systems'
+);
+const systems = await response.json();
+
+Python
+import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems'
+)
+systems = response.json()
+
+Response Format
+{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Grant Systems",
+  "type": "GrantSystemCollection",
+  "systems": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "name": "Octant",
+      "type": "DAO",
+      "grantPoolsURI": "/api/v1/pools?system=octant"
+    }
+  ]
+}
+
+GET /api/v1/systems/:id
+Get details for a specific grant system.
+
+cURL
+curl -X GET \
+  "https://opengrants.replit.app/api/v1/systems/octant"
+
+JavaScript
+const response = await fetch(
+  '/api/v1/systems/octant'
+);
+const system = await response.json();
+
+Python
+import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems/octant'
+)
+system = response.json()
+
+Grant Pools
+GET /api/v1/pools
+Retrieve grant pools from one or more systems with optional filtering.
+
+Query Parameters
+system - Filter by grant system (octant, giveth)
+limit - Maximum number of results (default: 50)
+offset - Number of results to skip (default: 0)
+cURL
+curl -X GET \
+  "https://opengrants.replit.app/api/v1/pools?system=octant&limit=10"
+
+JavaScript
+const response = await fetch(
+  '/api/v1/pools?system=octant&limit=10'
+);
+const pools = await response.json();
+
+Python
+import requests
+
+params = {'system': 'octant', 'limit': 10}
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/pools',
+  params=params
+)
+pools = response.json()
+
+Response Format
+{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Grant Pools",
+  "type": "GrantPoolCollection", 
+  "grantPools": [
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=4",
+      "name": "Octant Epoch 4",
+      "description": "Quadratic funding round for Octant epoch 4",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-12-24T00:00:00Z",
+      "totalGrantPoolSize": [
+        {
+          "amount": "567845123456789012345",
+          "denomination": "ETH"
+        }
+      ]
+    }
+  ],
+  "total": 7
+}
+
+Applications
+GET /api/v1/applications
+Retrieve grant applications with approved funding amounts.
+
+cURL
+curl -X GET \
+  "https://opengrants.replit.app/api/v1/applications?system=octant&limit=5"
+
+JavaScript
+const response = await fetch(
+  '/api/v1/applications?system=octant'
+);
+const apps = await response.json();
+
+Python
+import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/applications',
+  params={'system': 'octant'}
+)
+applications = response.json()
+
+Response Format
+{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Applications",
+  "type": "ApplicationCollection",
+  "applications": [
+    {
+      "type": "Application",
+      "id": "eip155:1:0x1234567890abcdef-epoch-3",
+      "projectId": "eip155:1:0x1234567890abcdef",
+      "poolId": "eip155:1:0x0000000000000000000000000000000000000000?contractId=3",
+      "status": "approved",
+      "submissionDate": "2025-03-31T06:15:57.285Z",
+      "approvedAmount": [
+        {
+          "amount": "4.591929",
+          "denomination": "ETH"
+        }
+      ]
+    }
+  ],
+  "total": 156
+}
+
+Authentication (Optional)
+The API supports optional authentication for higher rate limits. Anonymous requests are limited to 100 requests per hour.
+
+cURL with API Key
+curl -X GET \
+  "https://opengrants.replit.app/api/v1/systems" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+JavaScript with API Key
+const response = await fetch('/api/v1/systems', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+Python with API Key
+import requests
+
+headers = {
+  'Authorization': 'Bearer YOUR_API_KEY'
+}
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems',
+  headers=headers
+)

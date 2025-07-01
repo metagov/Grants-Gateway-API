@@ -378,348 +378,7 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
 
-              {/* API Endpoints Documentation */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold">API Endpoints</h2>
-                
-                {/* Grant Systems */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Building className="h-5 w-5 mr-2" />
-                      Grant Systems
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/systems</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Retrieve all available grant systems following DAOIP-5 specification.
-                      </p>
-                      
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <h5 className="font-medium mb-2">cURL</h5>
-                          <CodeBlock
-                            code={`curl -X GET \\
-  "https://opengrants.replit.app/api/v1/systems" \\
-  -H "Accept: application/json"`}
-                            language="bash"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">JavaScript</h5>
-                          <CodeBlock
-                            code={`const response = await fetch(
-  '/api/v1/systems'
-);
-const systems = await response.json();`}
-                            language="javascript"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">Python</h5>
-                          <CodeBlock
-                            code={`import requests
 
-response = requests.get(
-  'https://opengrants.replit.app/api/v1/systems'
-)
-systems = response.json()`}
-                            language="python"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4">
-                        <h5 className="font-medium mb-2">Response Format</h5>
-                        <CodeBlock
-                          code={`{
-  "@context": "http://www.daostar.org/schemas",
-  "name": "Grant Systems",
-  "type": "GrantSystemCollection",
-  "systems": [
-    {
-      "@context": "http://www.daostar.org/schemas",
-      "name": "Octant",
-      "type": "DAO",
-      "grantPoolsURI": "/api/v1/pools?system=octant"
-    }
-  ]
-}`}
-                          language="json"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/systems/:id</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Get details for a specific grant system.
-                      </p>
-                      
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <h5 className="font-medium mb-2">cURL</h5>
-                          <CodeBlock
-                            code={`curl -X GET \\
-  "https://opengrants.replit.app/api/v1/systems/octant"`}
-                            language="bash"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">JavaScript</h5>
-                          <CodeBlock
-                            code={`const response = await fetch(
-  '/api/v1/systems/octant'
-);
-const system = await response.json();`}
-                            language="javascript"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">Python</h5>
-                          <CodeBlock
-                            code={`import requests
-
-response = requests.get(
-  'https://opengrants.replit.app/api/v1/systems/octant'
-)
-system = response.json()`}
-                            language="python"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Grant Pools */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Layers className="h-5 w-5 mr-2" />
-                      Grant Pools
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/pools</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Retrieve grant pools from one or more systems with optional filtering.
-                      </p>
-                      
-                      <div className="mb-4">
-                        <h5 className="font-medium mb-2">Query Parameters</h5>
-                        <div className="text-sm space-y-1">
-                          <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
-                          <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Maximum number of results (default: 50)</div>
-                          <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Number of results to skip (default: 0)</div>
-                        </div>
-                      </div>
-                      
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <h5 className="font-medium mb-2">cURL</h5>
-                          <CodeBlock
-                            code={`curl -X GET \\
-  "https://opengrants.replit.app/api/v1/pools?system=octant&limit=10"`}
-                            language="bash"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">JavaScript</h5>
-                          <CodeBlock
-                            code={`const response = await fetch(
-  '/api/v1/pools?system=octant&limit=10'
-);
-const pools = await response.json();`}
-                            language="javascript"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">Python</h5>
-                          <CodeBlock
-                            code={`import requests
-
-params = {'system': 'octant', 'limit': 10}
-response = requests.get(
-  'https://opengrants.replit.app/api/v1/pools',
-  params=params
-)
-pools = response.json()`}
-                            language="python"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <h5 className="font-medium mb-2">Response Format</h5>
-                        <CodeBlock
-                          code={`{
-  "@context": "http://www.daostar.org/schemas",
-  "name": "Grant Pools",
-  "type": "GrantPoolCollection", 
-  "grantPools": [
-    {
-      "type": "GrantPool",
-      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=4",
-      "name": "Octant Epoch 4",
-      "description": "Quadratic funding round for Octant epoch 4",
-      "grantFundingMechanism": "Quadratic Funding",
-      "isOpen": false,
-      "closeDate": "2024-12-24T00:00:00Z",
-      "totalGrantPoolSize": [
-        {
-          "amount": "567845123456789012345",
-          "denomination": "ETH"
-        }
-      ]
-    }
-  ],
-  "total": 7
-}`}
-                          language="json"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Applications */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <FileText className="h-5 w-5 mr-2" />
-                      Applications
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/applications</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Retrieve grant applications with approved funding amounts.
-                      </p>
-                      
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                          <h5 className="font-medium mb-2">cURL</h5>
-                          <CodeBlock
-                            code={`curl -X GET \\
-  "https://opengrants.replit.app/api/v1/applications?system=octant&limit=5"`}
-                            language="bash"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">JavaScript</h5>
-                          <CodeBlock
-                            code={`const response = await fetch(
-  '/api/v1/applications?system=octant'
-);
-const apps = await response.json();`}
-                            language="javascript"
-                          />
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">Python</h5>
-                          <CodeBlock
-                            code={`import requests
-
-response = requests.get(
-  'https://opengrants.replit.app/api/v1/applications',
-  params={'system': 'octant'}
-)
-applications = response.json()`}
-                            language="python"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <h5 className="font-medium mb-2">Response Format</h5>
-                        <CodeBlock
-                          code={`{
-  "@context": "http://www.daostar.org/schemas",
-  "name": "Applications",
-  "type": "ApplicationCollection",
-  "applications": [
-    {
-      "type": "Application",
-      "id": "eip155:1:0x1234567890abcdef-epoch-3",
-      "projectId": "eip155:1:0x1234567890abcdef",
-      "poolId": "eip155:1:0x0000000000000000000000000000000000000000?contractId=3",
-      "status": "approved",
-      "submissionDate": "2025-03-31T06:15:57.285Z",
-      "approvedAmount": [
-        {
-          "amount": "4.591929",
-          "denomination": "ETH"
-        }
-      ]
-    }
-  ],
-  "total": 156
-}`}
-                          language="json"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Authentication */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Ticket className="h-5 w-5 mr-2" />
-                      Authentication (Optional)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      The API supports optional authentication for higher rate limits. Anonymous requests are limited to 100 requests per hour.
-                    </p>
-                    
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h5 className="font-medium mb-2">cURL with API Key</h5>
-                        <CodeBlock
-                          code={`curl -X GET \\
-  "https://opengrants.replit.app/api/v1/systems" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`}
-                          language="bash"
-                        />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">JavaScript with API Key</h5>
-                        <CodeBlock
-                          code={`const response = await fetch('/api/v1/systems', {
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  }
-});`}
-                          language="javascript"
-                        />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">Python with API Key</h5>
-                        <CodeBlock
-                          code={`import requests
-
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY'
-}
-response = requests.get(
-  'https://opengrants.replit.app/api/v1/systems',
-  headers=headers
-)`}
-                          language="python"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </div>
           )}
 
@@ -885,7 +544,344 @@ response = requests.get(
                   Complete reference for all available API endpoints with DAOIP-5 compliant responses.
                 </p>
               </div>
-              {/* Endpoint documentation cards would go here */}
+
+              {/* Grant Systems */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Building className="h-5 w-5 mr-2" />
+                    Grant Systems
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-2">GET /api/v1/systems</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                      Retrieve all available grant systems following DAOIP-5 specification.
+                    </p>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <h5 className="font-medium mb-2">cURL</h5>
+                        <CodeBlock
+                          code={`curl -X GET \\
+  "https://opengrants.replit.app/api/v1/systems" \\
+  -H "Accept: application/json"`}
+                          language="bash"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">JavaScript</h5>
+                        <CodeBlock
+                          code={`const response = await fetch(
+  '/api/v1/systems'
+);
+const systems = await response.json();`}
+                          language="javascript"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">Python</h5>
+                        <CodeBlock
+                          code={`import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems'
+)
+systems = response.json()`}
+                          language="python"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <h5 className="font-medium mb-2">Response Format</h5>
+                      <CodeBlock
+                        code={`{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "name": "Octant",
+      "type": "DAO",
+      "grantPoolsURI": "/api/v1/pools?system=octant"
+    }
+  ],
+  "total": 2,
+  "page": 1
+}`}
+                        language="json"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2">GET /api/v1/systems/:id</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                      Get details for a specific grant system.
+                    </p>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <h5 className="font-medium mb-2">cURL</h5>
+                        <CodeBlock
+                          code={`curl -X GET \\
+  "https://opengrants.replit.app/api/v1/systems/octant"`}
+                          language="bash"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">JavaScript</h5>
+                        <CodeBlock
+                          code={`const response = await fetch(
+  '/api/v1/systems/octant'
+);
+const system = await response.json();`}
+                          language="javascript"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">Python</h5>
+                        <CodeBlock
+                          code={`import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems/octant'
+)
+system = response.json()`}
+                          language="python"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Grant Pools */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Layers className="h-5 w-5 mr-2" />
+                    Grant Pools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-2">GET /api/v1/pools</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                      Retrieve grant pools from one or more systems with optional filtering.
+                    </p>
+                    
+                    <div className="mb-4">
+                      <h5 className="font-medium mb-2">Query Parameters</h5>
+                      <div className="text-sm space-y-1">
+                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Maximum number of results (default: 50)</div>
+                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Number of results to skip (default: 0)</div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <h5 className="font-medium mb-2">cURL</h5>
+                        <CodeBlock
+                          code={`curl -X GET \\
+  "https://opengrants.replit.app/api/v1/pools?system=octant&limit=10"`}
+                          language="bash"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">JavaScript</h5>
+                        <CodeBlock
+                          code={`const response = await fetch(
+  '/api/v1/pools?system=octant&limit=10'
+);
+const pools = await response.json();`}
+                          language="javascript"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">Python</h5>
+                        <CodeBlock
+                          code={`import requests
+
+params = {'system': 'octant', 'limit': 10}
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/pools',
+  params=params
+)
+pools = response.json()`}
+                          language="python"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <h5 className="font-medium mb-2">Response Format</h5>
+                      <CodeBlock
+                        code={`{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Grant Pools",
+  "type": "GrantPoolCollection", 
+  "grantPools": [
+    {
+      "type": "GrantPool",
+      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=4",
+      "name": "Octant Epoch 4",
+      "description": "Quadratic funding round for Octant epoch 4",
+      "grantFundingMechanism": "Quadratic Funding",
+      "isOpen": false,
+      "closeDate": "2024-12-24T00:00:00Z",
+      "totalGrantPoolSize": [
+        {
+          "amount": "567845123456789012345",
+          "denomination": "ETH"
+        }
+      ]
+    }
+  ],
+  "total": 7
+}`}
+                        language="json"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Applications */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="h-5 w-5 mr-2" />
+                    Applications
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-2">GET /api/v1/applications</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                      Retrieve grant applications with approved funding amounts.
+                    </p>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <h5 className="font-medium mb-2">cURL</h5>
+                        <CodeBlock
+                          code={`curl -X GET \\
+  "https://opengrants.replit.app/api/v1/applications?system=octant&limit=5"`}
+                          language="bash"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">JavaScript</h5>
+                        <CodeBlock
+                          code={`const response = await fetch(
+  '/api/v1/applications?system=octant'
+);
+const apps = await response.json();`}
+                          language="javascript"
+                        />
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2">Python</h5>
+                        <CodeBlock
+                          code={`import requests
+
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/applications',
+  params={'system': 'octant'}
+)
+applications = response.json()`}
+                          language="python"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <h5 className="font-medium mb-2">Response Format</h5>
+                      <CodeBlock
+                        code={`{
+  "@context": "http://www.daostar.org/schemas",
+  "name": "Applications",
+  "type": "ApplicationCollection",
+  "applications": [
+    {
+      "type": "Application",
+      "id": "eip155:1:0x1234567890abcdef-epoch-3",
+      "projectId": "eip155:1:0x1234567890abcdef",
+      "poolId": "eip155:1:0x0000000000000000000000000000000000000000?contractId=3",
+      "status": "approved",
+      "submissionDate": "2025-03-31T06:15:57.285Z",
+      "approvedAmount": [
+        {
+          "amount": "4.591929",
+          "denomination": "ETH"
+        }
+      ]
+    }
+  ],
+  "total": 156
+}`}
+                        language="json"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Authentication */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Ticket className="h-5 w-5 mr-2" />
+                    Authentication (Optional)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    The API supports optional authentication for higher rate limits. Anonymous requests are limited to 100 requests per hour.
+                  </p>
+                  
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <h5 className="font-medium mb-2">cURL with API Key</h5>
+                      <CodeBlock
+                        code={`curl -X GET \\
+  "https://opengrants.replit.app/api/v1/systems" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                        language="bash"
+                      />
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-2">JavaScript with API Key</h5>
+                      <CodeBlock
+                        code={`const response = await fetch('/api/v1/systems', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});`}
+                        language="javascript"
+                      />
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-2">Python with API Key</h5>
+                      <CodeBlock
+                        code={`import requests
+
+headers = {
+  'Authorization': 'Bearer YOUR_API_KEY'
+}
+response = requests.get(
+  'https://opengrants.replit.app/api/v1/systems',
+  headers=headers
+)`}
+                        language="python"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 

@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- June 30, 2025. Enhanced API documentation and DAOIP-5 compliance
+  - Replaced Gitcoin with Questbook in supported systems overview
+  - Updated grant systems to return proper DAOIP-5 format with @context field
+  - Removed projectsURI fields from systems responses per specification
+  - Hidden epochMetadata from Octant pools responses (commented for future use)
+  - Moved comprehensive API documentation to dedicated "API Endpoints" tab
+  - Added detailed CURL, JavaScript, and Python examples for all endpoints
+  - Generated .env file for local development setup
+  - Kept landing page overview brief and focused
 - June 28, 2025. Successfully implemented real API functionality with authentic data from Octant and Giveth
   - Fixed Octant adapter to fetch real epoch data and transform to DAOIP-5 format
   - Fixed Giveth GraphQL queries to fetch actual QF rounds data
