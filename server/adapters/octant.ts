@@ -39,8 +39,7 @@ export class OctantAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Octant",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=octant",
-      projectsURI: "/api/v1/projects?system=octant"
+      grantPoolsURI: "/api/v1/pools?system=octant"
     }];
   }
 
@@ -122,19 +121,19 @@ export class OctantAdapter extends BaseAdapter {
             closeDate: closeDate,
             applicationsURI: `./applications_epoch_${epoch}.json`,
             governanceURI: "https://docs.octant.app/how-it-works/mechanism",
-            totalGrantPoolSize,
-            epochMetadata: {
-              stakingProceeds: epochInfo.stakingProceeds,
-              totalEffectiveDeposit: epochInfo.totalEffectiveDeposit,
-              vanillaIndividualRewards: epochInfo.vanillaIndividualRewards,
-              operationalCost: epochInfo.operationalCost,
-              matchedRewards: epochInfo.matchedRewards,
-              patronsRewards: epochInfo.patronsRewards,
-              totalWithdrawals: epochInfo.totalWithdrawals,
-              leftover: epochInfo.leftover,
-              ppf: epochInfo.ppf,
-              communityFund: epochInfo.communityFund
-            }
+            totalGrantPoolSize
+            // epochMetadata: {
+            //   stakingProceeds: epochInfo.stakingProceeds,
+            //   totalEffectiveDeposit: epochInfo.totalEffectiveDeposit,
+            //   vanillaIndividualRewards: epochInfo.vanillaIndividualRewards,
+            //   operationalCost: epochInfo.operationalCost,
+            //   matchedRewards: epochInfo.matchedRewards,
+            //   patronsRewards: epochInfo.patronsRewards,
+            //   totalWithdrawals: epochInfo.totalWithdrawals,
+            //   leftover: epochInfo.leftover,
+            //   ppf: epochInfo.ppf,
+            //   communityFund: epochInfo.communityFund
+            // }
           };
 
           // Apply filters
