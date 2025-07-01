@@ -2,7 +2,7 @@
 
 ## Overview
 
-OpenGrants Gateway API is a unified interface for accessing grant data across multiple blockchain ecosystems using the DAOIP-5 metadata standard. The application provides a standardized REST API that normalizes data from various grant systems including Octant and Giveth, making it easier for developers to build applications that work with multiple funding platforms.
+OpenGrants Gateway API is a unified interface for accessing grant data across Ethereum Ecosystem using the DAOIP-5 metadata standard. The application provides a standardized REST API that normalizes data from various grant systems including Octant and Giveth, making it easier for developers to build applications that work with multiple funding platforms.
 
 ## System Architecture
 
@@ -104,6 +104,7 @@ Changelog:
   - Moved comprehensive API documentation to dedicated "API Endpoints" tab
   - Added tabbed interface for code examples with cURL, JavaScript, TypeScript, and Python
   - Transformed Examples tab into Contributors & Supporters page with mission statement
+  - Updated ecosystem description from "blockchain ecosystems" to "Ethereum Ecosystem"
   - Generated .env file for local development setup
   - Kept landing page overview brief and focused
 - June 28, 2025. Successfully implemented real API functionality with authentic data from Octant and Giveth
