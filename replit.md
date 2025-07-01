@@ -102,7 +102,8 @@ Changelog:
   - Removed projectsURI fields from systems responses per specification
   - Hidden epochMetadata from Octant pools responses (commented for future use)
   - Moved comprehensive API documentation to dedicated "API Endpoints" tab
-  - Added detailed CURL, JavaScript, and Python examples for all endpoints
+  - Added tabbed interface for code examples with cURL, JavaScript, TypeScript, and Python
+  - Transformed Examples tab into Contributors & Supporters page with mission statement
   - Generated .env file for local development setup
   - Kept landing page overview brief and focused
 - June 28, 2025. Successfully implemented real API functionality with authentic data from Octant and Giveth

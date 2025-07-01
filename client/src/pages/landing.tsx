@@ -89,7 +89,7 @@ export default function LandingPage() {
     { id: "endpoints", label: "API Endpoints", icon: Target },
     { id: "query-builder", label: "Query Builder", icon: Code },
     { id: "field-mapping", label: "Field Mapping", icon: Ticket },
-    { id: "examples", label: "Examples", icon: Book },
+    { id: "supporters", label: "Contributors & Supporters", icon: Heart },
   ];
 
   return (
@@ -560,39 +560,65 @@ export default function LandingPage() {
                       Retrieve all available grant systems following DAOIP-5 specification.
                     </p>
                     
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h5 className="font-medium mb-2">cURL</h5>
+                    <Tabs defaultValue="curl" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="curl">cURL</TabsTrigger>
+                        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                        <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                        <TabsTrigger value="python">Python</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="curl" className="mt-4">
                         <CodeBlock
                           code={`curl -X GET \\
   "https://opengrants.replit.app/api/v1/systems" \\
   -H "Accept: application/json"`}
                           language="bash"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">JavaScript</h5>
+                      </TabsContent>
+                      <TabsContent value="javascript" className="mt-4">
                         <CodeBlock
-                          code={`const response = await fetch(
-  '/api/v1/systems'
-);
-const systems = await response.json();`}
+                          code={`const response = await fetch('/api/v1/systems');
+const systems = await response.json();
+console.log(systems);`}
                           language="javascript"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">Python</h5>
+                      </TabsContent>
+                      <TabsContent value="typescript" className="mt-4">
+                        <CodeBlock
+                          code={`interface GrantSystem {
+  "@context": string;
+  name: string;
+  type: string;
+  grantPoolsURI: string;
+}
+
+interface SystemsResponse {
+  "@context": string;
+  data: GrantSystem[];
+  total: number;
+  page: number;
+}
+
+const response = await fetch('/api/v1/systems');
+const systems: SystemsResponse = await response.json();
+console.log(systems);`}
+                          language="typescript"
+                        />
+                      </TabsContent>
+                      <TabsContent value="python" className="mt-4">
                         <CodeBlock
                           code={`import requests
+from typing import List, Dict, Any
 
 response = requests.get(
-  'https://opengrants.replit.app/api/v1/systems'
+    'https://opengrants.replit.app/api/v1/systems'
 )
-systems = response.json()`}
+systems: Dict[str, Any] = response.json()
+print(systems)`}
                           language="python"
                         />
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
                     
                     <div className="mt-4">
                       <h5 className="font-medium mb-2">Response Format</h5>
@@ -621,38 +647,57 @@ systems = response.json()`}
                       Get details for a specific grant system.
                     </p>
                     
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h5 className="font-medium mb-2">cURL</h5>
+                    <Tabs defaultValue="curl" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="curl">cURL</TabsTrigger>
+                        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                        <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                        <TabsTrigger value="python">Python</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="curl" className="mt-4">
                         <CodeBlock
                           code={`curl -X GET \\
   "https://opengrants.replit.app/api/v1/systems/octant"`}
                           language="bash"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">JavaScript</h5>
+                      </TabsContent>
+                      <TabsContent value="javascript" className="mt-4">
                         <CodeBlock
-                          code={`const response = await fetch(
-  '/api/v1/systems/octant'
-);
-const system = await response.json();`}
+                          code={`const response = await fetch('/api/v1/systems/octant');
+const system = await response.json();
+console.log(system);`}
                           language="javascript"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">Python</h5>
+                      </TabsContent>
+                      <TabsContent value="typescript" className="mt-4">
+                        <CodeBlock
+                          code={`interface GrantSystem {
+  "@context": string;
+  name: string;
+  type: string;
+  grantPoolsURI: string;
+}
+
+const response = await fetch('/api/v1/systems/octant');
+const system: GrantSystem = await response.json();
+console.log(system);`}
+                          language="typescript"
+                        />
+                      </TabsContent>
+                      <TabsContent value="python" className="mt-4">
                         <CodeBlock
                           code={`import requests
+from typing import Dict, Any
 
 response = requests.get(
-  'https://opengrants.replit.app/api/v1/systems/octant'
+    'https://opengrants.replit.app/api/v1/systems/octant'
 )
-system = response.json()`}
+system: Dict[str, Any] = response.json()
+print(system)`}
                           language="python"
                         />
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 </CardContent>
               </Card>
@@ -681,40 +726,88 @@ system = response.json()`}
                       </div>
                     </div>
                     
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h5 className="font-medium mb-2">cURL</h5>
+                    <Tabs defaultValue="curl" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="curl">cURL</TabsTrigger>
+                        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                        <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                        <TabsTrigger value="python">Python</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="curl" className="mt-4">
                         <CodeBlock
                           code={`curl -X GET \\
   "https://opengrants.replit.app/api/v1/pools?system=octant&limit=10"`}
                           language="bash"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">JavaScript</h5>
+                      </TabsContent>
+                      <TabsContent value="javascript" className="mt-4">
                         <CodeBlock
-                          code={`const response = await fetch(
-  '/api/v1/pools?system=octant&limit=10'
-);
-const pools = await response.json();`}
+                          code={`const params = new URLSearchParams({
+  system: 'octant',
+  limit: '10'
+});
+
+const response = await fetch(\`/api/v1/pools?\${params}\`);
+const pools = await response.json();
+console.log(pools);`}
                           language="javascript"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">Python</h5>
+                      </TabsContent>
+                      <TabsContent value="typescript" className="mt-4">
+                        <CodeBlock
+                          code={`interface GrantPool {
+  type: string;
+  id: string;
+  name: string;
+  description: string;
+  grantFundingMechanism: string;
+  isOpen: boolean;
+  closeDate: string;
+  totalGrantPoolSize: Array<{
+    amount: string;
+    denomination: string;
+  }>;
+}
+
+interface PoolsResponse {
+  "@context": string;
+  name: string;
+  type: string;
+  grantPools: GrantPool[];
+  total: number;
+}
+
+const params = new URLSearchParams({
+  system: 'octant',
+  limit: '10'
+});
+
+const response = await fetch(\`/api/v1/pools?\${params}\`);
+const pools: PoolsResponse = await response.json();
+console.log(pools);`}
+                          language="typescript"
+                        />
+                      </TabsContent>
+                      <TabsContent value="python" className="mt-4">
                         <CodeBlock
                           code={`import requests
+from typing import Dict, List, Any
 
-params = {'system': 'octant', 'limit': 10}
+params = {
+    'system': 'octant',
+    'limit': 10
+}
+
 response = requests.get(
-  'https://opengrants.replit.app/api/v1/pools',
-  params=params
+    'https://opengrants.replit.app/api/v1/pools',
+    params=params
 )
-pools = response.json()`}
+pools: Dict[str, Any] = response.json()
+print(f"Found {pools['total']} grant pools")`}
                           language="python"
                         />
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
 
                     <div className="mt-4">
                       <h5 className="font-medium mb-2">Response Format</h5>
@@ -764,39 +857,87 @@ pools = response.json()`}
                       Retrieve grant applications with approved funding amounts.
                     </p>
                     
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <h5 className="font-medium mb-2">cURL</h5>
+                    <Tabs defaultValue="curl" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="curl">cURL</TabsTrigger>
+                        <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                        <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                        <TabsTrigger value="python">Python</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="curl" className="mt-4">
                         <CodeBlock
                           code={`curl -X GET \\
   "https://opengrants.replit.app/api/v1/applications?system=octant&limit=5"`}
                           language="bash"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">JavaScript</h5>
+                      </TabsContent>
+                      <TabsContent value="javascript" className="mt-4">
                         <CodeBlock
-                          code={`const response = await fetch(
-  '/api/v1/applications?system=octant'
-);
-const apps = await response.json();`}
+                          code={`const params = new URLSearchParams({
+  system: 'octant',
+  limit: '5'
+});
+
+const response = await fetch(\`/api/v1/applications?\${params}\`);
+const applications = await response.json();
+console.log(applications);`}
                           language="javascript"
                         />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-2">Python</h5>
+                      </TabsContent>
+                      <TabsContent value="typescript" className="mt-4">
+                        <CodeBlock
+                          code={`interface Application {
+  type: string;
+  id: string;
+  projectId: string;
+  poolId: string;
+  status: string;
+  submissionDate: string;
+  approvedAmount: Array<{
+    amount: string;
+    denomination: string;
+  }>;
+}
+
+interface ApplicationsResponse {
+  "@context": string;
+  name: string;
+  type: string;
+  applications: Application[];
+  total: number;
+}
+
+const params = new URLSearchParams({
+  system: 'octant',
+  limit: '5'
+});
+
+const response = await fetch(\`/api/v1/applications?\${params}\`);
+const applications: ApplicationsResponse = await response.json();
+console.log(\`Found \${applications.total} applications\`);`}
+                          language="typescript"
+                        />
+                      </TabsContent>
+                      <TabsContent value="python" className="mt-4">
                         <CodeBlock
                           code={`import requests
+from typing import Dict, List, Any
+
+params = {
+    'system': 'octant',
+    'limit': 5
+}
 
 response = requests.get(
-  'https://opengrants.replit.app/api/v1/applications',
-  params={'system': 'octant'}
+    'https://opengrants.replit.app/api/v1/applications',
+    params=params
 )
-applications = response.json()`}
+applications: Dict[str, Any] = response.json()
+print(f"Found {applications['total']} applications")`}
                           language="python"
                         />
-                      </div>
-                    </div>
+                      </TabsContent>
+                    </Tabs>
 
                     <div className="mt-4">
                       <h5 className="font-medium mb-2">Response Format</h5>
@@ -1053,15 +1194,214 @@ response = requests.get(
             </div>
           )}
 
-          {activeSection === "examples" && (
+          {activeSection === "supporters" && (
             <div className="space-y-8">
               <div>
-                <h1 className="text-3xl font-bold mb-4">API Examples</h1>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Real-world examples of API usage with complete request and response data.
+                <h1 className="text-3xl font-bold mb-4">Contributors & Supporters</h1>
+                <p className="text-gray-600 dark:text-gray-300 mb-8">
+                  Building the future of grants interoperability together. Thank you to our contributors and supporters who believe in open, standardized grant data.
                 </p>
               </div>
-              {/* Example content would go here */}
+
+              {/* Mission Statement */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Target className="h-5 w-5 mr-2" />
+                    Our Mission
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    Grant funding is fragmented across dozens of platforms, each with unique APIs and data formats. 
+                    Developers building grant discovery tools, analytics platforms, or ecosystem overviews face 
+                    significant integration challenges.
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    OpenGrants Gateway bridges this gap by providing a unified DAOIP-5 compliant API that 
+                    standardizes grant data across multiple ecosystems, enabling innovation and transparency 
+                    in the grants space.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Current Contributors */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Building className="h-5 w-5 mr-2" />
+                    Data Contributors
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Octant */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Layers className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Octant</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Quadratic funding for Ethereum public goods
+                      </p>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Integrated
+                      </Badge>
+                    </div>
+
+                    {/* Giveth */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Heart className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Giveth</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Donation platform for public goods and social impact
+                      </p>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Integrated
+                      </Badge>
+                    </div>
+
+                    {/* Questbook */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Book className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Questbook</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Decentralized grants orchestration platform
+                      </p>
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Coming Soon
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Community Testimonials */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Heart className="h-5 w-5 mr-2" />
+                    Why This Matters
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                          <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">For Grant Platforms</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            "Standardized APIs reduce integration overhead and enable cross-platform analytics, 
+                            helping us understand funding flows across the entire ecosystem."
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                          <Code className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">For Developers</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            "One API to access grant data from multiple platforms saves weeks of integration work. 
+                            The DAOIP-5 standard ensures consistent, high-quality data for our applications."
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                          <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">For Grant Seekers</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            "Better tooling means easier discovery of funding opportunities. 
+                            Standardized data enables powerful search and matching platforms."
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                          <Layers className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">For Ecosystem Health</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            "Transparent, accessible funding data improves accountability and enables 
+                            data-driven decisions about resource allocation across public goods."
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Get Involved */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Star className="h-5 w-5 mr-2" />
+                    Get Involved
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold mb-4">Join the Mission</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        Help us build the future of grants interoperability. Whether you're a grant platform, 
+                        developer, or ecosystem supporter, there are many ways to contribute.
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 border rounded-lg">
+                        <Building className="h-8 w-8 mx-auto mb-3 text-primary" />
+                        <h4 className="font-semibold mb-2">Grant Platforms</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          Integrate your platform to increase discoverability and enable ecosystem analytics.
+                        </p>
+                      </div>
+
+                      <div className="text-center p-4 border rounded-lg">
+                        <Code className="h-8 w-8 mx-auto mb-3 text-primary" />
+                        <h4 className="font-semibold mb-2">Developers</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          Contribute to our open-source codebase or build applications using our API.
+                        </p>
+                      </div>
+
+                      <div className="text-center p-4 border rounded-lg">
+                        <Heart className="h-8 w-8 mx-auto mb-3 text-primary" />
+                        <h4 className="font-semibold mb-2">Supporters</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          Help fund development and infrastructure costs to keep the API free and accessible.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </main>

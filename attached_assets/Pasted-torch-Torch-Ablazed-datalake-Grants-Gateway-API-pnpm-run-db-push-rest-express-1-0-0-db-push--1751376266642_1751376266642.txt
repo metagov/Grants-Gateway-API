@@ -1,0 +1,36 @@
+torch@Torch-Ablazed:~/datalake/Grants-Gateway-API$ pnpm run db:push
+
+> rest-express@1.0.0 db:push /home/torch/datalake/Grants-Gateway-API
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/home/torch/datalake/Grants-Gateway-API/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[✓] Changes applied
+torch@Torch-Ablazed:~/datalake/Grants-Gateway-API$ pnpm run dev
+
+> rest-express@1.0.0 dev /home/torch/datalake/Grants-Gateway-API
+> NODE_ENV=development tsx server/index.ts
+
+
+node:internal/process/esm_loader:34
+      internalBinding('errors').triggerUncaughtException(
+                                ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'nanoid' imported from /home/torch/datalake/Grants-Gateway-API/server/vite.ts
+Did you mean to import "nanoid/index.cjs"?
+    at packageResolve (node:internal/modules/esm/resolve:854:9)
+    at moduleResolve (node:internal/modules/esm/resolve:927:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1157:11)
+    at nextResolve (node:internal/modules/esm/hooks:866:28)
+    at resolveBase (file:///home/torch/datalake/Grants-Gateway-API/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1751376236036:2:3811)
+    at resolveDirectory (file:///home/torch/datalake/Grants-Gateway-API/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1751376236036:2:4310)
+    at resolveTsPaths (file:///home/torch/datalake/Grants-Gateway-API/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1751376236036:2:5051)
+    at async resolve (file:///home/torch/datalake/Grants-Gateway-API/node_modules/.pnpm/tsx@4.20.3/node_modules/tsx/dist/esm/index.mjs?1751376236036:2:5422)
+    at async nextResolve (node:internal/modules/esm/hooks:866:22)
+    at async Hooks.resolve (node:internal/modules/esm/hooks:304:24) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v20.12.0
+ ELIFECYCLE  Command failed with exit code 1.
