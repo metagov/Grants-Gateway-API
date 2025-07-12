@@ -24,7 +24,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize adapters
   const adapters: { [key: string]: BaseAdapter } = {
     octant: new OctantAdapter(),
-    giveth: new GivethAdapter()
+    giveth: new GivethAdapter(),
+    // questbook: new QuestbookAdapter(), // Available but commented for demonstration
   };
 
   // Helper function to get adapter
@@ -246,6 +247,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Internal server error",
         message: "Failed to fetch project"
       });
+    }
+  });
+
+  // Health endpoints
+  app.get('/api/v1/health', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { healthService } = await import('./services/health');
+      const forceRefresh = req.query.refresh === 'true';
+      const health = await healthService.getSystemHealth(forceRefresh);
+      
+      // Set appropriate HTTP status based on health
+      const statusCode = health.status === 'healthy' ? 200 : 
+                        health.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json(health);
+    } catch (error) {
+      console.error('Health check failed:', error);
+      res.status(503).json({
+        status: 'down',
+        timestamp: new Date().toISOString(),
+        error: 'Health check system failure'
+      });
+    }
+  });
+
+  app.get('/api/v1/health/:adapter', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { healthService } = await import('./services/health');
+      const { adapter } = req.params;
+      const adapterHealth = await healthService.getAdapterHealth(adapter);
+      
+      if (!adapterHealth) {
+        return res.status(404).json({
+          error: "Adapter not found",
+          message: `Health status for adapter '${adapter}' not available`
+        });
+      }
+
+      const statusCode = adapterHealth.status === 'healthy' ? 200 :
+                        adapterHealth.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json(adapterHealth);
+    } catch (error) {
+      console.error(`Health check failed for adapter ${req.params.adapter}:`, error);
+      res.status(503).json({
+        status: 'down',
+        timestamp: new Date().toISOString(),
+        error: 'Adapter health check failure'
+      });
+    }
+  });
+
+  // Quick health check endpoint (no detailed checks, uses cache)
+  app.get('/api/v1/health-quick', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { healthService } = await import('./services/health');
+      const quickHealth = healthService.getQuickHealth();
+      res.json(quickHealth);
+    } catch (error) {
+      res.status(503).json({ status: 'down' });
     }
   });
 

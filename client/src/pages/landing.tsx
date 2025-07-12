@@ -23,7 +23,8 @@ import {
   Loader2,
   Info as InfoIcon,
   BookOpen,
-  ExternalLink
+  ExternalLink,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,6 +94,7 @@ export default function LandingPage() {
     { id: "endpoints", label: "API Endpoints", icon: Target },
     { id: "query-builder", label: "Query Builder", icon: Code },
     { id: "field-mapping", label: "Field Mapping", icon: Ticket },
+    { id: "health", label: "API Health", icon: Activity, isExternal: true, href: "/health" },
     { id: "supporters", label: "Contributors & Supporters", icon: Heart },
   ];
 
@@ -121,6 +123,25 @@ export default function LandingPage() {
           <div className="space-y-2">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
+              
+              if (item.isExternal) {
+                return (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      window.location.href = item.href || '#';
+                      setSidebarOpen(false);
+                    }}
+                  >
+                    <Icon className="h-4 w-4 mr-3" />
+                    {item.label}
+                    <ExternalLink className="h-3 w-3 ml-auto" />
+                  </Button>
+                );
+              }
+              
               return (
                 <Button
                   key={item.id}
@@ -153,7 +174,7 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Gitcoin (Coming Soon)</span>
+                <span className="text-gray-600 dark:text-gray-300">Questbook (Coming Soon)</span>
               </div>
             </div>
           </div>
