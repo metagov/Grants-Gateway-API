@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   Copy,
-  Loader2
+  Loader2,
+  Info as InfoIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useThemeContext } from "@/components/ui/theme-provider";
 import { CodeBlock } from "@/components/ui/code-block";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -443,6 +445,28 @@ export default function LandingPage() {
                       </div>
                     )}
 
+                    {entityType === "applications" && (
+                      <div>
+                        <Label htmlFor="poolId" className="flex items-center">
+                          Grant Pool ID
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <InfoIcon className="h-4 w-4 ml-1 text-gray-400" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Optional. Defaults to latest grant pool if not specified.</p>
+                              <p>Format: daoip5:&lt;grantSystemName&gt;:grantPool:&lt;poolId&gt;</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </Label>
+                        <Input
+                          placeholder="e.g., daoip5:octant:grantPool:7 (defaults to latest)"
+                          value={queryFilters.poolId || ""}
+                          onChange={(e) => setQueryFilters(prev => ({ ...prev, poolId: e.target.value || undefined }))}
+                        />
+                      </div>
+                    )}
+
 
 
                     <Button 
@@ -819,7 +843,7 @@ print(f"Found {pools['total']} grant pools")`}
   "grantPools": [
     {
       "type": "GrantPool",
-      "id": "eip155:1:0x0000000000000000000000000000000000000000?contractId=4",
+      "id": "daoip5:octant:grantPool:4",
       "name": "Octant Epoch 4",
       "description": "Quadratic funding round for Octant epoch 4",
       "grantFundingMechanism": "Quadratic Funding",
