@@ -96,6 +96,16 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 12, 2025. Added API Health Monitoring and Enhanced Integration Documentation
+  - Created comprehensive health monitoring system with dedicated health service (server/services/health.ts)
+  - Added API health endpoints: /api/v1/health, /api/v1/health/:adapter, /api/v1/health-quick
+  - Built interactive health monitoring page (/health) with real-time adapter status, response times, and error tracking
+  - Enhanced integration documentation with two integration types: Source API (Octant/Giveth) vs Direct DAOIP-5 (Questbook)
+  - Added performance considerations section covering caching strategies, circuit breaker patterns, and graceful degradation
+  - Created Questbook adapter example (server/adapters/questbook.ts) demonstrating DAOIP-5 endpoint caching with 5-minute TTL
+  - Added health navigation to landing page with external link handling
+  - Updated grant system references from Gitcoin to Questbook to match implementation
+  - Performance optimizations ensure direct DAOIP-5 integrations don't slow down API through caching and async processing
 - January 12, 2025. Added Comprehensive Grant System Integration Documentation
   - Created detailed integration guide (docs/integration-guide.md) with step-by-step instructions for adding new grant systems
   - Documentation covers complete workflow: information gathering, API analysis, field mapping, adapter implementation, testing, and deployment
