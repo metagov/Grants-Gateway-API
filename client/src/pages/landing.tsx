@@ -21,7 +21,9 @@ import {
   X,
   Copy,
   Loader2,
-  Info as InfoIcon
+  Info as InfoIcon,
+  BookOpen,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -380,6 +382,89 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
 
+              {/* Developer Resources */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Code className="h-5 w-5 text-primary mr-2" />
+                    Developer Resources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold mb-3">Integration Guide</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                        Step-by-step guide to integrate new grant systems into the API gateway.
+                      </p>
+                      <div className="space-y-3">
+                        <div className="flex items-center text-sm">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          <span>Complete file changes walkthrough</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          <span>API information gathering checklist</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Check className="h-4 w-4 text-green-500 mr-2" />
+                          <span>Field mapping and testing procedures</span>
+                        </div>
+                      </div>
+                      <a
+                        href="/docs/integration-guide.md"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        View Integration Guide
+                      </a>
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold mb-3">Documentation</h3>
+                      <div className="space-y-3">
+                        <a
+                          href="/docs/README.md"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <FileText className="h-5 w-5 text-primary mr-3" />
+                          <div>
+                            <div className="font-medium text-sm">Developer Docs</div>
+                            <div className="text-xs text-gray-500">API reference and guides</div>
+                          </div>
+                        </a>
+                        <a
+                          href="http://www.daostar.org/schemas"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <ExternalLink className="h-5 w-5 text-primary mr-3" />
+                          <div>
+                            <div className="font-medium text-sm">DAOIP-5 Standard</div>
+                            <div className="text-xs text-gray-500">Official specification</div>
+                          </div>
+                        </a>
+                        <a
+                          href="https://github.com/yourusername/opengrants-gateway"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <GitBranch className="h-5 w-5 text-primary mr-3" />
+                          <div>
+                            <div className="font-medium text-sm">GitHub Repository</div>
+                            <div className="text-xs text-gray-500">Source code and issues</div>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
             </div>
           )}
