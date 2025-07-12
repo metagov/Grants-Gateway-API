@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 12, 2025. Added Comprehensive Grant System Integration Documentation
+  - Created detailed integration guide (docs/integration-guide.md) with step-by-step instructions for adding new grant systems
+  - Documentation covers complete workflow: information gathering, API analysis, field mapping, adapter implementation, testing, and deployment
+  - Includes practical code examples for adapter class structure, error handling, pagination, and data transformation
+  - Added developer resources section to landing page with direct links to integration documentation
+  - Created docs/README.md with overview of API usage, supported systems, and documentation structure
+  - Integration guide covers all file changes needed: adapters, routes, environment variables, database schema, and testing
+  - Documentation designed for developers to independently integrate new grant systems without additional guidance
 - January 12, 2025. Enhanced Applications Schema with Full DAOIP-5 Field Support
   - Updated application interface to match complete DAOIP-5 grant application schema specification
   - Added comprehensive field mappings: grantPoolId, grantPoolName, projectName, createdAt, contentURI, fundsApproved, fundsApprovedInUSD, payoutAddress, status, socials, extensions
