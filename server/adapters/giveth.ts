@@ -131,13 +131,13 @@ export class GivethAdapter extends BaseAdapter {
 
         const pool: DAOIP5GrantPool = {
           type: "GrantPool",
-          id: `daoip5:grantPool:1:${round.id}`,
+          id: `daoip5:giveth:grantPool:${round.id}`,
           name: round.name || "",
           description: round.description || `Quadratic Funding round on Giveth platform. ${round.name} provides funding for public goods projects through community-driven quadratic funding mechanisms.`,
           grantFundingMechanism: "Quadratic Funding",
           isOpen: round.isActive || false,
           closeDate: round.endDate ? this.formatDate(round.endDate) : undefined,
-          applicationsURI: `/api/v1/applications?poolId=daoip5:grantPool:1:${round.id}`,
+          applicationsURI: `/api/v1/applications?poolId=daoip5:giveth:grantPool:${round.id}`,
           governanceURI: `https://giveth.io/qf/${round.slug}`,
           attestationIssuersURI: "https://giveth.io/attestations",
           requiredCredentials: ["EthereumAddress", "GivethProfile"],
@@ -235,7 +235,7 @@ export class GivethAdapter extends BaseAdapter {
 
         const daoip5Project: DAOIP5Project = {
           type: "Project",
-          id: primaryAddress ? this.toCaip10(primaryAddress) : `giveth:project:${project.id}`,
+          id: `daoip5:${project.title?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.id}`,
           name: project.title || "",
           description: project.description || "",
           contentURI: `https://giveth.io/project/${project.slug}`,
@@ -300,7 +300,7 @@ export class GivethAdapter extends BaseAdapter {
         for (const pool of pools) {
           const application: DAOIP5Application = {
             type: "Application",
-            id: `${project.id}-${pool.id}`,
+            id: `daoip5:giveth:grantApplication:${project.id}-${pool.id}`,
             projectId: project.id,
             poolId: pool.id,
             status: pool.isOpen ? "pending" : "approved",
