@@ -306,6 +306,24 @@ export class OctantAdapter extends BaseAdapter {
         [parseInt(filters.poolId.split(':')[3] || "1")] : // Extract epoch from daoip5:octant:grantPool:epochId
         Array.from({length: maxEpoch}, (_, i) => i + 1);
 
+      // Fetch project details with names for all epochs
+      const projectsMap = new Map<string, any>();
+      for (const epoch of epochsToQuery) {
+        try {
+          const projectDetailsResponse = await fetch(`${this.baseUrl}/projects/details?epochs=${epoch}&searchPhrases=`);
+          if (projectDetailsResponse.ok) {
+            const projectDetailsData = await projectDetailsResponse.json();
+            for (const project of projectDetailsData.projectsDetails || []) {
+              if (!projectsMap.has(project.address)) {
+                projectsMap.set(project.address, project);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching project details for epoch ${epoch}:`, error);
+        }
+      }
+
       for (const epoch of epochsToQuery) {
         try {
           // Fetch project rewards for each epoch - focusing on approved applications with funding
@@ -319,22 +337,59 @@ export class OctantAdapter extends BaseAdapter {
               
               // Only include approved applications (with funding > 0) as requested
               if (amountInEth > 0 && reward.address) {
-                const projectId = this.toCaip10(reward.address);
+                const projectData = projectsMap.get(reward.address);
+                const projectId = `daoip5:${projectData?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${reward.address}`;
+                
+                // Calculate USD amount
+                const ethAmount = amountInEth.toFixed(6);
+                const fundsApprovedInUSD = await currencyService.convertETHToUSD(ethAmount);
+                
+                // Build socials array from project data
+                const socials: Array<{ platform: string; url: string }> = [];
+                if (projectData?.website) {
+                  socials.push({ platform: "Website", url: projectData.website });
+                }
+                
                 const application: DAOIP5Application = {
-                  type: "Application",
+                  type: "GrantApplication",
                   id: `daoip5:octant:grantApplication:${reward.address}-epoch-${epoch}`,
+                  grantPoolId: `daoip5:octant:grantPool:${epoch}`,
+                  grantPoolName: `Octant Epoch ${epoch}`,
                   projectId: projectId,
-                  poolId: `daoip5:octant:grantPool:${epoch}`,
-                  status: "approved", // Only showing approved applications with funding
-                  submissionDate: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
-                  approvedAmount: [{
-                    amount: amountInEth.toFixed(6),
+                  projectName: projectData?.name || `Project ${reward.address.slice(-8)}`,
+                  createdAt: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
+                  contentURI: projectData?.website || `https://octant.app/project/${reward.address}`,
+                  socials: socials.length > 0 ? socials : undefined,
+                  fundsApproved: [{
+                    amount: ethAmount,
                     denomination: "ETH"
-                  }]
+                  }],
+                  fundsApprovedInUSD: fundsApprovedInUSD,
+                  payoutAddress: {
+                    type: "EthereumAddress",
+                    value: reward.address
+                  },
+                  status: "funded", // Octant applications with rewards are considered funded
+                  extensions: {
+                    "app.octant.applicationMetadata": {
+                      epochNumber: epoch,
+                      rewardAllocation: reward.allocated,
+                      projectAddress: reward.address,
+                      fundingMechanism: "quadratic_funding",
+                      network: "ethereum",
+                      chainId: "1"
+                    },
+                    "app.octant.projectDetails": {
+                      profileImageSmall: projectData?.profileImageSmall,
+                      profileImageMedium: projectData?.profileImageMedium,
+                      description: projectData?.description,
+                      website: projectData?.website
+                    }
+                  }
                 };
 
                 // Apply filters
-                if (filters?.poolId && application.poolId !== filters.poolId) continue;
+                if (filters?.poolId && application.grantPoolId !== filters.poolId) continue;
                 if (filters?.projectId && application.projectId !== filters.projectId) continue;
 
                 applications.push(application);
@@ -348,8 +403,8 @@ export class OctantAdapter extends BaseAdapter {
 
       // Sort by approved amount (highest first)
       applications.sort((a, b) => {
-        const amountA = parseFloat(a.approvedAmount?.[0]?.amount || '0');
-        const amountB = parseFloat(b.approvedAmount?.[0]?.amount || '0');
+        const amountA = parseFloat(a.fundsApproved?.[0]?.amount || '0');
+        const amountB = parseFloat(b.fundsApproved?.[0]?.amount || '0');
         return amountB - amountA;
       });
 

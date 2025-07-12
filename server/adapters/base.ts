@@ -50,21 +50,42 @@ export interface DAOIP5Project {
 }
 
 export interface DAOIP5Application {
-  type: "Application";
+  type: "GrantApplication";
   id: string;
+  grantPoolId: string;
+  grantPoolName?: string;
   projectId: string;
-  poolId: string;
-  status: "pending" | "approved" | "rejected";
-  submissionDate: string;
-  requestedAmount?: Array<{
+  projectName?: string;
+  createdAt?: string;
+  contentURI?: string;
+  discussionsTo?: string;
+  licenseURI?: string;
+  isInactive?: boolean;
+  applicationCompletionRate?: number;
+  socials?: Array<{
+    platform: string;
+    url: string;
+  }>;
+  fundsAsked?: Array<{
     amount: string;
     denomination: string;
   }>;
-  approvedAmount?: Array<{
+  fundsAskedInUSD?: string;
+  fundsApproved?: Array<{
     amount: string;
     denomination: string;
   }>;
-  applicationURI?: string;
+  fundsApprovedInUSD?: string;
+  payoutAddress?: {
+    type: string;
+    value: string;
+  };
+  status: "pending" | "in_review" | "approved" | "funded" | "rejected" | "completed";
+  payouts?: Array<{
+    type: string;
+    value: any;
+    proof?: string;
+  }>;
   extensions?: Record<string, any>;
 }
 

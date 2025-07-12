@@ -96,6 +96,16 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 12, 2025. Enhanced Applications Schema with Full DAOIP-5 Field Support
+  - Updated application interface to match complete DAOIP-5 grant application schema specification
+  - Added comprehensive field mappings: grantPoolId, grantPoolName, projectName, createdAt, contentURI, fundsApproved, fundsApprovedInUSD, payoutAddress, status, socials, extensions
+  - Enhanced Octant adapter to fetch real project names using /projects/details API endpoint
+  - Projects now display actual names: Protocol Guild, Rotki, Hypercerts instead of address fragments
+  - Applications include USD conversion, proper status mapping, and semantic project IDs
+  - Improved semantic project ID format: daoip5:<project-name>:project:<address>
+  - Added social media links extraction and proper CAIP-10 address formatting for payout addresses
+  - Enhanced extensions with detailed application and project metadata for both platforms
+  - Fixed poolId field references throughout codebase to use grantPoolId for consistency
 - January 12, 2025. Cleaned up DAOIP-5 Extensions and Improved Grant Pool ID Format
   - Cleaned up extensions to only include platform-specific fields not in DAOIP-5 standard
   - Changed grant pool ID format from EIP-155 to semantic format: daoip5:grantPool:<networkId>:<epochId>
