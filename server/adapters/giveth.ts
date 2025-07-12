@@ -298,17 +298,46 @@ export class GivethAdapter extends BaseAdapter {
       for (const project of projects) {
         // Since Giveth doesn't have explicit applications, we create them based on QF round participation
         for (const pool of pools) {
+          // Extract social media for DAOIP-5 format
+          const socials: Array<{ platform: string; url: string }> = [];
+          if (project.extensions?.["io.giveth.projectMetadata"]?.socialMedia) {
+            for (const social of project.extensions["io.giveth.projectMetadata"].socialMedia) {
+              socials.push({
+                platform: social.type,
+                url: social.link
+              });
+            }
+          }
+
           const application: DAOIP5Application = {
-            type: "Application",
+            type: "GrantApplication",
             id: `daoip5:giveth:grantApplication:${project.id}-${pool.id}`,
+            grantPoolId: pool.id,
+            grantPoolName: pool.name,
             projectId: project.id,
-            poolId: pool.id,
+            projectName: project.name || "",
+            createdAt: project.extensions?.["io.giveth.projectMetadata"]?.creationDate ? 
+              this.formatDate(project.extensions["io.giveth.projectMetadata"].creationDate) : 
+              new Date().toISOString(),
+            contentURI: `https://giveth.io/project/${project.extensions?.["io.giveth.projectMetadata"]?.slug}`,
+            socials: socials.length > 0 ? socials : undefined,
+            payoutAddress: project.extensions?.["io.giveth.projectMetadata"]?.primaryRecipientAddress ? {
+              type: "EthereumAddress", 
+              value: project.extensions["io.giveth.projectMetadata"].primaryRecipientAddress
+            } : undefined,
             status: pool.isOpen ? "pending" : "approved",
-            submissionDate: new Date().toISOString(), // Giveth doesn't provide submission dates
+            extensions: {
+              "io.giveth.applicationMetadata": {
+                projectSlug: project.extensions?.["io.giveth.projectMetadata"]?.slug,
+                qfRoundSlug: pool.extensions?.["io.giveth.roundMetadata"]?.slug,
+                projectStatus: project.extensions?.["io.giveth.projectMetadata"]?.status,
+                qfRoundId: pool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId
+              }
+            }
           };
 
           // Apply filters
-          if (filters?.poolId && application.poolId !== filters.poolId) continue;
+          if (filters?.poolId && application.grantPoolId !== filters.poolId) continue;
           if (filters?.projectId && application.projectId !== filters.projectId) continue;
           if (filters?.status && application.status !== filters.status) continue;
 
