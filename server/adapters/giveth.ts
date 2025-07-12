@@ -131,13 +131,13 @@ export class GivethAdapter extends BaseAdapter {
 
         const pool: DAOIP5GrantPool = {
           type: "GrantPool",
-          id: this.toCaip10(`0x${round.id}`, "1"), // Ethereum mainnet
+          id: `daoip5:grantPool:1:${round.id}`,
           name: round.name || "",
           description: round.description || `Quadratic Funding round on Giveth platform. ${round.name} provides funding for public goods projects through community-driven quadratic funding mechanisms.`,
           grantFundingMechanism: "Quadratic Funding",
           isOpen: round.isActive || false,
           closeDate: round.endDate ? this.formatDate(round.endDate) : undefined,
-          applicationsURI: `/api/v1/applications?poolId=${this.toCaip10(`0x${round.id}`, "1")}`,
+          applicationsURI: `/api/v1/applications?poolId=daoip5:grantPool:1:${round.id}`,
           governanceURI: `https://giveth.io/qf/${round.slug}`,
           attestationIssuersURI: "https://giveth.io/attestations",
           requiredCredentials: ["EthereumAddress", "GivethProfile"],
@@ -150,16 +150,6 @@ export class GivethAdapter extends BaseAdapter {
               qfRoundId: round.id,
               slug: round.slug,
               allocatedFund: round.allocatedFund,
-              totalGrantPoolSizeUSD: totalGrantPoolSizeUSD,
-              beginDate: round.beginDate,
-              endDate: round.endDate,
-              isActive: round.isActive
-            },
-            "io.giveth.platform": {
-              platform: "giveth",
-              fundingMechanism: "quadratic_funding",
-              network: "ethereum",
-              chainId: "1",
               platformUrl: `https://giveth.io/qf/${round.slug}`,
               donationUrl: `https://giveth.io/donate/${round.slug}`
             }

@@ -261,15 +261,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset = '0' 
       } = req.query;
 
+      const selectedAdapters = getAdapter(system as string);
+      let finalPoolId = poolId as string;
+      
+      // If no poolId is provided, fetch the latest grant pool
+      if (!poolId) {
+        const latestPools = [];
+        for (const adapter of selectedAdapters) {
+          const pools = await adapter.getPools({ limit: 1, offset: 0 });
+          if (pools.length > 0) {
+            latestPools.push(pools[0]);
+          }
+        }
+        
+        // Use the first available pool as the latest
+        if (latestPools.length > 0) {
+          finalPoolId = latestPools[0].id;
+        }
+      }
+
       const filters = {
-        poolId: poolId as string,
+        poolId: finalPoolId,
         projectId: projectId as string,
         status: status as string,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string)
       };
 
-      const selectedAdapters = getAdapter(system as string);
       const applications = [];
       
       for (const adapter of selectedAdapters) {
@@ -282,7 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: "Applications",
         type: "ApplicationCollection",
         applications: applications,
-        total: applications.length
+        total: applications.length,
+        poolId: finalPoolId
       });
     } catch (error) {
       console.error('Error fetching applications:', error);
