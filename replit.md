@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 12, 2025. Cleaned up DAOIP-5 Extensions and Improved Grant Pool ID Format
+  - Cleaned up extensions to only include platform-specific fields not in DAOIP-5 standard
+  - Changed grant pool ID format from EIP-155 to semantic format: daoip5:grantPool:<networkId>:<epochId>
+  - Improved applications endpoint to fetch latest grant pool by default or accept specific grantPool ID
+  - Fixed confusing EIP-155 IDs that referenced non-existent contract addresses
+  - Octant pools now use semantic IDs like daoip5:grantPool:1:1 (network 1, epoch 1)
+  - Giveth pools now use semantic IDs like daoip5:grantPool:1:14 (network 1, QF round 14)
+  - Applications endpoint automatically selects latest grant pool when no poolId parameter provided
+  - Maintained DAOIP-5 extensions with proper vendor prefixes (app.octant.* and io.giveth.*)
 - January 12, 2025. Implemented DAOIP-5 Extensions Field Support
   - Updated base adapter interfaces to include optional extensions field for all schema components
   - Implemented Octant-specific extensions with epochMetadata, grantMechanism, and epochDetails

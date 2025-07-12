@@ -126,7 +126,7 @@ export class OctantAdapter extends BaseAdapter {
 
           const pool: DAOIP5GrantPool = {
             type: "GrantPool",
-            id: `eip155:1:0x0000000000000000000000000000000000000000?contractId=${epoch}`,
+            id: `daoip5:grantPool:1:${epoch}`,
             name: `Octant Epoch ${epoch}`,
             description: `Quadratic funding round for Octant epoch ${epoch} - 90-day funding period supporting Ethereum public goods`,
             grantFundingMechanism: "Quadratic Funding",
@@ -148,14 +148,6 @@ export class OctantAdapter extends BaseAdapter {
                 ppf: epochInfo.ppf,
                 communityFund: epochInfo.communityFund,
                 totalGrantPoolSizeUSD: totalGrantPoolSizeUSD
-              },
-              "app.octant.grantMechanism": {
-                type: "quadratic_funding",
-                epochDuration: "90_days",
-                votingMechanism: "quadratic_voting",
-                matchingPool: "eth_staking_proceeds",
-                network: "ethereum",
-                chainId: "1"
               },
               "app.octant.epochDetails": {
                 epochNumber: epoch,
@@ -311,7 +303,7 @@ export class OctantAdapter extends BaseAdapter {
       // Query epochs 1-7 for comprehensive application data, focusing on approved applications
       const maxEpoch = Math.min(7, currentEpoch - 1); // Use current-1 config like pools
       const epochsToQuery = filters?.poolId ? 
-        [parseInt(filters.poolId.match(/contractId=(\d+)/)?.[1] || "1")] : 
+        [parseInt(filters.poolId.split(':')[3] || "1")] : // Extract epoch from daoip5:grantPool:1:epochId
         Array.from({length: maxEpoch}, (_, i) => i + 1);
 
       for (const epoch of epochsToQuery) {
@@ -332,7 +324,7 @@ export class OctantAdapter extends BaseAdapter {
                   type: "Application",
                   id: `${projectId}-epoch-${epoch}`,
                   projectId: projectId,
-                  poolId: `eip155:1:0x0000000000000000000000000000000000000000?contractId=${epoch}`,
+                  poolId: `daoip5:grantPool:1:${epoch}`,
                   status: "approved", // Only showing approved applications with funding
                   submissionDate: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
                   approvedAmount: [{
