@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 12, 2025. Implemented DAOIP-5 Extensions Field Support
+  - Updated base adapter interfaces to include optional extensions field for all schema components
+  - Implemented Octant-specific extensions with epochMetadata, grantMechanism, and epochDetails
+  - Implemented Giveth-specific extensions with roundMetadata, platform details, and project metadata
+  - Moved platform-specific fields (USD amounts, metadata) from base schema to extensions
+  - Added system-level extensions with platform metadata for both Octant and Giveth
+  - Maintained strict DAOIP-5 base compliance while enabling platform innovation
+  - Used proper vendor-specific naming conventions (app.octant.* and io.giveth.*)
 - June 30, 2025. Enhanced API documentation and DAOIP-5 compliance
   - Replaced Gitcoin with Questbook in supported systems overview
   - Updated grant systems to return proper DAOIP-5 format with @context field

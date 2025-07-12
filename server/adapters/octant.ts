@@ -39,7 +39,20 @@ export class OctantAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Octant",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=octant"
+      grantPoolsURI: "/api/v1/pools?system=octant",
+      extensions: {
+        "app.octant.systemMetadata": {
+          platform: "octant",
+          description: "Quadratic funding for Ethereum public goods through ETH staking proceeds",
+          website: "https://octant.app",
+          apiEndpoint: this.baseUrl,
+          supportedNetworks: ["ethereum"],
+          fundingMechanisms: ["quadratic_funding"],
+          established: "2023",
+          epochDuration: "90_days",
+          fundingSource: "eth_staking_proceeds"
+        }
+      }
     }];
   }
 
@@ -121,19 +134,36 @@ export class OctantAdapter extends BaseAdapter {
             closeDate: closeDate,
             applicationsURI: `./applications_epoch_${epoch}.json`,
             governanceURI: "https://docs.octant.app/how-it-works/mechanism",
-            totalGrantPoolSize
-            // epochMetadata: {
-            //   stakingProceeds: epochInfo.stakingProceeds,
-            //   totalEffectiveDeposit: epochInfo.totalEffectiveDeposit,
-            //   vanillaIndividualRewards: epochInfo.vanillaIndividualRewards,
-            //   operationalCost: epochInfo.operationalCost,
-            //   matchedRewards: epochInfo.matchedRewards,
-            //   patronsRewards: epochInfo.patronsRewards,
-            //   totalWithdrawals: epochInfo.totalWithdrawals,
-            //   leftover: epochInfo.leftover,
-            //   ppf: epochInfo.ppf,
-            //   communityFund: epochInfo.communityFund
-            // }
+            totalGrantPoolSize,
+            extensions: {
+              "app.octant.epochMetadata": {
+                stakingProceeds: epochInfo.stakingProceeds,
+                totalEffectiveDeposit: epochInfo.totalEffectiveDeposit,
+                vanillaIndividualRewards: epochInfo.vanillaIndividualRewards,
+                operationalCost: epochInfo.operationalCost,
+                matchedRewards: epochInfo.matchedRewards,
+                patronsRewards: epochInfo.patronsRewards,
+                totalWithdrawals: epochInfo.totalWithdrawals,
+                leftover: epochInfo.leftover,
+                ppf: epochInfo.ppf,
+                communityFund: epochInfo.communityFund,
+                totalGrantPoolSizeUSD: totalGrantPoolSizeUSD
+              },
+              "app.octant.grantMechanism": {
+                type: "quadratic_funding",
+                epochDuration: "90_days",
+                votingMechanism: "quadratic_voting",
+                matchingPool: "eth_staking_proceeds",
+                network: "ethereum",
+                chainId: "1"
+              },
+              "app.octant.epochDetails": {
+                epochNumber: epoch,
+                isFinalized: epoch < currentEpoch,
+                isCurrent: epoch === currentEpoch,
+                apiEndpoint: `${this.baseUrl}/epochs/info/${epoch}`
+              }
+            }
           };
 
           // Apply filters
@@ -220,7 +250,23 @@ export class OctantAdapter extends BaseAdapter {
           image: project.profileImageSmall || "",
           coverImage: project.profileImageMedium || project.profileImageSmall || "",
           socials: socials.length > 0 ? socials : undefined,
-          relevantTo: [`octant-epoch-${currentEpoch}`]
+          relevantTo: [`octant-epoch-${currentEpoch}`],
+          extensions: {
+            "app.octant.projectMetadata": {
+              address: project.address,
+              profileImageSmall: project.profileImageSmall,
+              profileImageMedium: project.profileImageMedium,
+              website: project.website,
+              lastActive: epochsToQuery[0],
+              participatingEpochs: epochsToQuery
+            },
+            "app.octant.funding": {
+              platform: "octant",
+              fundingMechanism: "quadratic_funding",
+              network: "ethereum",
+              chainId: "1"
+            }
+          }
         };
 
         // Apply search filter

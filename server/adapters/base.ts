@@ -4,6 +4,7 @@ export interface DAOIP5System {
   type: string;
   grantPoolsURI?: string;
   projectsURI?: string;
+  extensions?: Record<string, any>;
 }
 
 export interface DAOIP5GrantPool {
@@ -22,22 +23,10 @@ export interface DAOIP5GrantPool {
     amount: string;
     denomination: string;
   }>;
-  totalGrantPoolSizeUSD?: string;
   email?: string;
   image?: string;
   coverImage?: string;
-  epochMetadata?: {
-    stakingProceeds?: string;
-    totalEffectiveDeposit?: string;
-    vanillaIndividualRewards?: string;
-    operationalCost?: string;
-    matchedRewards?: string;
-    patronsRewards?: string;
-    totalWithdrawals?: string;
-    leftover?: string;
-    ppf?: string;
-    communityFund?: string;
-  };
+  extensions?: Record<string, any>;
 }
 
 export interface DAOIP5Project {
@@ -57,6 +46,7 @@ export interface DAOIP5Project {
     name: string;
     value: string;
   }>;
+  extensions?: Record<string, any>;
 }
 
 export interface DAOIP5Application {
@@ -75,6 +65,7 @@ export interface DAOIP5Application {
     denomination: string;
   }>;
   applicationURI?: string;
+  extensions?: Record<string, any>;
 }
 
 export interface QueryFilters {
