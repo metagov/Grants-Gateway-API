@@ -50,7 +50,18 @@ export class GivethAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Giveth",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=giveth"
+      grantPoolsURI: "/api/v1/pools?system=giveth",
+      extensions: {
+        "io.giveth.systemMetadata": {
+          platform: "giveth",
+          description: "Donation platform for public goods and social impact projects",
+          website: "https://giveth.io",
+          apiEndpoint: this.baseUrl,
+          supportedNetworks: ["ethereum"],
+          fundingMechanisms: ["donations", "quadratic_funding"],
+          established: "2016"
+        }
+      }
     }];
   }
 
@@ -131,10 +142,28 @@ export class GivethAdapter extends BaseAdapter {
           attestationIssuersURI: "https://giveth.io/attestations",
           requiredCredentials: ["EthereumAddress", "GivethProfile"],
           totalGrantPoolSize,
-          totalGrantPoolSizeUSD,
           email: "info@giveth.io",
           image: "https://giveth.io/images/logo.png",
-          coverImage: "https://giveth.io/images/banner.jpg"
+          coverImage: "https://giveth.io/images/banner.jpg",
+          extensions: {
+            "io.giveth.roundMetadata": {
+              qfRoundId: round.id,
+              slug: round.slug,
+              allocatedFund: round.allocatedFund,
+              totalGrantPoolSizeUSD: totalGrantPoolSizeUSD,
+              beginDate: round.beginDate,
+              endDate: round.endDate,
+              isActive: round.isActive
+            },
+            "io.giveth.platform": {
+              platform: "giveth",
+              fundingMechanism: "quadratic_funding",
+              network: "ethereum",
+              chainId: "1",
+              platformUrl: `https://giveth.io/qf/${round.slug}`,
+              donationUrl: `https://giveth.io/donate/${round.slug}`
+            }
+          }
         };
 
         // Apply filters
@@ -222,7 +251,27 @@ export class GivethAdapter extends BaseAdapter {
           contentURI: `https://giveth.io/project/${project.slug}`,
           image: project.image || "",
           coverImage: project.image || "",
-          socials: socials.length > 0 ? socials : undefined
+          socials: socials.length > 0 ? socials : undefined,
+          extensions: {
+            "io.giveth.projectMetadata": {
+              projectId: project.id,
+              slug: project.slug,
+              creationDate: project.creationDate,
+              status: project.status?.name,
+              addresses: project.addresses,
+              socialMedia: project.socialMedia,
+              qfRounds: project.qfRounds,
+              primaryRecipientAddress: primaryAddress
+            },
+            "io.giveth.platform": {
+              platform: "giveth",
+              fundingMechanism: "donations_and_qf",
+              network: "ethereum",
+              chainId: "1",
+              projectUrl: `https://giveth.io/project/${project.slug}`,
+              donationUrl: `https://giveth.io/donate/${project.slug}`
+            }
+          }
         };
 
         // Apply search filter
