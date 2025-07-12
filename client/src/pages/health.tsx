@@ -112,26 +112,33 @@ export default function HealthPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="container mx-auto px-4 py-4 md:py-8">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold mb-2">API Health Monitor</h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">API Health Monitor</h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
               Real-time status of grant system integrations and API components
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
-              className={autoRefresh ? "bg-green-50 border-green-200" : ""}
+              className={`${autoRefresh ? "bg-green-50 border-green-200" : ""} w-full sm:w-auto`}
             >
               <Activity className="h-4 w-4 mr-2" />
-              Auto Refresh {autoRefresh ? 'ON' : 'OFF'}
+              <span className="hidden sm:inline">Auto Refresh</span>
+              <span className="sm:hidden">Auto</span> {autoRefresh ? 'ON' : 'OFF'}
             </Button>
-            <Button onClick={() => refetch()} disabled={isLoading}>
+            <Button 
+              onClick={() => refetch()} 
+              disabled={isLoading}
+              size="sm"
+              className="w-full sm:w-auto"
+            >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
@@ -153,22 +160,22 @@ export default function HealthPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{healthData.summary.healthyAdapters}</div>
-                    <div className="text-sm text-gray-500">Healthy</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                    <div className="text-xl md:text-2xl font-bold text-green-600">{healthData.summary.healthyAdapters}</div>
+                    <div className="text-xs md:text-sm text-gray-500">Healthy</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">{healthData.summary.degradedAdapters}</div>
-                    <div className="text-sm text-gray-500">Degraded</div>
+                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                    <div className="text-xl md:text-2xl font-bold text-yellow-600">{healthData.summary.degradedAdapters}</div>
+                    <div className="text-xs md:text-sm text-gray-500">Degraded</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{healthData.summary.downAdapters}</div>
-                    <div className="text-sm text-gray-500">Down</div>
+                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                    <div className="text-xl md:text-2xl font-bold text-red-600">{healthData.summary.downAdapters}</div>
+                    <div className="text-xs md:text-sm text-gray-500">Down</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{healthData.summary.totalAdapters}</div>
-                    <div className="text-sm text-gray-500">Total</div>
+                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                    <div className="text-xl md:text-2xl font-bold text-blue-600">{healthData.summary.totalAdapters}</div>
+                    <div className="text-xs md:text-sm text-gray-500">Total</div>
                   </div>
                 </div>
               </CardContent>
@@ -184,12 +191,12 @@ export default function HealthPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                   <div className="flex items-center">
                     {getStatusIcon(healthData.database.status)}
-                    <span className="ml-2">PostgreSQL Connection</span>
+                    <span className="ml-2 text-sm md:text-base">PostgreSQL Connection</span>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs md:text-sm text-gray-500">
                     Response time: {formatResponseTime(healthData.database.responseTime)}
                   </div>
                 </div>
@@ -197,7 +204,7 @@ export default function HealthPage() {
             </Card>
 
             {/* Adapter Status */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {healthData.adapters.map((adapter) => (
                 <Card key={adapter.name}>
                   <CardHeader>
@@ -213,37 +220,37 @@ export default function HealthPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                       <div className="flex items-center">
                         {getStatusIcon(adapter.status)}
-                        <span className="ml-2">API Connectivity</span>
+                        <span className="ml-2 text-sm md:text-base">API Connectivity</span>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-xs md:text-sm text-gray-500">
                         {adapter.responseTime ? formatResponseTime(adapter.responseTime) : 'N/A'}
                       </div>
                     </div>
 
                     {adapter.error && (
                       <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <div className="text-sm text-red-600 dark:text-red-400 font-medium">Error:</div>
-                        <div className="text-sm text-red-500 dark:text-red-300">{adapter.error}</div>
+                        <div className="text-xs md:text-sm text-red-600 dark:text-red-400 font-medium">Error:</div>
+                        <div className="text-xs md:text-sm text-red-500 dark:text-red-300 break-words">{adapter.error}</div>
                       </div>
                     )}
 
                     {adapter.endpoints && (
                       <div>
-                        <div className="text-sm font-medium mb-2">Endpoint Status:</div>
+                        <div className="text-xs md:text-sm font-medium mb-2">Endpoint Status:</div>
                         <div className="space-y-2">
                           {Object.entries(adapter.endpoints).map(([endpoint, status]) => (
-                            <div key={endpoint} className="flex items-center justify-between text-sm">
-                              <span className="capitalize">{endpoint}</span>
-                              <div className="flex items-center">
+                            <div key={endpoint} className="flex items-center justify-between text-xs md:text-sm">
+                              <span className="capitalize truncate">{endpoint}</span>
+                              <div className="flex items-center ml-2">
                                 {status ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
                                 ) : (
-                                  <XCircle className="h-4 w-4 text-red-500" />
+                                  <XCircle className="h-3 w-3 md:h-4 md:w-4 text-red-500" />
                                 )}
-                                <span className="ml-1">{status ? 'OK' : 'Failed'}</span>
+                                <span className="ml-1 text-xs md:text-sm">{status ? 'OK' : 'Failed'}</span>
                               </div>
                             </div>
                           ))}
@@ -264,13 +271,13 @@ export default function HealthPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <h3 className="font-semibold">Source API Integrations</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <h3 className="text-sm md:text-base font-semibold">Source API Integrations</h3>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                       These adapters fetch data from custom APIs and transform it to DAOIP-5 format:
                     </p>
-                    <ul className="text-sm space-y-1">
+                    <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                         Octant - Ethereum public goods funding
@@ -282,11 +289,11 @@ export default function HealthPage() {
                     </ul>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="font-semibold">Direct DAOIP-5 Integrations</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <h3 className="text-sm md:text-base font-semibold">Direct DAOIP-5 Integrations</h3>
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                       These systems provide DAOIP-5 compliant endpoints that are cached for performance:
                     </p>
-                    <ul className="text-sm space-y-1">
+                    <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <Clock className="h-4 w-4 text-yellow-500 mr-2" />
                         Questbook - Coming soon (DAOIP-5 native)

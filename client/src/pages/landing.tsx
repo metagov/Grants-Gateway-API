@@ -94,7 +94,7 @@ export default function LandingPage() {
     { id: "endpoints", label: "API Endpoints", icon: Target },
     { id: "query-builder", label: "Query Builder", icon: Code },
     { id: "field-mapping", label: "Field Mapping", icon: Ticket },
-    { id: "health", label: "API Health", icon: Activity, isExternal: true, href: "/health" },
+    { id: "health", label: "API Health", icon: Activity },
     { id: "supporters", label: "Contributors & Supporters", icon: Heart },
   ];
 
@@ -123,24 +123,6 @@ export default function LandingPage() {
           <div className="space-y-2">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
-              
-              if (item.isExternal) {
-                return (
-                  <Button
-                    key={item.id}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      window.location.href = item.href || '#';
-                      setSidebarOpen(false);
-                    }}
-                  >
-                    <Icon className="h-4 w-4 mr-3" />
-                    {item.label}
-                    <ExternalLink className="h-3 w-3 ml-auto" />
-                  </Button>
-                );
-              }
               
               return (
                 <Button
@@ -221,27 +203,31 @@ export default function LandingPage() {
           {activeSection === "overview" && (
             <div className="space-y-8">
               {/* Hero Section */}
-              <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-8">
+              <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-6 md:p-8">
                 <div className="max-w-4xl">
-                  <h1 className="text-4xl font-bold mb-4">OpenGrants Gateway API</h1>
-                  <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+                  <h1 className="text-3xl md:text-4xl font-bold mb-4">OpenGrants Gateway API</h1>
+                  <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6">
                     A unified interface for accessing grant data across Ethereum Ecosystem using the DAOIP-5 metadata standard.
                   </p>
-                  <div className="flex flex-wrap gap-4">
-                    <Button onClick={() => setActiveSection("query-builder")}>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button onClick={() => setActiveSection("query-builder")} className="flex items-center justify-center">
                       <Play className="h-4 w-4 mr-2" />
                       Get Started
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={() => setActiveSection("endpoints")} className="flex items-center justify-center">
                       <Book className="h-4 w-4 mr-2" />
-                      Documentation
+                      API Documentation
+                    </Button>
+                    <Button variant="outline" onClick={() => window.open('/health', '_blank')} className="flex items-center justify-center">
+                      <Activity className="h-4 w-4 mr-2" />
+                      Health Monitor
                     </Button>
                   </div>
                 </div>
               </div>
 
               {/* Quick Start */}
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -1324,11 +1310,133 @@ response = requests.get(
             </div>
           )}
 
+          {/* API Health */}
+          {activeSection === "health" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">API Health Monitor</h2>
+                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">
+                  Real-time monitoring of all grant system integrations and API infrastructure.
+                </p>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2" />
+                    System Status Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Monitor the health and performance of all integrated grant systems, database connectivity, 
+                      and API response times in real-time.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2 flex items-center">
+                          <Target className="h-4 w-4 mr-2" />
+                          Adapter Monitoring
+                        </h4>
+                        <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+                          <li>• Real-time status of Octant & Giveth integrations</li>
+                          <li>• Response time tracking and performance metrics</li>
+                          <li>• Endpoint health checks and error reporting</li>
+                          <li>• Cache statistics and refresh monitoring</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2 flex items-center">
+                          <Zap className="h-4 w-4 mr-2" />
+                          Infrastructure Health
+                        </h4>
+                        <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+                          <li>• PostgreSQL database connectivity</li>
+                          <li>• Auto-refresh capabilities for live monitoring</li>
+                          <li>• Integration type classification and status</li>
+                          <li>• Performance optimization tracking</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button 
+                        onClick={() => window.open('/health', '_blank')}
+                        className="flex items-center justify-center"
+                      >
+                        <Activity className="h-4 w-4 mr-2" />
+                        Open Health Dashboard
+                        <ExternalLink className="h-3 w-3 ml-2" />
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        onClick={() => copyToClipboard('GET /api/v1/health')}
+                        className="flex items-center justify-center"
+                      >
+                        <Code className="h-4 w-4 mr-2" />
+                        Copy Health API
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Health API Endpoints</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">GET /api/v1/health</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Complete system health report including all adapters and database status.
+                      </p>
+                      <CodeBlock
+                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  "https://opengrants.replit.app/api/v1/health"`}
+                        language="bash"
+                      />
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-2">GET /api/v1/health/:adapter</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Specific health status for individual adapters (octant, giveth).
+                      </p>
+                      <CodeBlock
+                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  "https://opengrants.replit.app/api/v1/health/octant"`}
+                        language="bash"
+                      />
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-2">GET /api/v1/health-quick</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Lightweight health check returning cached status without full checks.
+                      </p>
+                      <CodeBlock
+                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
+  "https://opengrants.replit.app/api/v1/health-quick"`}
+                        language="bash"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {activeSection === "supporters" && (
             <div className="space-y-8">
               <div>
-                <h1 className="text-3xl font-bold mb-4">Contributors & Supporters</h1>
-                <p className="text-gray-600 dark:text-gray-300 mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold mb-4">Contributors & Supporters</h1>
+                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 mb-8">
                   Building the future of grants interoperability together. Thank you to our contributors and supporters who believe in open, standardized grant data.
                 </p>
               </div>
