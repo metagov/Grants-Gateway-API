@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 15, 2025. Fixed Documentation Links and Added Stellar/Questbook as Coming Soon Contributors
+  - Fixed 404 errors for documentation links by implementing proper static file serving
+  - Added static routes for /docs, /docs/integration-guide, and /docs/field-mappings 
+  - Created comprehensive docs/README.md with API usage, authentication, and supported systems
+  - Added Stellar and Questbook to contributors section as "Coming Soon" status
+  - Updated both landing and health pages to show upcoming integrations alongside active ones
+  - Documentation routes now serve markdown files with proper content-type headers
+  - Integration links properly route to /docs/integration-guide instead of broken .md paths
 - January 15, 2025. Removed Questbook Integration
   - Removed Questbook adapter class and all associated code from server/adapters/questbook.ts
   - Updated server/routes.ts to remove QuestbookAdapter import and initialization

@@ -164,11 +164,15 @@ export default function LandingPage() {
 
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
+                <span className="text-gray-600 dark:text-gray-300">Questbook (Coming Soon)</span>
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Stellar (Coming Soon)</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
               </div>
             </div>
           </div>
@@ -413,7 +417,7 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <a
-                        href="/docs/integration-guide.md"
+                        href="/docs/integration-guide"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -426,7 +430,7 @@ export default function LandingPage() {
                       <h3 className="text-lg font-semibold mb-3">Documentation</h3>
                       <div className="space-y-3">
                         <a
-                          href="/docs/README.md"
+                          href="/docs"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -1214,6 +1218,36 @@ response = requests.get(
                     </div>
 
 
+
+                    {/* Questbook */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Book className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Questbook</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Decentralized grants orchestration platform
+                      </p>
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Coming Soon
+                      </Badge>
+                    </div>
+
+                    {/* Stellar */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Star className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Stellar</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Cross-border payments and financial inclusion platform
+                      </p>
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Coming Soon
+                      </Badge>
+                    </div>
 
                     {/* OSO */}
                     <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">

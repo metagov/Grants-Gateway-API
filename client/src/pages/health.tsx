@@ -193,11 +193,15 @@ export default function HealthPage() {
 
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
+                <span className="text-gray-600 dark:text-gray-300">Questbook (Coming Soon)</span>
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Stellar (Coming Soon)</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
               </div>
             </div>
           </div>
