@@ -68,11 +68,10 @@ export class QuestbookAdapter extends BaseAdapter {
       "type": "DAO",
       "name": "Questbook",
       "description": "Decentralized grants orchestration platform for DAOs to distribute capital efficiently",
-      "grantFundingMechanism": "Competitive Grants",
-      "website": "https://questbook.app",
       "extensions": {
-        "io.questbook.platform": "questbook",
-        "io.questbook.type": "direct-daoip5"
+        "io.questbook.grantFundingMechanism": "Competitive Grants",
+        "io.questbook.website": "https://questbook.app",
+        "io.questbook.apiEndpoint": "https://api.questbook.app/daoip-5"
       }
     }];
   }
@@ -95,14 +94,14 @@ export class QuestbookAdapter extends BaseAdapter {
       url.searchParams.set('offset', offset.toString());
 
       const response = await this.fetchWithCache<{ 
-        grantsPools: DAOIP5GrantPool[],
+        grants: DAOIP5GrantPool[],
         pagination?: { first: number; offset: number; returned: number }
       }>(
         url.toString(), 
         `pools_${limit}_${offset}`
       );
       
-      let pools = response.grantsPools || [];
+      let pools = response.grants || [];
 
       // Apply filters
       if (filters?.isOpen !== undefined) {
