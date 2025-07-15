@@ -417,7 +417,7 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <a
-                        href="/docs/integration-guide"
+                        href="https://github.com/metagov/Grants-Gateway-API/blob/main/docs/integration-guide.md"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -430,7 +430,7 @@ export default function LandingPage() {
                       <h3 className="text-lg font-semibold mb-3">Documentation</h3>
                       <div className="space-y-3">
                         <a
-                          href="/docs"
+                          href="https://docs.daostar.org/"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -442,27 +442,27 @@ export default function LandingPage() {
                           </div>
                         </a>
                         <a
-                          href="http://www.daostar.org/schemas"
+                          href="https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                         >
                           <ExternalLink className="h-5 w-5 text-primary mr-3" />
                           <div>
-                            <div className="font-medium text-sm">DAOIP-5 Standard</div>
+                            <div className="font-medium text-sm">DAOIP-5 Spec</div>
                             <div className="text-xs text-gray-500">Official specification</div>
                           </div>
                         </a>
                         <a
-                          href="https://github.com/yourusername/opengrants-gateway"
+                          href="https://github.com/metagov/Grants-Gateway-API/blob/main/docs/field-mappings.md"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                         >
                           <GitBranch className="h-5 w-5 text-primary mr-3" />
                           <div>
-                            <div className="font-medium text-sm">GitHub Repository</div>
-                            <div className="text-xs text-gray-500">Source code and issues</div>
+                            <div className="font-medium text-sm">Field Mappings</div>
+                            <div className="text-xs text-gray-500">Platform to DAOIP-5 mappings</div>
                           </div>
                         </a>
                       </div>

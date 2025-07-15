@@ -96,14 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
-- January 15, 2025. Fixed Documentation Links and Added Stellar/Questbook as Coming Soon Contributors
-  - Fixed 404 errors for documentation links by implementing proper static file serving
-  - Added static routes for /docs, /docs/integration-guide, and /docs/field-mappings 
-  - Created comprehensive docs/README.md with API usage, authentication, and supported systems
+- January 15, 2025. Updated Documentation Links to GitHub and Added Stellar/Questbook as Coming Soon Contributors
+  - Replaced local static documentation routes with GitHub repository links
+  - Updated Integration Guide link to: https://github.com/metagov/Grants-Gateway-API/blob/main/docs/integration-guide.md
+  - Updated Field Mappings link to: https://github.com/metagov/Grants-Gateway-API/blob/main/docs/field-mappings.md
+  - Updated DAOstar Docs link to: https://docs.daostar.org/
+  - Updated DAOIP-5 Spec link to: https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md
   - Added Stellar and Questbook to contributors section as "Coming Soon" status
   - Updated both landing and health pages to show upcoming integrations alongside active ones
-  - Documentation routes now serve markdown files with proper content-type headers
-  - Integration links properly route to /docs/integration-guide instead of broken .md paths
+  - Changed "Developer Resources" to "Resources" and "Developer Docs" to "DAOstar Docs"
 - January 15, 2025. Removed Questbook Integration
   - Removed Questbook adapter class and all associated code from server/adapters/questbook.ts
   - Updated server/routes.ts to remove QuestbookAdapter import and initialization
