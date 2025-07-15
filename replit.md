@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 15, 2025. Fixed Questbook API Integration with Real Endpoints
+  - Updated Questbook adapter to use correct API endpoints: /grant_pools.json and /applications
+  - Fixed response parsing to use "grantsPools" field from API response instead of "grants"
+  - Enabled Questbook adapter in routes.ts and health service monitoring
+  - Questbook now appears in systems list alongside Octant and Giveth
+  - Applications endpoint correctly requires grantId parameter per API specification
+  - Added proper health monitoring for Questbook's endpoints with graceful error handling
+  - Questbook integration type: Direct DAOIP-5 endpoint routing with 5-minute caching
 - January 12, 2025. Added Responsive Design and Integrated API Health Navigation
   - Made all styling responsive to screen sizes with proper mobile/tablet/desktop breakpoints
   - Integrated API Health page into main navigation sidebar instead of external link

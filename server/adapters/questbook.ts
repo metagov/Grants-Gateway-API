@@ -10,10 +10,8 @@ export class QuestbookAdapter extends BaseAdapter {
   private cache = new Map<string, CacheEntry<any>>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly ENDPOINTS = {
-    systems: "https://api.questbook.app/daoip-5/systems.json",
     pools: "https://api.questbook.app/daoip-5/grant_pools.json",
-    projects: "https://api.questbook.app/daoip-5/projects.json",
-    applications: "https://api.questbook.app/daoip-5/applications.json"
+    applications: "https://api.questbook.app/daoip-5/applications"
   };
 
   constructor() {
@@ -64,16 +62,19 @@ export class QuestbookAdapter extends BaseAdapter {
   }
 
   async getSystems(): Promise<DAOIP5System[]> {
-    try {
-      const response = await this.fetchWithCache<{ systems: DAOIP5System[] }>(
-        this.ENDPOINTS.systems, 
-        'systems'
-      );
-      return response.systems || [];
-    } catch (error) {
-      console.error("Error fetching Questbook systems:", error);
-      return [];
-    }
+    // Questbook doesn't have a systems endpoint, return default system
+    return [{
+      "@context": "http://www.daostar.org/schemas",
+      "type": "DAO",
+      "name": "Questbook",
+      "description": "Decentralized grants orchestration platform for DAOs to distribute capital efficiently",
+      "grantFundingMechanism": "Competitive Grants",
+      "website": "https://questbook.app",
+      "extensions": {
+        "io.questbook.platform": "questbook",
+        "io.questbook.type": "direct-daoip5"
+      }
+    }];
   }
 
   async getSystem(id: string): Promise<DAOIP5System | null> {
@@ -85,11 +86,23 @@ export class QuestbookAdapter extends BaseAdapter {
 
   async getPools(filters?: QueryFilters): Promise<DAOIP5GrantPool[]> {
     try {
-      const response = await this.fetchWithCache<{ grantPools: DAOIP5GrantPool[] }>(
-        this.ENDPOINTS.pools, 
-        'pools'
+      // Build URL with pagination parameters
+      const url = new URL(this.ENDPOINTS.pools);
+      const limit = filters?.limit || 20;
+      const offset = filters?.offset || 0;
+      
+      url.searchParams.set('first', limit.toString());
+      url.searchParams.set('offset', offset.toString());
+
+      const response = await this.fetchWithCache<{ 
+        grantsPools: DAOIP5GrantPool[],
+        pagination?: { first: number; offset: number; returned: number }
+      }>(
+        url.toString(), 
+        `pools_${limit}_${offset}`
       );
-      let pools = response.grantPools || [];
+      
+      let pools = response.grantsPools || [];
 
       // Apply filters
       if (filters?.isOpen !== undefined) {
@@ -106,7 +119,7 @@ export class QuestbookAdapter extends BaseAdapter {
         );
       }
 
-      return pools.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
+      return pools;
     } catch (error) {
       console.error("Error fetching Questbook pools:", error);
       return [];
@@ -119,46 +132,45 @@ export class QuestbookAdapter extends BaseAdapter {
   }
 
   async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
-    try {
-      const response = await this.fetchWithCache<{ projects: DAOIP5Project[] }>(
-        this.ENDPOINTS.projects, 
-        'projects'
-      );
-      let projects = response.projects || [];
-
-      // Apply filters
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        projects = projects.filter(project => 
-          project.name.toLowerCase().includes(searchLower) ||
-          project.description.toLowerCase().includes(searchLower)
-        );
-      }
-
-      return projects.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
-    } catch (error) {
-      console.error("Error fetching Questbook projects:", error);
-      return [];
-    }
+    // Questbook doesn't have a dedicated projects endpoint
+    // Projects are embedded within applications, so return empty for now
+    console.warn("Questbook adapter: Projects endpoint not available. Projects are embedded within applications.");
+    return [];
   }
 
   async getProject(id: string): Promise<DAOIP5Project | null> {
-    const projects = await this.getProjects();
-    return projects.find(project => project.id === id) || null;
+    // Projects not available as standalone entities in Questbook API
+    return null;
   }
 
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
-      const response = await this.fetchWithCache<{ applications: DAOIP5Application[] }>(
-        this.ENDPOINTS.applications, 
-        'applications'
+      // Applications endpoint requires grantId parameter
+      if (!filters?.poolId) {
+        console.warn("Questbook applications require grantId parameter");
+        return [];
+      }
+
+      // Build URL with required grantId and optional pagination
+      const url = new URL(this.ENDPOINTS.applications);
+      const limit = filters?.limit || 20;
+      const offset = filters?.offset || 0;
+      
+      url.searchParams.set('grantId', filters.poolId);
+      url.searchParams.set('first', limit.toString());
+      url.searchParams.set('offset', offset.toString());
+
+      const response = await this.fetchWithCache<{ 
+        applications: DAOIP5Application[],
+        pagination?: { first: number; offset: number; returned: number }
+      }>(
+        url.toString(), 
+        `applications_${filters.poolId}_${limit}_${offset}`
       );
+      
       let applications = response.applications || [];
 
-      // Apply filters
-      if (filters?.poolId) {
-        applications = applications.filter(app => app.grantPoolId === filters.poolId);
-      }
+      // Apply additional filters
       if (filters?.projectId) {
         applications = applications.filter(app => app.projectId === filters.projectId);
       }
@@ -166,7 +178,7 @@ export class QuestbookAdapter extends BaseAdapter {
         applications = applications.filter(app => app.status === filters.status);
       }
 
-      return applications.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
+      return applications;
     } catch (error) {
       console.error("Error fetching Questbook applications:", error);
       return [];
@@ -182,18 +194,31 @@ export class QuestbookAdapter extends BaseAdapter {
   async healthCheck(): Promise<{ status: string; endpoints: Record<string, boolean> }> {
     const results: Record<string, boolean> = {};
     
-    for (const [key, endpoint] of Object.entries(this.ENDPOINTS)) {
-      try {
-        const response = await fetch(endpoint, { 
-          method: 'HEAD',
-          headers: {
-            'User-Agent': 'OpenGrants-Gateway/1.0'
-          }
-        });
-        results[key] = response.ok;
-      } catch {
-        results[key] = false;
-      }
+    // Test pools endpoint
+    try {
+      const response = await fetch(`${this.ENDPOINTS.pools}?first=1`, { 
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'OpenGrants-Gateway/1.0'
+        }
+      });
+      results.pools = response.ok;
+    } catch {
+      results.pools = false;
+    }
+
+    // Test applications endpoint with a basic call (may fail without grantId, but should return error not 404)
+    try {
+      const response = await fetch(this.ENDPOINTS.applications, { 
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'OpenGrants-Gateway/1.0'
+        }
+      });
+      // Applications endpoint should return 400 for missing grantId, not 404
+      results.applications = response.status === 400 || response.ok;
+    } catch {
+      results.applications = false;
     }
 
     const allHealthy = Object.values(results).every(Boolean);

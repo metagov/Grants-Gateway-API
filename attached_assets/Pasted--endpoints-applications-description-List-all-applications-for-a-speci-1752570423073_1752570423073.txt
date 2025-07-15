@@ -1,0 +1,116 @@
+{
+  "endpoints": {
+    "/applications": {
+      "description": "List all applications for a specific grant.",
+      "method": "GET",
+      "parameters": {
+        "first": {
+          "default": 10,
+          "description": "Number of applications to fetch.",
+          "required": false,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination.",
+          "required": false,
+          "type": "integer"
+        },
+        "grantId": {
+          "description": "The ID of the specific grant to fetch applications for.",
+          "required": true,
+          "type": "string"
+        }
+      },
+      "response": {
+        "properties": {
+          "@context": {
+            "description": "The schema context URL.",
+            "type": "string"
+          },
+          "applications": {
+            "description": "An array of grant application objects.",
+            "type": "array"
+          },
+          "pagination": {
+            "description": "Pagination metadata.",
+            "properties": {
+              "first": {
+                "description": "Number of applications fetched.",
+                "type": "integer"
+              },
+              "offset": {
+                "description": "Number of records skipped.",
+                "type": "integer"
+              },
+              "returned": {
+                "description": "Total number of applications returned.",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "description": "Entity type.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "/grant_pools.json": {
+      "description": "List all grants in a workspace with pagination support.",
+      "method": "GET",
+      "parameters": {
+        "first": {
+          "default": 10,
+          "description": "Number of grants to fetch.",
+          "required": false,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of records to skip for pagination.",
+          "required": false,
+          "type": "integer"
+        }
+      },
+      "response": {
+        "properties": {
+          "@context": {
+            "description": "The schema context URL.",
+            "type": "string"
+          },
+          "grants": {
+            "description": "An array of grant objects.",
+            "type": "array"
+          },
+          "pagination": {
+            "description": "Pagination metadata.",
+            "properties": {
+              "first": {
+                "description": "Number of grants fetched.",
+                "type": "integer"
+              },
+              "offset": {
+                "description": "Number of records skipped.",
+                "type": "integer"
+              },
+              "returned": {
+                "description": "Total number of grants returned.",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": {
+            "description": "Entity type.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "message": "Welcome to the Questbook API"
+}
