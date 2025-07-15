@@ -1,119 +1,69 @@
-# OpenGrants Gateway API - Developer Documentation
+# OpenGrants Gateway Documentation
 
 ## Overview
 
-OpenGrants Gateway API provides a unified interface for accessing grant data across the Ethereum Ecosystem using the DAOIP-5 metadata standard. This documentation helps developers understand how to use and extend the API.
+OpenGrants Gateway provides a unified REST API for accessing grant data across multiple blockchain ecosystems using the DAOIP-5 metadata standard.
 
 ## Quick Start
 
-### Using the API
-
 ```bash
 # Get all grant systems
-curl "https://your-domain.com/api/v1/systems"
+curl "https://opengrants.replit.app/api/v1/systems"
 
 # Get grant pools from Octant
-curl "https://your-domain.com/api/v1/pools?system=octant"
+curl "https://opengrants.replit.app/api/v1/pools?system=octant"
 
-# Get projects from all systems
-curl "https://your-domain.com/api/v1/projects?limit=10"
-
-# Get applications for a specific grant pool
-curl "https://your-domain.com/api/v1/applications?poolId=daoip5:octant:grantPool:1"
+# Get applications for a specific pool
+curl "https://opengrants.replit.app/api/v1/applications?poolId=daoip5:octant:grantPool:7"
 ```
 
-### Authentication
+## Supported Systems
 
-```bash
-# Using API key authentication
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-     "https://your-domain.com/api/v1/applications"
-```
+- **Octant**: Ethereum public goods funding with quadratic voting
+- **Giveth**: Donation platform for public goods and social impact
+- **Questbook**: Decentralized grants orchestration platform
 
 ## API Endpoints
 
-| Endpoint | Description | Parameters |
-|----------|-------------|------------|
-| `GET /api/v1/systems` | List all grant systems | `system` (optional) |
-| `GET /api/v1/pools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
-| `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `search` |
-| `GET /api/v1/applications` | List applications | `system`, `poolId`, `projectId`, `status`, `limit`, `offset` |
+- `GET /api/v1/systems` - List all grant systems
+- `GET /api/v1/pools` - List grant pools with optional filtering
+- `GET /api/v1/projects` - List projects with optional search
+- `GET /api/v1/applications` - List applications with optional pool filtering
+- `GET /api/v1/health` - System health monitoring
 
-## Currently Supported Systems
+## Authentication
 
-- **Octant**: Ethereum public goods funding with quadratic funding mechanism
-- **Giveth**: Donation platform for public goods projects
+Optional API key authentication for higher rate limits:
 
-## DAOIP-5 Compliance
-
-All API responses follow the [DAOIP-5 metadata standard](http://www.daostar.org/schemas) for grant data interoperability:
-
-```json
-{
-  "@context": "http://www.daostar.org/schemas",
-  "type": "GrantApplication",
-  "id": "daoip5:octant:grantApplication:0xF6CB...-epoch-1",
-  "grantPoolId": "daoip5:octant:grantPool:1",
-  "grantPoolName": "Octant Epoch 1",
-  "projectId": "daoip5:protocol-guild:project:0xF6CB...",
-  "projectName": "Protocol Guild",
-  "fundsApproved": [{"amount": "0.957816", "denomination": "ETH"}],
-  "fundsApprovedInUSD": "2817.21",
-  "status": "funded"
-}
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://opengrants.replit.app/api/v1/systems"
 ```
 
-## Documentation Sections
+## Documentation Structure
 
-### For API Users
-- **[API Reference](./api-reference.md)** - Complete endpoint documentation
-- **[Authentication Guide](./authentication.md)** - API key setup and usage
-- **[Query Examples](./query-examples.md)** - Common use cases and examples
+- [Integration Guide](./integration-guide.md) - Add new grant systems
+- [API Reference](../client/src/pages/landing.tsx) - Complete endpoint documentation
+- [Health Monitoring](https://opengrants.replit.app/health) - System status
 
-### For Developers
-- **[Integration Guide](./integration-guide.md)** - How to add new grant systems
-- **[Architecture Overview](./architecture.md)** - System design and components
-- **[Development Setup](./development-setup.md)** - Local development environment
+## Data Format
 
-### For Contributors
-- **[Contributing Guidelines](./contributing.md)** - How to contribute to the project
-- **[Testing Guide](./testing.md)** - Running and writing tests
-- **[Deployment Guide](./deployment.md)** - Production deployment instructions
+All responses follow the DAOIP-5 metadata standard with:
 
-## Key Features
+- Consistent USD currency conversion
+- Semantic ID formatting (`daoip5:system:type:id`)
+- Standardized field mappings
+- CAIP-10 address formatting
 
-### Unified Data Format
-- **DAOIP-5 Standard**: All grant data normalized to DAOIP-5 format
-- **Semantic IDs**: Clear, hierarchical identifiers like `daoip5:octant:grantPool:1`
-- **Currency Conversion**: Automatic ETH to USD conversion for funding amounts
+## Rate Limits
 
-### Flexible Querying
-- **Multi-System**: Query across multiple grant systems simultaneously
-- **Filtering**: Filter by system, status, funding amounts, dates
-- **Pagination**: Efficient pagination for large datasets
+- Anonymous: 100 requests/hour
+- Authenticated: 1000 requests/hour
 
-### Developer-Friendly
-- **TypeScript**: Full TypeScript support with type definitions
-- **Rate Limiting**: Built-in rate limiting with API key management
-- **Error Handling**: Comprehensive error responses with helpful messages
+## Examples
 
-## Getting Started
-
-1. **Explore the API**: Use the interactive query builder at the root URL
-2. **Get API Keys**: Contact us for API access credentials
-3. **Read the Integration Guide**: Learn how to add new grant systems
-4. **Join the Community**: Contribute to the open-source project
+See the interactive documentation at [opengrants.replit.app](https://opengrants.replit.app) for complete examples in multiple languages.
 
 ## Support
 
-- **GitHub Issues**: Report bugs and request features
-- **Documentation**: Comprehensive guides and examples
-- **Community**: Join our developer community discussions
-
-## License
-
-This project is open source under the MIT License. See the LICENSE file for details.
-
----
-
-*For technical questions about integrating new grant systems, start with the [Integration Guide](./integration-guide.md) which provides step-by-step instructions for adding support for new funding platforms.*
+For questions or integration assistance, refer to the integration guide or system health monitoring.
