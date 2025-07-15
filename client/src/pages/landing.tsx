@@ -238,12 +238,12 @@ export default function LandingPage() {
                   <CardContent className="space-y-4">
                     <CodeBlock
                       code="GET /api/v1/systems"
-                      title="Get all grant systems"
+                      title="Get all grant systems (3 active integrations)"
                       language="http"
                     />
                     <CodeBlock
-                      code="GET /api/v1/projects?system=octant"
-                      title="Get projects from Octant"
+                      code="GET /api/v1/pools?system=questbook"
+                      title="Get grant pools from Questbook"
                       language="http"
                     />
                   </CardContent>
@@ -324,9 +324,9 @@ export default function LandingPage() {
                       <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
                         Decentralized grants orchestration platform for DAOs and ecosystems.
                       </p>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Coming Soon
+                      <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active Integration
                       </Badge>
                     </CardContent>
                   </Card>
@@ -520,6 +520,7 @@ export default function LandingPage() {
                           <SelectItem value="all">All Systems</SelectItem>
                           <SelectItem value="octant">Octant</SelectItem>
                           <SelectItem value="giveth">Giveth</SelectItem>
+                          <SelectItem value="questbook">Questbook</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -749,7 +750,7 @@ print(systems)`}
       "grantPoolsURI": "/api/v1/pools?system=octant"
     }
   ],
-  "total": 2,
+  "total": 3,
   "page": 1
 }`}
                         language="json"
@@ -836,7 +837,7 @@ print(system)`}
                     <div className="mb-4">
                       <h5 className="font-medium mb-2">Query Parameters</h5>
                       <div className="text-sm space-y-1">
-                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth, questbook)</div>
                         <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Maximum number of results (default: 50)</div>
                         <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Number of results to skip (default: 0)</div>
                       </div>

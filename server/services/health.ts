@@ -36,34 +36,41 @@ class HealthService {
     const startTime = Date.now();
     
     try {
-      // Test basic connectivity by fetching systems
+      // Test basic connectivity by fetching systems first
       await adapter.getSystems();
-      const responseTime = Date.now() - startTime;
+      const basicResponseTime = Date.now() - startTime;
 
-      // If adapter has health check method, use it
+      // If adapter has health check method, use it for detailed external API monitoring
       if (typeof adapter.healthCheck === 'function') {
+        const healthCheckStart = Date.now();
         const healthResult = await adapter.healthCheck();
+        const healthCheckTime = Date.now() - healthCheckStart;
+        
         return {
           name: adapterName,
           status: healthResult.status === 'healthy' ? 'healthy' : 'degraded',
-          responseTime,
+          responseTime: Math.max(basicResponseTime, healthCheckTime),
           lastChecked: new Date().toISOString(),
-          endpoints: healthResult.endpoints
+          endpoints: healthResult.endpoints,
+          error: healthResult.status !== 'healthy' ? `External API dependency issues detected` : undefined
         };
       }
 
       return {
         name: adapterName,
-        status: responseTime < 5000 ? 'healthy' : 'degraded',
-        responseTime,
+        status: basicResponseTime < 5000 ? 'healthy' : 'degraded',
+        responseTime: basicResponseTime,
         lastChecked: new Date().toISOString()
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Health check failed for ${adapterName}:`, errorMessage);
+      
       return {
         name: adapterName,
         status: 'down',
         lastChecked: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: `External API connectivity failed: ${errorMessage}`
       };
     }
   }
