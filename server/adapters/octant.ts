@@ -152,8 +152,7 @@ export class OctantAdapter extends BaseAdapter {
               "app.octant.epochDetails": {
                 epochNumber: epoch,
                 isFinalized: epoch < currentEpoch,
-                isCurrent: epoch === currentEpoch,
-                apiEndpoint: `${this.baseUrl}/epochs/info/${epoch}`
+                isCurrent: epoch === currentEpoch
               }
             }
           };

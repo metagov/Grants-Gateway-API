@@ -76,9 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         "@context": "http://www.daostar.org/schemas",
-        data: systems,
-        total: systems.length,
-        page: 1
+        data: systems
       });
     } catch (error) {
       console.error('Error fetching systems:', error);
@@ -143,10 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         "@context": "http://www.daostar.org/schemas",
-        name: "Grant Pools",
-        type: "GrantPoolCollection",
-        grantPools: pools,
-        total: pools.length
+        data: pools
       });
     } catch (error) {
       console.error('Error fetching pools:', error);
@@ -211,10 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         "@context": "http://www.daostar.org/schemas",
-        name: `Projects${system ? ` - ${system}` : ''}`,
-        type: "Organization",
-        projects: projects,
-        total: projects.length
+        data: projects
       });
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -359,11 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         "@context": "http://www.daostar.org/schemas",
-        name: "Applications",
-        type: "ApplicationCollection",
-        applications: applications,
-        total: applications.length,
-        poolId: finalPoolId
+        data: applications
       });
     } catch (error) {
       console.error('Error fetching applications:', error);
