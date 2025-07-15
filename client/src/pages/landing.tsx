@@ -147,8 +147,12 @@ export default function LandingPage() {
                   variant={activeSection === item.id ? "secondary" : "ghost"}
                   className={`w-full justify-start ${activeSection === item.id ? 'bg-primary/10 text-primary' : ''}`}
                   onClick={() => {
-                    setActiveSection(item.id);
-                    setSidebarOpen(false);
+                    if (item.id === 'health') {
+                      window.location.href = '/health';
+                    } else {
+                      setActiveSection(item.id);
+                      setSidebarOpen(false);
+                    }
                   }}
                 >
                   <Icon className="h-4 w-4 mr-3" />
@@ -1177,14 +1181,7 @@ response = requests.get(
 
 
 
-          {/* API Health */}
-          {activeSection === "health" && (
-            <iframe 
-              src="/health" 
-              className="w-full h-screen border-0 rounded-lg"
-              title="API Health Monitor"
-            />
-          )}
+
 
           {activeSection === "supporters" && (
             <div className="space-y-8">
