@@ -387,12 +387,12 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
 
-              {/* Developer Resources */}
+              {/* Resources */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Code className="h-5 w-5 text-primary mr-2" />
-                    Developer Resources
+                    Resources
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -437,7 +437,7 @@ export default function LandingPage() {
                         >
                           <FileText className="h-5 w-5 text-primary mr-3" />
                           <div>
-                            <div className="font-medium text-sm">Developer Docs</div>
+                            <div className="font-medium text-sm">DAOstar Docs</div>
                             <div className="text-xs text-gray-500">API reference and guides</div>
                           </div>
                         </a>
