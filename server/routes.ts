@@ -412,110 +412,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Analytics endpoints
-  app.get('/api/v1/analytics/dashboard', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { system, timeRange = '30d' } = req.query;
-      const selectedAdapters = system && system !== 'all' 
-        ? { [system as string]: adapters[system as string] }
-        : adapters;
-
-      const allPools = [];
-      const allProjects = [];
-      const allApplications = [];
-      const systemMetrics = [];
-
-      for (const [systemName, adapter] of Object.entries(selectedAdapters)) {
-        try {
-          const [pools, projects, applications] = await Promise.all([
-            adapter.getGrantPools(),
-            adapter.getProjects(),
-            adapter.getApplications()
-          ]);
-
-          allPools.push(...pools.map((p: any) => ({ ...p, system: systemName })));
-          allProjects.push(...projects.map((p: any) => ({ ...p, system: systemName })));
-          allApplications.push(...applications.map((a: any) => ({ ...a, system: systemName })));
-
-          const totalFunding = pools.reduce((sum: number, pool: any) => {
-            return sum + (pool.totalGrantPoolSize?.[0]?.amount ? parseFloat(pool.totalGrantPoolSize[0].amount) : 0);
-          }, 0);
-
-          systemMetrics.push({
-            system: systemName,
-            pools: pools.length,
-            projects: projects.length,
-            applications: applications.length,
-            totalFunding,
-          });
-        } catch (error) {
-          console.error(`Error fetching data from ${systemName}:`, error);
-        }
-      }
-
-      const totalFundingETH = allPools.reduce((sum: number, pool: any) => {
-        return sum + (pool.totalGrantPoolSize?.[0]?.amount ? parseFloat(pool.totalGrantPoolSize[0].amount) : 0);
-      }, 0);
-
-      const ethToUSD = 3000; // Should fetch real rate
-      const totalFundingUSD = totalFundingETH * ethToUSD;
-
-      const fundingBySystem = systemMetrics.map((metric: any, index: number) => ({
-        name: metric.system.charAt(0).toUpperCase() + metric.system.slice(1),
-        amount: metric.totalFunding * ethToUSD,
-        color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index % 4]
-      }));
-
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
-      const fundingTrends = [];
-      
-      for (let i = days; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        
-        fundingTrends.push({
-          date: date.toISOString().split('T')[0],
-          amount: Math.round(totalFundingUSD * (0.5 + Math.random() * 0.5) / days),
-          applications: Math.round(allApplications.length * (0.5 + Math.random() * 0.5) / days)
-        });
-      }
-
-      const topProjects = allApplications
-        .filter((app: any) => app.fundsApproved && parseFloat(app.fundsApproved) > 0)
-        .map((app: any) => ({
-          name: app.projectName || 'Unnamed Project',
-          funding: parseFloat(app.fundsApprovedInUSD || app.fundsApproved || '0'),
-          system: (app as any).system || 'Unknown'
-        }))
-        .sort((a: any, b: any) => b.funding - a.funding)
-        .slice(0, 10);
-
-      const poolMetrics = systemMetrics.map((metric: any) => ({
-        system: metric.system,
-        pools: metric.pools,
-        avgSize: metric.pools > 0 ? (metric.totalFunding * ethToUSD) / metric.pools : 0,
-        successRate: metric.applications > 0 ? Math.round((metric.applications * 0.3) * 100) : 0
-      }));
-
-      const dashboardData = {
-        totalFunding: { usd: totalFundingUSD, eth: totalFundingETH },
-        totalProjects: allProjects.length,
-        totalApplications: allApplications.length,
-        activePools: allPools.filter((pool: any) => pool.isOpen).length,
-        grantSystems: Object.keys(selectedAdapters).length,
-        fundingBySystem,
-        fundingTrends,
-        topProjects,
-        poolMetrics
-      };
-
-      res.json(dashboardData);
-    } catch (error) {
-      console.error('Analytics dashboard error:', error);
-      res.status(500).json({ error: 'Failed to generate dashboard analytics' });
-    }
-  });
-
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -526,8 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
         projects: "/api/v1/projects",
-        applications: "/api/v1/applications",
-        analytics: "/api/v1/analytics/dashboard"
+        applications: "/api/v1/applications"
       },
       supportedSystems: Object.keys(adapters),
       documentation: "https://docs.opengrants.dev"

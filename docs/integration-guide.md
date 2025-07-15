@@ -1,41 +1,8 @@
-# Grant System Integration Guide
+# Integration Guide
 
-## 4-Tier Integration Framework for OpenGrants Gateway
+## Adding New Grant Systems to OpenGrants Gateway
 
-This guide outlines our comprehensive integration strategy for connecting grant systems to the OpenGrants Gateway API using the DAOIP-5 metadata standard.
-
-## Integration Types Overview
-
-### Type 1: Source API Integration
-**Best for**: Grant systems with existing REST/GraphQL APIs
-**Examples**: Octant, Giveth
-**Complexity**: High - requires custom field mapping and transformation
-**Maintenance**: Medium - API changes require adapter updates
-
-### Type 2: Direct DAOIP-5 Integration  
-**Best for**: Grant systems that can implement DAOIP-5 endpoints
-**Examples**: Questbook
-**Complexity**: Low - minimal transformation needed
-**Maintenance**: Low - standardized interface reduces breaking changes
-
-### Type 3: Static Data Integration
-**Best for**: Grant systems with CSV/Airtable data exports
-**Examples**: Legacy systems, manual grant programs
-**Complexity**: Medium - requires data conversion pipeline
-**Maintenance**: Low - static files with scheduled updates
-
-### Type 4: Custom Integration
-**Best for**: Complex systems requiring hybrid approaches
-**Examples**: Multi-chain systems, federated grant networks
-**Complexity**: Variable - depends on specific requirements
-**Maintenance**: Variable - custom solutions require tailored support
-
-## Choosing Integration Type
-
-1. **Does the system have live APIs?** → Consider Type 1 or Type 2
-2. **Can they implement DAOIP-5 endpoints?** → Use Type 2
-3. **Only have static data exports?** → Use Type 3
-4. **Complex multi-source requirements?** → Design Type 4 solution
+This guide walks you through integrating a new grant system into the OpenGrants Gateway API using the DAOIP-5 metadata standard.
 
 ## Prerequisites
 
