@@ -29,6 +29,26 @@ There are two primary integration approaches supported by the OpenGrants Gateway
 - **Process**: Proxy/cache DAOIP-5 endpoint → Return with minimal processing
 - **Implementation**: Lightweight adapter with caching for performance
 
+## Complete Integration Requirements
+
+For any new API integration to be considered complete, it must be supported in all three critical areas:
+
+### 1. Query Builder Integration
+- Add the new system to the Grant System dropdown in `client/src/pages/landing.tsx`
+- Ensure interactive testing works through the web interface
+- Update system selection options to include the new grant system
+
+### 2. Supported Systems Documentation
+- Update the landing page to show the new system as "Active Integration"
+- Update total system count in examples and documentation
+- Include the new system in API parameter documentation (e.g., `system=newsystem`)
+
+### 3. API Health Monitoring
+- Add the adapter to the health service in `server/services/health.ts`
+- Implement external API dependency monitoring through `healthCheck()` method
+- Ensure `/api/v1/health` and `/api/v1/health/:adapter` endpoints work
+- Monitor external API connectivity and response times for reliability
+
 ## Integration Steps
 
 ### 1. Information Gathering Phase
