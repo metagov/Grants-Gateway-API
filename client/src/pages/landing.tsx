@@ -258,8 +258,8 @@ export default function LandingPage() {
                       language="http"
                     />
                     <CodeBlock
-                      code="GET /api/v1/pools?system=questbook"
-                      title="Get grant pools from Questbook"
+                      code="GET /api/v1/pools?system=octant"
+                      title="Get grant pools from Octant"
                       language="http"
                     />
                   </CardContent>
