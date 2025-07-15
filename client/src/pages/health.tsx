@@ -8,7 +8,14 @@ import {
   RefreshCw,
   Database,
   Server,
-  Wifi
+  Wifi,
+  Building,
+  Target,
+  Code,
+  Heart,
+  Layers,
+  X,
+  Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +50,15 @@ interface SystemHealthStatus {
 
 export default function HealthPage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const sidebarItems = [
+    { id: "overview", label: "Overview", icon: Building },
+    { id: "endpoints", label: "API Endpoints", icon: Target },
+    { id: "query-builder", label: "Query Builder", icon: Code },
+    { id: "health", label: "API Health", icon: Activity, active: true },
+    { id: "supporters", label: "Contributors & Supporters", icon: Heart },
+  ];
 
   const { data: healthData, isLoading, refetch, error } = useQuery<SystemHealthStatus>({
     queryKey: ['/api/v1/health'],
@@ -112,38 +128,132 @@ export default function HealthPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-8">
-      <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
-        {/* Header */}
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">API Health Monitor</h1>
-            <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
-              Real-time status of grant system integrations and API components
-            </p>
+    <div className="flex min-h-screen bg-gray-50 dark:bg-slate-900">
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 shadow-lg border-r border-gray-200 dark:border-slate-700 transform transition-transform duration-200 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-slate-700">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <Layers className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-lg font-semibold">OpenGrants</span>
           </div>
-          <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`${autoRefresh ? "bg-green-50 border-green-200" : ""} w-full sm:w-auto`}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Auto Refresh</span>
-              <span className="sm:hidden">Auto</span> {autoRefresh ? 'ON' : 'OFF'}
-            </Button>
-            <Button 
-              onClick={() => refetch()} 
-              disabled={isLoading}
-              size="sm"
-              className="w-full sm:w-auto"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
+        
+        <nav className="mt-8 px-4">
+          <div className="space-y-2">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon;
+              
+              return (
+                <Button
+                  key={item.id}
+                  variant={item.active ? "secondary" : "ghost"}
+                  className={`w-full justify-start ${item.active ? 'bg-primary/10 text-primary' : ''}`}
+                  onClick={() => {
+                    if (item.id === 'health') {
+                      // Already on health page
+                      return;
+                    } else if (item.id === 'overview') {
+                      window.location.href = '/';
+                    } else {
+                      window.location.href = `/#${item.id}`;
+                    }
+                    setSidebarOpen(false);
+                  }}
+                >
+                  <Icon className="h-4 w-4 mr-3" />
+                  {item.label}
+                </Button>
+              );
+            })}
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Grant Systems
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Octant</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Giveth</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-64">
+        {/* Top Bar */}
+        <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700">
+          <div className="flex items-center justify-between h-16 px-6">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden mr-2"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+              <h1 className="text-xl font-semibold">API Health Monitor</h1>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
+            {/* Controls */}
+            <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+              <div>
+                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
+                  Real-time status of grant system integrations and API components
+                </p>
+              </div>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                  className={`${autoRefresh ? "bg-green-50 border-green-200" : ""} w-full sm:w-auto`}
+                >
+                  <Activity className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Auto Refresh</span>
+                  <span className="sm:hidden">Auto</span> {autoRefresh ? 'ON' : 'OFF'}
+                </Button>
+                <Button 
+                  onClick={() => refetch()} 
+                  disabled={isLoading}
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+            </div>
 
         {/* System Overview */}
         {healthData && (
@@ -316,6 +426,8 @@ export default function HealthPage() {
             </CardContent>
           </Card>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
