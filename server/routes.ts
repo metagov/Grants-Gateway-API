@@ -7,6 +7,8 @@ import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
 import { BaseAdapter } from "./adapters/base";
 import cors from "cors";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
@@ -16,6 +18,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : true,
     credentials: true
   }));
+
+  // Documentation routes (before API middleware)
+  app.get('/docs', (req, res) => {
+    const docPath = path.join(process.cwd(), 'docs', 'README.md');
+    if (fs.existsSync(docPath)) {
+      const content = fs.readFileSync(docPath, 'utf8');
+      res.setHeader('Content-Type', 'text/markdown');
+      res.send(content);
+    } else {
+      res.status(404).json({ error: 'Documentation not found' });
+    }
+  });
+
+  app.get('/docs/integration-guide', (req, res) => {
+    const docPath = path.join(process.cwd(), 'docs', 'integration-guide.md');
+    if (fs.existsSync(docPath)) {
+      const content = fs.readFileSync(docPath, 'utf8');
+      res.setHeader('Content-Type', 'text/markdown');
+      res.send(content);
+    } else {
+      res.status(404).json({ error: 'Integration guide not found' });
+    }
+  });
+
+  app.get('/docs/field-mappings', (req, res) => {
+    const docPath = path.join(process.cwd(), 'docs', 'field-mappings.md');
+    if (fs.existsSync(docPath)) {
+      const content = fs.readFileSync(docPath, 'utf8');
+      res.setHeader('Content-Type', 'text/markdown');
+      res.send(content);
+    } else {
+      res.status(404).json({ error: 'Field mappings documentation not found' });
+    }
+  });
 
   // Apply middleware to all API routes
   app.use('/api', authenticateApiKey as any);
@@ -398,6 +434,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+
+
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -411,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         applications: "/api/v1/applications"
       },
       supportedSystems: Object.keys(adapters),
-      documentation: "https://docs.opengrants.dev"
+      documentation: "/docs"
     });
   });
 

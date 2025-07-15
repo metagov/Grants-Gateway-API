@@ -1,69 +1,101 @@
-# OpenGrants Gateway Documentation
+# OpenGrants Gateway API Documentation
 
 ## Overview
 
-OpenGrants Gateway provides a unified REST API for accessing grant data across multiple blockchain ecosystems using the DAOIP-5 metadata standard.
+The OpenGrants Gateway API provides a unified interface for accessing grant data across the Ethereum ecosystem using the DAOIP-5 metadata standard. This documentation covers API usage, supported systems, and integration guides.
 
 ## Quick Start
 
-```bash
-# Get all grant systems
-curl "https://opengrants.replit.app/api/v1/systems"
+### Authentication
 
-# Get grant pools from Octant
-curl "https://opengrants.replit.app/api/v1/pools?system=octant"
-
-# Get applications for a specific pool
-curl "https://opengrants.replit.app/api/v1/applications?poolId=daoip5:octant:grantPool:7"
-```
-
-## Supported Systems
-
-- **Octant**: Ethereum public goods funding with quadratic voting
-- **Giveth**: Donation platform for public goods and social impact
-- **Questbook**: Decentralized grants orchestration platform
-
-## API Endpoints
-
-- `GET /api/v1/systems` - List all grant systems
-- `GET /api/v1/pools` - List grant pools with optional filtering
-- `GET /api/v1/projects` - List projects with optional search
-- `GET /api/v1/applications` - List applications with optional pool filtering
-- `GET /api/v1/health` - System health monitoring
-
-## Authentication
-
-Optional API key authentication for higher rate limits:
+All API requests require authentication using an API key in the Authorization header:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
   "https://opengrants.replit.app/api/v1/systems"
 ```
 
-## Documentation Structure
+### Basic Usage
 
-- [Integration Guide](./integration-guide.md) - Add new grant systems
-- [API Reference](../client/src/pages/landing.tsx) - Complete endpoint documentation
-- [Health Monitoring](https://opengrants.replit.app/health) - System status
+```bash
+# Get all grant systems
+GET /api/v1/systems
 
-## Data Format
+# Get grant pools from specific system
+GET /api/v1/pools?system=octant
 
-All responses follow the DAOIP-5 metadata standard with:
+# Get projects
+GET /api/v1/projects?system=giveth&limit=10
 
-- Consistent USD currency conversion
-- Semantic ID formatting (`daoip5:system:type:id`)
-- Standardized field mappings
-- CAIP-10 address formatting
+# Get applications for a grant pool
+GET /api/v1/applications?poolId=daoip5:octant:grantPool:7
+```
+
+## Supported Systems
+
+### Active Integrations
+
+- **Octant** - Quadratic funding for Ethereum public goods through ETH staking proceeds
+- **Giveth** - Donation platform for public goods and social impact projects
+
+### Coming Soon
+
+- **Stellar** - Cross-border payments and financial inclusion platform
+- **Questbook** - Decentralized grants orchestration platform
+
+## API Reference
+
+### Endpoints
+
+| Endpoint | Description | Parameters |
+|----------|-------------|------------|
+| `GET /api/v1/systems` | List all grant systems | `system` (optional) |
+| `GET /api/v1/pools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
+| `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `search` |
+| `GET /api/v1/applications` | List applications | `system`, `poolId`, `limit`, `offset` |
+| `GET /api/v1/health` | API health status | `refresh` (optional) |
+
+### Response Format
+
+All responses follow the DAOIP-5 standard with JSON-LD context:
+
+```json
+{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [...]
+}
+```
 
 ## Rate Limits
 
-- Anonymous: 100 requests/hour
-- Authenticated: 1000 requests/hour
+- **Authenticated requests**: 1000 requests per hour
+- **Anonymous requests**: 100 requests per hour
 
-## Examples
+## Error Handling
 
-See the interactive documentation at [opengrants.replit.app](https://opengrants.replit.app) for complete examples in multiple languages.
+The API returns standard HTTP status codes:
+
+- `200` - Success
+- `400` - Bad Request
+- `401` - Unauthorized
+- `404` - Not Found
+- `429` - Rate Limited
+- `500` - Internal Server Error
+
+## DAOIP-5 Compliance
+
+This API implements the [DAOIP-5 metadata standard](http://www.daostar.org/EIPs/eip-4824) for interoperable grant data exchange.
+
+## Integration Guide
+
+For adding new grant systems to the API, see the [Integration Guide](./integration-guide.md).
+
+## Field Mappings
+
+For detailed field transformations between platform APIs and DAOIP-5 format, see [Field Mappings](./field-mappings.md).
 
 ## Support
 
-For questions or integration assistance, refer to the integration guide or system health monitoring.
+- **API Documentation**: Available in the web interface query builder
+- **Health Monitoring**: `/health` endpoint for real-time status
+- **Integration Support**: See integration guide for adding new systems
