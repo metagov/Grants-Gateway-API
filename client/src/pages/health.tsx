@@ -56,8 +56,7 @@ export default function HealthPage() {
     { id: "overview", label: "Overview", icon: Building },
     { id: "endpoints", label: "API Endpoints", icon: Target },
     { id: "query-builder", label: "Query Builder", icon: Code },
-    { id: "dashboard", label: "Analytics Dashboard", icon: Activity },
-    { id: "health", label: "API Health", icon: Wifi, active: true },
+    { id: "health", label: "API Health", icon: Activity, active: true },
     { id: "supporters", label: "Contributors", icon: Heart },
   ];
 
@@ -165,8 +164,6 @@ export default function HealthPage() {
                       return;
                     } else if (item.id === 'overview') {
                       window.location.href = '/';
-                    } else if (item.id === 'dashboard') {
-                      window.location.href = '/dashboard';
                     } else {
                       window.location.href = `/#${item.id}`;
                     }

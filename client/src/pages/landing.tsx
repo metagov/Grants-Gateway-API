@@ -25,8 +25,7 @@ import {
   BookOpen,
   ExternalLink,
   Activity,
-  Database,
-  TrendingUp
+  Database
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,7 +110,7 @@ export default function LandingPage() {
     { id: "overview", label: "Overview", icon: Building },
     { id: "endpoints", label: "API Endpoints", icon: Target },
     { id: "query-builder", label: "Query Builder", icon: Code },
-    { id: "dashboard", label: "Analytics Dashboard", icon: TrendingUp },
+
     { id: "health", label: "API Health", icon: Activity },
     { id: "supporters", label: "Contributors", icon: Heart },
   ];
@@ -150,8 +149,6 @@ export default function LandingPage() {
                   onClick={() => {
                     if (item.id === 'health') {
                       window.location.href = '/health';
-                    } else if (item.id === 'dashboard') {
-                      window.location.href = '/dashboard';
                     } else {
                       setActiveSection(item.id);
                       setSidebarOpen(false);
