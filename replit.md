@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 15, 2025. Enhanced Landing Page with OSO Integration and Optimized Query Builder
+  - Fixed runtime error in field mapping table by properly escaping JSX interpolation syntax
+  - Added OSO (Open Source Observer) integration as "Coming Soon" in supported systems section
+  - Simplified API Health tab to directly link to /health page with clean iframe display
+  - Optimized Query Builder for Questbook with "Direct DAOIP-5" label and notification banner
+  - Updated Quick Start example from Questbook to Octant for better consistency
+  - Fixed Giveth ID format in field mapping table to use proper semantic format
+  - Enhanced currency conversion documentation with CoinGecko API and 5-minute caching details
+  - All 3 systems (Octant, Giveth, Questbook) properly documented with correct integration types
 - January 15, 2025. Completed Full Questbook API Integration with Comprehensive Support
   - Updated Questbook adapter to use correct API endpoints: /grant_pools.json and /applications
   - Fixed response parsing to use "grantsPools" field from API response instead of "grants"
