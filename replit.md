@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 15, 2025. Removed Questbook Integration
+  - Removed Questbook adapter class and all associated code from server/adapters/questbook.ts
+  - Updated server/routes.ts to remove QuestbookAdapter import and initialization
+  - Updated server/services/health.ts to remove Questbook from health monitoring
+  - Removed Questbook references from frontend UI components across landing page and health page
+  - Removed Questbook from query builder system dropdown and documentation
+  - Updated field mapping documentation to remove Questbook system mappings
+  - Updated integration guide to remove Questbook references
+  - Now supports 2 active integrations: Octant and Giveth
 - January 15, 2025. Enhanced Landing Page with OSO Integration and Optimized Query Builder
   - Fixed runtime error in field mapping table by properly escaping JSX interpolation syntax
   - Added OSO (Open Source Observer) integration as "Coming Soon" in supported systems section

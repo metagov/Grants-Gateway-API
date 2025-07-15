@@ -190,10 +190,7 @@ export default function HealthPage() {
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Giveth</span>
               </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
-              </div>
+
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
@@ -410,7 +407,7 @@ export default function HealthPage() {
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <Clock className="h-4 w-4 text-yellow-500 mr-2" />
-                        Questbook - Coming soon (DAOIP-5 native)
+                        Coming soon...
                       </li>
                     </ul>
                   </div>
