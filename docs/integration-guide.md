@@ -63,7 +63,6 @@ import { MySystemAdapter } from './adapters/my-system';
 const adapters: { [key: string]: BaseAdapter } = {
   octant: new OctantAdapter(),
   giveth: new GivethAdapter(),
-  questbook: new QuestbookAdapter(),
   'my-system': new MySystemAdapter(), // Add here
 };
 ```

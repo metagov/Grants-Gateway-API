@@ -64,20 +64,7 @@ This document describes how OpenGrants Gateway standardizes data from different 
 | N/A | `totalGrantPoolSize.denomination` | Always `"USD"` |
 | Direct | `totalGrantPoolSizeUSD` | Already in USD (no conversion) |
 
-### Questbook System Mappings
 
-**Integration Type**: Direct DAOIP-5 endpoint routing (no transformation required)
-
-**Source Fields Used**:
-- All fields come pre-formatted in DAOIP-5 specification
-- Direct passthrough from `https://api.questbook.app/daoip-5/grant_pools.json`
-- Applications from `https://api.questbook.app/daoip-5/applications?grantId={id}`
-
-| Questbook Field | DAOIP-5 Field | Transformation |
-|------------------|---------------|----------------|
-| All fields | All fields | **Direct passthrough** - already DAOIP-5 compliant |
-| Cache TTL | Performance | 5-minute caching to optimize response times |
-| Graceful degradation | Reliability | Serves stale cache if API temporarily fails |
 
 ## Currency Standardization
 

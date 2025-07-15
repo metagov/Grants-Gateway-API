@@ -70,23 +70,9 @@ export default function LandingPage() {
     setQueryPreview(query);
   }, [entityType, queryFilters]);
 
-  // Execute query mutation with Questbook optimization
+  // Execute query mutation
   const executeQueryMutation = useMutation({
     mutationFn: async () => {
-      // Direct Questbook optimization: bypass our API for DAOIP-5 compliant endpoints
-      if (queryFilters.system === 'questbook') {
-        if (entityType === 'pools') {
-          const response = await fetch('https://api.questbook.app/daoip-5/grant_pools.json');
-          if (!response.ok) throw new Error(`Questbook API error: ${response.status}`);
-          return await response.json();
-        } else if (entityType === 'applications' && queryFilters.poolId) {
-          const response = await fetch(`https://api.questbook.app/daoip-5/applications?grantId=${queryFilters.poolId}`);
-          if (!response.ok) throw new Error(`Questbook API error: ${response.status}`);
-          return await response.json();
-        }
-      }
-      
-      // Use our API for other systems or fallback
       return apiClient.executeQuery(entityType, queryFilters);
     },
     onError: (error) => {
@@ -175,10 +161,7 @@ export default function LandingPage() {
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Giveth</span>
               </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
-              </div>
+
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
@@ -340,21 +323,7 @@ export default function LandingPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-purple-500 rounded-lg mb-4 flex items-center justify-center">
-                        <GitBranch className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">Questbook</h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                        Decentralized grants orchestration platform for DAOs and ecosystems.
-                      </p>
-                      <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        <CheckCircle className="h-3 w-3 ml-1 mr-1" />
-                        Active Integration
-                      </Badge>
-                    </CardContent>
-                  </Card>
+
                 </div>
               </div>
 
@@ -545,20 +514,10 @@ export default function LandingPage() {
                           <SelectItem value="all">All Systems</SelectItem>
                           <SelectItem value="octant">Octant</SelectItem>
                           <SelectItem value="giveth">Giveth</SelectItem>
-                          <SelectItem value="questbook">Questbook (Direct DAOIP-5)</SelectItem>
+
                         </SelectContent>
                       </Select>
-                      {queryFilters.system === 'questbook' && (
-                        <div className="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                          <div className="flex items-center text-sm text-purple-700 dark:text-purple-300">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                            <span className="font-medium">Direct DAOIP-5 Endpoint</span>
-                          </div>
-                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                            Queries bypass our API and connect directly to Questbook's DAOIP-5 compliant endpoints for optimal performance.
-                          </p>
-                        </div>
-                      )}
+
                     </div>
 
 
@@ -873,7 +832,7 @@ print(system)`}
                     <div className="mb-4">
                       <h5 className="font-medium mb-2">Query Parameters</h5>
                       <div className="text-sm space-y-1">
-                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth, questbook)</div>
+                        <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
                         <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Maximum number of results (default: 50)</div>
                         <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Number of results to skip (default: 0)</div>
                       </div>
@@ -1254,20 +1213,7 @@ response = requests.get(
                       </Badge>
                     </div>
 
-                    {/* Questbook */}
-                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
-                        <Book className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">Questbook</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                        Decentralized grants orchestration platform
-                      </p>
-                      <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Active Integration
-                      </Badge>
-                    </div>
+
 
                     {/* OSO */}
                     <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
