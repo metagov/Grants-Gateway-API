@@ -69,9 +69,25 @@ export default function LandingPage() {
     setQueryPreview(query);
   }, [entityType, queryFilters]);
 
-  // Execute query mutation
+  // Execute query mutation with Questbook optimization
   const executeQueryMutation = useMutation({
-    mutationFn: () => apiClient.executeQuery(entityType, queryFilters),
+    mutationFn: async () => {
+      // Direct Questbook optimization: bypass our API for DAOIP-5 compliant endpoints
+      if (queryFilters.system === 'questbook') {
+        if (entityType === 'pools') {
+          const response = await fetch('https://api.questbook.app/daoip-5/grant_pools.json');
+          if (!response.ok) throw new Error(`Questbook API error: ${response.status}`);
+          return await response.json();
+        } else if (entityType === 'applications' && queryFilters.poolId) {
+          const response = await fetch(`https://api.questbook.app/daoip-5/applications?grantId=${queryFilters.poolId}`);
+          if (!response.ok) throw new Error(`Questbook API error: ${response.status}`);
+          return await response.json();
+        }
+      }
+      
+      // Use our API for other systems or fallback
+      return apiClient.executeQuery(entityType, queryFilters);
+    },
     onError: (error) => {
       console.error("Query execution failed:", error);
     }
@@ -155,8 +171,8 @@ export default function LandingPage() {
                 <span className="text-gray-600 dark:text-gray-300">Giveth</span>
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook (Coming Soon)</span>
+                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
               </div>
             </div>
           </div>
@@ -218,7 +234,7 @@ export default function LandingPage() {
                       <Book className="h-4 w-4 mr-2" />
                       API Documentation
                     </Button>
-                    <Button variant="outline" onClick={() => window.open('/health', '_blank')} className="flex items-center justify-center">
+                    <Button variant="outline" onClick={() => setActiveSection("health")} className="flex items-center justify-center">
                       <Activity className="h-4 w-4 mr-2" />
                       Health Monitor
                     </Button>
@@ -520,9 +536,20 @@ export default function LandingPage() {
                           <SelectItem value="all">All Systems</SelectItem>
                           <SelectItem value="octant">Octant</SelectItem>
                           <SelectItem value="giveth">Giveth</SelectItem>
-                          <SelectItem value="questbook">Questbook</SelectItem>
+                          <SelectItem value="questbook">Questbook (Direct DAOIP-5)</SelectItem>
                         </SelectContent>
                       </Select>
+                      {queryFilters.system === 'questbook' && (
+                        <div className="mt-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                          <div className="flex items-center text-sm text-purple-700 dark:text-purple-300">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                            <span className="font-medium">Direct DAOIP-5 Endpoint</span>
+                          </div>
+                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                            Queries bypass our API and connect directly to Questbook's DAOIP-5 compliant endpoints for optimal performance.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
 
@@ -1152,7 +1179,7 @@ response = requests.get(
                 </p>
 
                 {/* Live Data Comparison */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -1171,7 +1198,15 @@ response = requests.get(
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">ID Format:</span>
-                          <span className="text-sm font-mono text-blue-600 dark:text-blue-400">eip155:1:0x(epoch)</span>
+                          <span className="text-sm font-mono text-blue-600 dark:text-blue-400">daoip5:octant:grantPool:{epoch}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">ETH→USD Conversion:</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">CoinGecko API + 5min cache</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Source Fields:</span>
+                          <span className="text-sm text-blue-600 dark:text-blue-400">leftover + communityFund + ppf</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">Funding Mechanism:</span>
@@ -1203,7 +1238,7 @@ response = requests.get(
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">ID Format:</span>
-                          <span className="text-sm font-mono text-green-600 dark:text-green-400">eip155:1:0x(round_id)</span>
+                          <span className="text-sm font-mono text-green-600 dark:text-green-400">daoip5:giveth:grantPool:{roundId}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">Funding Mechanism:</span>
@@ -1212,6 +1247,38 @@ response = requests.get(
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">Data Source:</span>
                           <span className="text-sm text-green-600 dark:text-green-400">GraphQL API</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                        Questbook System
+                      </CardTitle>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Direct DAOIP-5 endpoint (no transformation)
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Source Currency:</span>
+                          <span className="text-sm text-purple-600 dark:text-purple-400">DAOIP-5 Native</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">ID Format:</span>
+                          <span className="text-sm font-mono text-purple-600 dark:text-purple-400">Pre-formatted</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Integration Type:</span>
+                          <span className="text-sm text-purple-600 dark:text-purple-400">Direct Passthrough</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Data Source:</span>
+                          <span className="text-sm text-purple-600 dark:text-purple-400">DAOIP-5 API</span>
                         </div>
                       </div>
                     </CardContent>
@@ -1235,38 +1302,45 @@ response = requests.get(
                               <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">DAOIP-5 Field</th>
                               <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Octant Mapping</th>
                               <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Giveth Mapping</th>
+                              <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 text-left">Questbook Mapping</th>
                             </tr>
                           </thead>
                           <tbody className="text-sm">
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">id</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch → CAIP-10</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].id → CAIP-10</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch → daoip5:octant:grantPool:{epoch}</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].id → daoip5:giveth:grantPool:{roundId}</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough (pre-formatted)</td>
                             </tr>
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">name</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Generated: "Octant Epoch (n)"</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].name (direct)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough</td>
                             </tr>
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">totalGrantPoolSize</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">wei → ETH conversion</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">leftover+communityFund+ppf → ETH</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">allocatedFund (USD direct)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough</td>
                             </tr>
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">totalGrantPoolSizeUSD</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">ETH → USD (live rates)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">ETH → USD (CoinGecko + 5min cache)</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">allocatedFund (direct)</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough</td>
                             </tr>
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">isOpen</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch === currentEpoch</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].isActive</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough</td>
                             </tr>
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">closeDate</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Calculated (90-day epochs)</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].endDate</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough</td>
                             </tr>
                           </tbody>
                         </table>
@@ -1282,7 +1356,7 @@ response = requests.get(
                       </p>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                           <h4 className="font-semibold mb-3">Octant (ETH → USD)</h4>
                           <div className="space-y-2 text-sm">
@@ -1303,6 +1377,16 @@ response = requests.get(
                             <div>5. Ready for display</div>
                           </div>
                         </div>
+                        <div>
+                          <h4 className="font-semibold mb-3">Questbook (DAOIP-5 Native)</h4>
+                          <div className="space-y-2 text-sm">
+                            <div>1. Direct API: /grant_pools.json</div>
+                            <div>2. No transformation needed</div>
+                            <div>3. 5-minute caching for performance</div>
+                            <div>4. Graceful degradation on errors</div>
+                            <div>5. Pre-formatted DAOIP-5 response</div>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -1320,7 +1404,13 @@ response = requests.get(
                   Real-time monitoring of all grant system integrations and API infrastructure.
                 </p>
               </div>
-
+              
+              <iframe 
+                src="/health" 
+                className="w-full h-screen border-0 rounded-lg"
+                title="API Health Monitor"
+              />
+              
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1513,9 +1603,9 @@ response = requests.get(
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                         Decentralized grants orchestration platform
                       </p>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Coming Soon
+                      <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active Integration
                       </Badge>
                     </div>
                   </div>
