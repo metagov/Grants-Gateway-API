@@ -112,7 +112,7 @@ export default function LandingPage() {
     { id: "query-builder", label: "Query Builder", icon: Code },
 
     { id: "health", label: "API Health", icon: Activity },
-    { id: "supporters", label: "Contributors & Supporters", icon: Heart },
+    { id: "supporters", label: "Contributors", icon: Heart },
   ];
 
   return (
@@ -183,6 +183,10 @@ export default function LandingPage() {
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
               </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Stellar (Coming Soon)</span>
+              </div>
             </div>
           </div>
         </nav>
@@ -242,10 +246,6 @@ export default function LandingPage() {
                     <Button variant="outline" onClick={() => setActiveSection("endpoints")} className="flex items-center justify-center">
                       <Book className="h-4 w-4 mr-2" />
                       API Documentation
-                    </Button>
-                    <Button variant="outline" onClick={() => setActiveSection("health")} className="flex items-center justify-center">
-                      <Activity className="h-4 w-4 mr-2" />
-                      Health Monitor
                     </Button>
                   </div>
                 </div>
