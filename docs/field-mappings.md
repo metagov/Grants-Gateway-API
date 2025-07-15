@@ -1,6 +1,6 @@
 # DAOIP-5 Field Mappings
 
-This document describes how OpenGrants Gateway standardizes data from different grant systems (Octant and Giveth) to the DAOIP-5 specification.
+This document describes how OpenGrants Gateway standardizes data from different grant systems (Octant, Giveth, and Questbook) to the DAOIP-5 specification.
 
 ## Grant Pool Mappings
 
@@ -19,31 +19,65 @@ This document describes how OpenGrants Gateway standardizes data from different 
 
 ### Octant System Mappings
 
+**ID System**: Uses semantic format `daoip5:octant:grantPool:{epochId}` (changed from EIP-155)
+
+**ETH to USD Conversion Process**:
+- Fetches from CoinGecko API: `https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd`
+- Fallback to CoinCap API if primary fails
+- 5-minute cache to avoid rate limits
+- Conservative fallback rate: $2500 if all APIs fail
+
+**Source Fields Used**:
+- `leftover`, `communityFund`, `ppf` amounts (wei format)
+- `currentEpoch` for pool identification
+- Calculated 90-day epoch dates from Oct 1, 2023 start
+
 | Octant Field | DAOIP-5 Field | Transformation |
 |--------------|---------------|----------------|
-| `currentEpoch` | `id` | Format as CAIP-10: `eip155:1:0x{epoch_padded}` |
+| `currentEpoch` | `id` | Format as semantic: `daoip5:octant:grantPool:{epoch}` |
 | N/A | `name` | Generate: `"Octant Epoch {epoch}"` |
 | N/A | `description` | Generate detailed description with epoch info |
 | N/A | `grantFundingMechanism` | Always `"Quadratic Funding"` |
 | `currentEpoch == epoch` | `isOpen` | True if current epoch |
 | Calculated | `closeDate` | 90-day epochs from Oct 1, 2023 |
-| `leftover \| communityFund \| ppf` | `totalGrantPoolSize.amount` | Convert wei to ETH |
+| `leftover + communityFund + ppf` | `totalGrantPoolSize.amount` | Convert wei to ETH string |
 | N/A | `totalGrantPoolSize.denomination` | Always `"ETH"` |
-| Calculated | `totalGrantPoolSizeUSD` | Convert ETH to USD using live rates |
+| ETH amount × live rate | `totalGrantPoolSizeUSD` | Real-time conversion with caching |
 
 ### Giveth System Mappings
 
+**ID System**: Uses semantic format `daoip5:giveth:grantPool:{roundId}` (changed from EIP-155)
+
+**Source Fields Used**:
+- `qfRounds[].id`, `name`, `description`, `isActive`, `endDate`
+- `qfRounds[].allocatedFund` (already in USD)
+
 | Giveth Field | DAOIP-5 Field | Transformation |
 |--------------|---------------|----------------|
-| `qfRounds[].id` | `id` | Format as CAIP-10: `eip155:1:0x{id}` |
+| `qfRounds[].id` | `id` | Format as semantic: `daoip5:giveth:grantPool:{roundId}` |
 | `qfRounds[].name` | `name` | Direct mapping |
 | `qfRounds[].description` | `description` | Use provided or generate |
 | N/A | `grantFundingMechanism` | Always `"Quadratic Funding"` |
 | `qfRounds[].isActive` | `isOpen` | Direct mapping |
 | `qfRounds[].endDate` | `closeDate` | Format to ISO 8601 |
-| `qfRounds[].allocatedFund` | `totalGrantPoolSize.amount` | Direct mapping |
+| `qfRounds[].allocatedFund` | `totalGrantPoolSize.amount` | Direct mapping (USD) |
 | N/A | `totalGrantPoolSize.denomination` | Always `"USD"` |
-| Direct | `totalGrantPoolSizeUSD` | Already in USD |
+| Direct | `totalGrantPoolSizeUSD` | Already in USD (no conversion) |
+
+### Questbook System Mappings
+
+**Integration Type**: Direct DAOIP-5 endpoint routing (no transformation required)
+
+**Source Fields Used**:
+- All fields come pre-formatted in DAOIP-5 specification
+- Direct passthrough from `https://api.questbook.app/daoip-5/grant_pools.json`
+- Applications from `https://api.questbook.app/daoip-5/applications?grantId={id}`
+
+| Questbook Field | DAOIP-5 Field | Transformation |
+|------------------|---------------|----------------|
+| All fields | All fields | **Direct passthrough** - already DAOIP-5 compliant |
+| Cache TTL | Performance | 5-minute caching to optimize response times |
+| Graceful degradation | Reliability | Serves stale cache if API temporarily fails |
 
 ## Currency Standardization
 
