@@ -24,7 +24,8 @@ import {
   Info as InfoIcon,
   BookOpen,
   ExternalLink,
-  Activity
+  Activity,
+  Database
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -173,6 +174,10 @@ export default function LandingPage() {
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Questbook</span>
+              </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
               </div>
             </div>
           </div>
@@ -1198,7 +1203,7 @@ response = requests.get(
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">ID Format:</span>
-                          <span className="text-sm font-mono text-blue-600 dark:text-blue-400">daoip5:octant:grantPool:{epoch}</span>
+                          <span className="text-sm font-mono text-blue-600 dark:text-blue-400">daoip5:octant:grantPool:&#123;epoch&#125;</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">ETH→USD Conversion:</span>
@@ -1308,8 +1313,8 @@ response = requests.get(
                           <tbody className="text-sm">
                             <tr>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2 font-mono">id</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch → daoip5:octant:grantPool:{epoch}</td>
-                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].id → daoip5:giveth:grantPool:{roundId}</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">epoch → daoip5:octant:grantPool:&#123;epoch&#125;</td>
+                              <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">qfRounds[].id → daoip5:giveth:grantPool:&#123;roundId&#125;</td>
                               <td className="border border-gray-200 dark:border-gray-700 px-4 py-2">Direct passthrough (pre-formatted)</td>
                             </tr>
                             <tr>
@@ -1397,130 +1402,11 @@ response = requests.get(
 
           {/* API Health */}
           {activeSection === "health" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-4">API Health Monitor</h2>
-                <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">
-                  Real-time monitoring of all grant system integrations and API infrastructure.
-                </p>
-              </div>
-              
-              <iframe 
-                src="/health" 
-                className="w-full h-screen border-0 rounded-lg"
-                title="API Health Monitor"
-              />
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="h-5 w-5 mr-2" />
-                    System Status Overview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Monitor the health and performance of all integrated grant systems, database connectivity, 
-                      and API response times in real-time.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 border rounded-lg">
-                        <h4 className="font-semibold mb-2 flex items-center">
-                          <Target className="h-4 w-4 mr-2" />
-                          Adapter Monitoring
-                        </h4>
-                        <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
-                          <li>• Real-time status of Octant & Giveth integrations</li>
-                          <li>• Response time tracking and performance metrics</li>
-                          <li>• Endpoint health checks and error reporting</li>
-                          <li>• Cache statistics and refresh monitoring</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 border rounded-lg">
-                        <h4 className="font-semibold mb-2 flex items-center">
-                          <Zap className="h-4 w-4 mr-2" />
-                          Infrastructure Health
-                        </h4>
-                        <ul className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
-                          <li>• PostgreSQL database connectivity</li>
-                          <li>• Auto-refresh capabilities for live monitoring</li>
-                          <li>• Integration type classification and status</li>
-                          <li>• Performance optimization tracking</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <Button 
-                        onClick={() => window.open('/health', '_blank')}
-                        className="flex items-center justify-center"
-                      >
-                        <Activity className="h-4 w-4 mr-2" />
-                        Open Health Dashboard
-                        <ExternalLink className="h-3 w-3 ml-2" />
-                      </Button>
-                      
-                      <Button 
-                        variant="outline" 
-                        onClick={() => copyToClipboard('GET /api/v1/health')}
-                        className="flex items-center justify-center"
-                      >
-                        <Code className="h-4 w-4 mr-2" />
-                        Copy Health API
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Health API Endpoints</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/health</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                        Complete system health report including all adapters and database status.
-                      </p>
-                      <CodeBlock
-                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  "https://opengrants.replit.app/api/v1/health"`}
-                        language="bash"
-                      />
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/health/:adapter</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                        Specific health status for individual adapters (octant, giveth).
-                      </p>
-                      <CodeBlock
-                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  "https://opengrants.replit.app/api/v1/health/octant"`}
-                        language="bash"
-                      />
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-2">GET /api/v1/health-quick</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                        Lightweight health check returning cached status without full checks.
-                      </p>
-                      <CodeBlock
-                        code={`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  "https://opengrants.replit.app/api/v1/health-quick"`}
-                        language="bash"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <iframe 
+              src="/health" 
+              className="w-full h-screen border-0 rounded-lg"
+              title="API Health Monitor"
+            />
           )}
 
           {activeSection === "supporters" && (
@@ -1606,6 +1492,21 @@ response = requests.get(
                       <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Active Integration
+                      </Badge>
+                    </div>
+
+                    {/* OSO */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Database className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">OSO</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Open Source Observer for impact measurement
+                      </p>
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Coming Soon
                       </Badge>
                     </div>
                   </div>
