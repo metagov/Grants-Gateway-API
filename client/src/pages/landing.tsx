@@ -1179,22 +1179,11 @@ response = requests.get(
 
           {/* API Health */}
           {activeSection === "health" && (
-            <div className="space-y-8">
-              <div>
-                <h1 className="text-3xl font-bold mb-4">API Health Monitor</h1>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Monitor the real-time health and performance of all integrated grant systems.
-                </p>
-                <Button 
-                  onClick={() => window.open('/health', '_blank')}
-                  className="flex items-center justify-center"
-                >
-                  <Activity className="h-4 w-4 mr-2" />
-                  Open Health Dashboard
-                  <ExternalLink className="h-3 w-3 ml-2" />
-                </Button>
-              </div>
-            </div>
+            <iframe 
+              src="/health" 
+              className="w-full h-screen border-0 rounded-lg"
+              title="API Health Monitor"
+            />
           )}
 
           {activeSection === "supporters" && (
