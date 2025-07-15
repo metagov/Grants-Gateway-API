@@ -30,11 +30,27 @@ The application uses a PostgreSQL database with the following core tables:
 - **apiLogs**: Request logging and analytics
 
 ### API Adapters
-Implements the adapter pattern for different grant systems:
-- **BaseAdapter**: Abstract base class defining the DAOIP-5 interface
-- **OctantAdapter**: Integration with Octant funding rounds
-- **GivethAdapter**: Integration with Giveth donation platform
-- Extensible design allows easy addition of new platforms
+Implements the adapter pattern for different grant systems with 4 integration types:
+
+**Type 1 - Source API Integration**: Direct API access (REST/GraphQL)
+- **OctantAdapter**: Octant REST API with epoch/project data transformation
+- **GivethAdapter**: Giveth GraphQL API with QF round data transformation
+- Custom field mapping and DAOIP-5 transformation logic
+
+**Type 2 - Direct DAOIP-5 Integration**: Native DAOIP-5 endpoints
+- **QuestbookAdapter**: Direct /daoip-5 endpoint routing with caching
+- Minimal transformation, direct passthrough with validation
+
+**Type 3 - Static Data Integration**: CSV/Airtable to GitHub JSON
+- Static file hosting on GitHub with raw URL access
+- Automated CSV-to-JSON conversion pipeline
+- Scheduled data refresh and caching
+
+**Type 4 - Blockchain Integration**: Direct on-chain data access
+- Smart contract event indexing and state queries
+- Multi-chain protocol support with web3 providers
+- IPFS metadata resolution for decentralized storage
+- Examples: Gitcoin Grants, Optimism RetroPGF, ENS Grants
 
 ### Authentication & Rate Limiting
 - API key-based authentication with Bearer token support
