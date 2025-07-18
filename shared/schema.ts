@@ -126,3 +126,30 @@ export type InsertApiConfiguration = z.infer<typeof insertApiConfigurationSchema
 export type ApiConfiguration = typeof apiConfigurations.$inferSelect;
 
 export type ApiLog = typeof apiLogs.$inferSelect;
+
+// Pagination schemas
+export const paginationSchema = z.object({
+  limit: z.number().min(1).max(100).default(10),
+  offset: z.number().min(0).default(0),
+  page: z.number().min(1).optional(),
+});
+
+export interface PaginationMeta {
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  offset: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  nextPage?: number;
+  previousPage?: number;
+}
+
+export interface PaginatedResponse<T> {
+  "@context": string;
+  data: T[];
+  pagination: PaginationMeta;
+}
+
+export type PaginationParams = z.infer<typeof paginationSchema>;

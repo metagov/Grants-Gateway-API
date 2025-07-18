@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 18, 2025. Added Comprehensive Pagination Support to All API Endpoints
+  - Implemented complete pagination system with PaginationMeta interface and paginated response structure
+  - Added support for both offset-based (offset/limit) and page-based (page/limit) pagination parameters
+  - All endpoints now return pagination metadata: totalCount, totalPages, currentPage, hasNext, hasPrevious
+  - Systems, pools, projects, and applications endpoints all support pagination with max limit of 100 items
+  - Enhanced BaseAdapter interface with PaginatedResult type and paginated methods
+  - Added utility functions for parsing pagination parameters and creating pagination metadata
+  - Pagination works across both Octant and Giveth adapters with proper total count tracking
+  - Response format: {"@context": "...", "data": [...], "pagination": {...}} for consistent API experience
 - January 18, 2025. Implemented Real-Time Giveth GraphQL Integration with Round-Based Application Filtering
   - Successfully integrated Giveth GraphQL API using allProjects query with qfRoundId parameter
   - Applications endpoint now returns real project data from Giveth QF rounds instead of sample data

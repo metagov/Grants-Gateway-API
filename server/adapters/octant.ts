@@ -1,4 +1,4 @@
-import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters } from "./base";
+import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
 
 interface OctantProject {
@@ -417,5 +417,37 @@ export class OctantAdapter extends BaseAdapter {
   async getApplication(id: string): Promise<DAOIP5Application | null> {
     const applications = await this.getApplications();
     return applications.find(app => app.id === id) || null;
+  }
+
+  async getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>> {
+    const allPools = await this.getPools(filters);
+    return {
+      data: allPools,
+      totalCount: allPools.length
+    };
+  }
+
+  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> {
+    const allProjects = await this.getProjects(filters);
+    return {
+      data: allProjects,
+      totalCount: allProjects.length
+    };
+  }
+
+  async getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>> {
+    // For Octant, we need to calculate total without applying limit/offset
+    const allApplications = await this.getApplications({ ...filters, limit: undefined, offset: undefined });
+    const totalCount = allApplications.length;
+    
+    // Apply pagination
+    const offset = filters?.offset || 0;
+    const limit = filters?.limit || 20;
+    const data = allApplications.slice(offset, offset + limit);
+    
+    return {
+      data,
+      totalCount
+    };
   }
 }

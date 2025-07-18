@@ -1,4 +1,4 @@
-import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters } from "./base";
+import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
 
 interface GivethProject {
@@ -447,5 +447,73 @@ export class GivethAdapter extends BaseAdapter {
   async getApplication(id: string): Promise<DAOIP5Application | null> {
     const applications = await this.getApplications();
     return applications.find(app => app.id === id) || null;
+  }
+
+  async getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>> {
+    const allPools = await this.getPools(filters);
+    return {
+      data: allPools,
+      totalCount: allPools.length
+    };
+  }
+
+  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> {
+    // For now, use the actual data length as total count
+    // In production, this could be optimized with a proper count query
+    const projects = await this.getProjects(filters);
+    
+    // For projects, we need to estimate total count based on current data
+    // This is a simplified approach - in production you'd want a proper count API
+    const totalCount = projects.length;
+    
+    return {
+      data: projects,
+      totalCount
+    };
+  }
+
+  async getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>> {
+    // Get all pools first to determine the target QF round
+    const allPools = await this.getPools();
+    let targetQfRoundId: number | null = null;
+    let targetPools: DAOIP5GrantPool[] = [];
+
+    if (!filters?.poolId) {
+      // Find the latest pool by close date when no poolId is provided
+      const latestPool = allPools.reduce((latest, pool) => {
+        const poolDate = pool.closeDate ? new Date(pool.closeDate) : new Date(0);
+        const latestDate = latest.closeDate ? new Date(latest.closeDate) : new Date(0);
+        return poolDate > latestDate ? pool : latest;
+      }, allPools[0]);
+      
+      targetPools = latestPool ? [latestPool] : [];
+      const rawQfRoundId = latestPool?.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
+      targetQfRoundId = rawQfRoundId ? parseInt(String(rawQfRoundId)) : null;
+    } else {
+      // Filter to specific pool if poolId is provided
+      targetPools = allPools.filter(pool => pool.id === filters.poolId);
+      const targetPool = targetPools[0];
+      const rawQfRoundId = targetPool?.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
+      targetQfRoundId = rawQfRoundId ? parseInt(String(rawQfRoundId)) : null;
+    }
+    
+    if (!targetQfRoundId || targetPools.length === 0) {
+      return { data: [], totalCount: 0 };
+    }
+
+    // For now, get all applications first and then count
+    // This could be optimized with proper GraphQL count queries in production
+    const allApplications = await this.getApplications({ ...filters, limit: undefined, offset: undefined });
+    const totalCount = allApplications.length;
+    
+    // Apply pagination
+    const offset = filters?.offset || 0;
+    const limit = filters?.limit || 10;
+    const applications = allApplications.slice(offset, offset + limit);
+    
+    return {
+      data: applications,
+      totalCount
+    };
   }
 }
