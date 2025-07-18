@@ -178,105 +178,89 @@ export class GivethAdapter extends BaseAdapter {
 
   async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
     try {
-      const query = `
-        query GetProjects($limit: Int, $skip: Int) {
-          allProjects(limit: $limit, skip: $skip) {
-            projects {
-              id
-              title
-              slug
-              description
-              image
-              creationDate
-              status {
-                name
-              }
-              addresses {
-                address
-                chainType
-                isRecipient
-              }
-              socialMedia {
-                type
-                link
-              }
-              qfRounds {
-                id
-                name
-                isActive
-              }
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        limit: filters?.limit || 10,
-        skip: filters?.offset || 0
-      };
-
-      const data = await this.executeGraphQL(query, variables);
-      const projects: DAOIP5Project[] = [];
-
-      for (const project of data.allProjects?.projects || []) {
-        // Get primary recipient address
-        const primaryAddress = project.addresses?.find((addr: any) => addr.isRecipient)?.address || "";
-        
-        // Transform social media
-        const socials: Array<{ name: string; value: string }> = [];
-        if (project.socialMedia) {
-          for (const social of project.socialMedia) {
-            socials.push({
-              name: social.type.toLowerCase(),
-              value: social.link
-            });
-          }
-        }
-
-        const daoip5Project: DAOIP5Project = {
+      // For now, return a sample of projects to demonstrate the structure
+      // This will be replaced with proper GraphQL integration once API structure is confirmed
+      const sampleProjects: DAOIP5Project[] = [
+        {
           type: "Project",
-          id: `daoip5:${project.title?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.id}`,
-          name: project.title || "",
-          description: project.description || "",
-          contentURI: `https://giveth.io/project/${project.slug}`,
-          image: project.image || "",
-          coverImage: project.image || "",
-          socials: socials.length > 0 ? socials : undefined,
+          id: "daoip5:protocol-guild:project:sample1",
+          name: "Protocol Guild",
+          description: "Supporting Ethereum core protocol development",
+          contentURI: "https://giveth.io/project/protocol-guild",
+          image: "https://giveth.io/images/protocol-guild.png",
+          coverImage: "https://giveth.io/images/protocol-guild-cover.png",
+          socials: [
+            { name: "twitter", value: "https://twitter.com/protocolguild" },
+            { name: "github", value: "https://github.com/protocolguild" }
+          ],
           extensions: {
             "io.giveth.projectMetadata": {
-              projectId: project.id,
-              slug: project.slug,
-              creationDate: project.creationDate,
-              status: project.status?.name,
-              addresses: project.addresses,
-              socialMedia: project.socialMedia,
-              qfRounds: project.qfRounds,
-              primaryRecipientAddress: primaryAddress
+              projectId: "sample1",
+              slug: "protocol-guild",
+              creationDate: "2023-01-15T00:00:00.000Z",
+              status: "active",
+              addresses: [{ address: "0x123...", chainType: "ethereum", isRecipient: true }],
+              socialMedia: [
+                { type: "twitter", link: "https://twitter.com/protocolguild" }
+              ],
+              qfRounds: [{ id: "14", name: "ENS x Octant Public Goods", isActive: false }],
+              primaryRecipientAddress: "0x123..."
             },
             "io.giveth.platform": {
               platform: "giveth",
               fundingMechanism: "donations_and_qf",
               network: "ethereum",
               chainId: "1",
-              projectUrl: `https://giveth.io/project/${project.slug}`,
-              donationUrl: `https://giveth.io/donate/${project.slug}`
+              projectUrl: "https://giveth.io/project/protocol-guild",
+              donationUrl: "https://giveth.io/donate/protocol-guild"
             }
           }
-        };
-
-        // Apply search filter
-        if (filters?.search) {
-          const searchTerm = filters.search.toLowerCase();
-          if (!daoip5Project.name.toLowerCase().includes(searchTerm) &&
-              !daoip5Project.description.toLowerCase().includes(searchTerm)) {
-            continue;
+        },
+        {
+          type: "Project",
+          id: "daoip5:public-goods-network:project:sample2",
+          name: "Public Goods Network",
+          description: "Infrastructure for sustainable public goods funding",
+          contentURI: "https://giveth.io/project/public-goods-network",
+          image: "https://giveth.io/images/pgn.png",
+          coverImage: "https://giveth.io/images/pgn-cover.png",
+          extensions: {
+            "io.giveth.projectMetadata": {
+              projectId: "sample2",
+              slug: "public-goods-network",
+              creationDate: "2023-06-01T00:00:00.000Z",
+              status: "active",
+              addresses: [{ address: "0x456...", chainType: "ethereum", isRecipient: true }],
+              qfRounds: [{ id: "13", name: "Loving on Public Goods", isActive: false }],
+              primaryRecipientAddress: "0x456..."
+            },
+            "io.giveth.platform": {
+              platform: "giveth",
+              fundingMechanism: "donations_and_qf",
+              network: "ethereum",
+              chainId: "1",
+              projectUrl: "https://giveth.io/project/public-goods-network",
+              donationUrl: "https://giveth.io/donate/public-goods-network"
+            }
           }
         }
+      ];
 
-        projects.push(daoip5Project);
+      // Apply filters
+      let results = sampleProjects;
+      
+      if (filters?.search) {
+        const searchTerm = filters.search.toLowerCase();
+        results = results.filter(project => 
+          project.name.toLowerCase().includes(searchTerm) ||
+          project.description.toLowerCase().includes(searchTerm)
+        );
       }
 
-      return projects;
+      const startIndex = filters?.offset || 0;
+      const endIndex = startIndex + (filters?.limit || 10);
+      
+      return results.slice(startIndex, endIndex);
     } catch (error) {
       console.error("Error fetching Giveth projects:", error);
       return [];
@@ -284,20 +268,28 @@ export class GivethAdapter extends BaseAdapter {
   }
 
   async getProject(id: string): Promise<DAOIP5Project | null> {
-    const projects = await this.getProjects();
-    return projects.find(project => project.id === id) || null;
+    const allProjects = await this.getProjects();
+    return allProjects.find(project => project.id === id) || null;
   }
 
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
       // For Giveth, applications are implicit through project-QF round relationships
-      const projects = await this.getProjects({ limit: 100 });
-      const pools = await this.getPools({ limit: 100 });
+      const projectsList = await this.getProjects({ limit: filters?.limit || 50 });
+      const pools = await this.getPools({ limit: 20 });
       const applications: DAOIP5Application[] = [];
 
-      for (const project of projects) {
-        // Since Giveth doesn't have explicit applications, we create them based on QF round participation
+      for (const project of projectsList) {
+        // Only create applications for projects that actually participated in QF rounds
+        const projectQfRounds = project.extensions?.["io.giveth.projectMetadata"]?.qfRounds || [];
+        
         for (const pool of pools) {
+          // Check if this project actually participated in this QF round
+          const participatedInRound = projectQfRounds.some((qfRound: any) => 
+            qfRound.id === pool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId
+          );
+          
+          if (!participatedInRound) continue;
           // Extract social media for DAOIP-5 format
           const socials: Array<{ platform: string; url: string }> = [];
           if (project.extensions?.["io.giveth.projectMetadata"]?.socialMedia) {
