@@ -12,7 +12,7 @@ All API requests require authentication using an API key in the Authorization he
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "https://opengrants.replit.app/api/v1/systems"
+  "https://grant-metadata-api.replit.app/api/v1/systems"
 ```
 
 ### Basic Usage
