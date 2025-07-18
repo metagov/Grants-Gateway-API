@@ -6,6 +6,8 @@ import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
 import { BaseAdapter } from "./adapters/base";
+import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
+import { PaginatedResponse } from "../shared/schema";
 import cors from "cors";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -66,18 +68,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/v1/systems', async (req: AuthenticatedRequest, res) => {
     try {
       const { system } = req.query;
+      const { limit, offset } = parsePaginationParams(req.query);
       const selectedAdapters = getAdapter(system as string);
       
-      const systems = [];
+      const allSystems = [];
       for (const adapter of selectedAdapters) {
         const adapterSystems = await adapter.getSystems();
-        systems.push(...adapterSystems);
+        allSystems.push(...adapterSystems);
       }
 
-      res.json({
+      // Apply pagination to systems
+      const totalCount = allSystems.length;
+      const paginatedSystems = allSystems.slice(offset, offset + limit);
+      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+
+      const response: PaginatedResponse<any> = {
         "@context": "http://www.daostar.org/schemas",
-        data: systems
-      });
+        data: paginatedSystems,
+        pagination: paginationMeta
+      };
+
+      res.json(response);
     } catch (error) {
       console.error('Error fetching systems:', error);
       res.status(500).json({
@@ -116,33 +127,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pools endpoints
   app.get('/api/v1/pools', async (req: AuthenticatedRequest, res) => {
     try {
-      const { 
-        system, 
-        isOpen, 
-        mechanism, 
-        limit = '10', 
-        offset = '0' 
-      } = req.query;
+      const { system, isOpen, mechanism } = req.query;
+      const { limit, offset } = parsePaginationParams(req.query);
 
       const filters = {
         isOpen: isOpen ? isOpen === 'true' : undefined,
         mechanism: mechanism as string,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string)
+        limit,
+        offset
       };
 
       const selectedAdapters = getAdapter(system as string);
-      const pools = [];
+      let allPools: any[] = [];
+      let totalCount = 0;
       
       for (const adapter of selectedAdapters) {
-        const adapterPools = await adapter.getPools(filters);
-        pools.push(...adapterPools);
+        const result = await adapter.getPoolsPaginated(filters);
+        allPools.push(...result.data);
+        totalCount += result.totalCount;
       }
 
-      res.json({
+      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+      
+      const response: PaginatedResponse<any> = {
         "@context": "http://www.daostar.org/schemas",
-        data: pools
-      });
+        data: allPools,
+        pagination: paginationMeta
+      };
+
+      res.json(response);
     } catch (error) {
       console.error('Error fetching pools:', error);
       res.status(500).json({
@@ -181,33 +194,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Projects endpoints
   app.get('/api/v1/projects', async (req: AuthenticatedRequest, res) => {
     try {
-      const { 
-        system, 
-        search, 
-        category, 
-        limit = '10', 
-        offset = '0' 
-      } = req.query;
+      const { system, search, category } = req.query;
+      const { limit, offset } = parsePaginationParams(req.query);
 
       const filters = {
         search: search as string,
         category: category as string,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string)
+        limit,
+        offset
       };
 
       const selectedAdapters = getAdapter(system as string);
-      const projects = [];
+      let allProjects: any[] = [];
+      let totalCount = 0;
       
       for (const adapter of selectedAdapters) {
-        const adapterProjects = await adapter.getProjects(filters);
-        projects.push(...adapterProjects);
+        const result = await adapter.getProjectsPaginated(filters);
+        allProjects.push(...result.data);
+        totalCount += result.totalCount;
       }
 
-      res.json({
+      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+      
+      const response: PaginatedResponse<any> = {
         "@context": "http://www.daostar.org/schemas",
-        data: projects
-      });
+        data: allProjects,
+        pagination: paginationMeta
+      };
+
+      res.json(response);
     } catch (error) {
       console.error('Error fetching projects:', error);
       res.status(500).json({
@@ -306,14 +321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Applications endpoints
   app.get('/api/v1/applications', async (req: AuthenticatedRequest, res) => {
     try {
-      const { 
-        system, 
-        poolId, 
-        projectId, 
-        status, 
-        limit = '10', 
-        offset = '0' 
-      } = req.query;
+      const { system, poolId, projectId, status } = req.query;
+      const { limit, offset } = parsePaginationParams(req.query);
 
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
@@ -338,21 +347,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         poolId: finalPoolId,
         projectId: projectId as string,
         status: status as string,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string)
+        limit,
+        offset
       };
 
-      const applications = [];
+      let allApplications: any[] = [];
+      let totalCount = 0;
       
       for (const adapter of selectedAdapters) {
-        const adapterApplications = await adapter.getApplications(filters);
-        applications.push(...adapterApplications);
+        const result = await adapter.getApplicationsPaginated(filters);
+        allApplications.push(...result.data);
+        totalCount += result.totalCount;
       }
 
-      res.json({
+      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+      
+      const response: PaginatedResponse<any> = {
         "@context": "http://www.daostar.org/schemas",
-        data: applications
-      });
+        data: allApplications,
+        pagination: paginationMeta
+      };
+
+      res.json(response);
     } catch (error) {
       console.error('Error fetching applications:', error);
       res.status(500).json({

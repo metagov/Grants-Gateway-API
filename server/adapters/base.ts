@@ -101,6 +101,11 @@ export interface QueryFilters {
   mechanism?: string;
 }
 
+export interface PaginatedResult<T> {
+  data: T[];
+  totalCount: number;
+}
+
 export abstract class BaseAdapter {
   protected systemName: string;
   protected baseUrl: string;
@@ -141,4 +146,9 @@ export abstract class BaseAdapter {
   abstract getProject(id: string): Promise<DAOIP5Project | null>;
   abstract getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]>;
   abstract getApplication(id: string): Promise<DAOIP5Application | null>;
+
+  // Paginated versions that return total count information
+  abstract getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>>;
+  abstract getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>>;
+  abstract getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>>;
 }
