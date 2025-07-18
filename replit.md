@@ -96,12 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
-- January 18, 2025. Enhanced Giveth Applications API with Latest Round Default Behavior
-  - Modified Giveth applications endpoint to always return latest round applications when no poolId is specified
-  - Applications query now automatically selects the most recent QF round by close date
-  - Specific poolId parameter still supported for querying historical round applications
-  - Improved query logic to handle latest round selection efficiently
-  - Sample data aligned with latest round requirement for proper API demonstration
+- January 18, 2025. Implemented Real-Time Giveth GraphQL Integration with Round-Based Application Filtering
+  - Successfully integrated Giveth GraphQL API using allProjects query with qfRoundId parameter
+  - Applications endpoint now returns real project data from Giveth QF rounds instead of sample data
+  - Latest round behavior: automatically selects most recent QF round by close date when no poolId specified
+  - Specific poolId filtering: supports querying applications from historical QF rounds
+  - Projects endpoint now fetches real project data with authentic descriptions, addresses, and metadata
+  - Proper integer conversion for qfRoundId parameter to match GraphQL schema requirements
+  - Complete DAOIP-5 compliance with real project names, payout addresses, and Giveth-specific extensions
+  - Real data examples: "Arch Grants", "Global Sanctuary for Elephants", "CARE PERU", "Safernet Brasil"
 - January 15, 2025. Updated Documentation Links to GitHub and Added Stellar/Questbook as Coming Soon Contributors
   - Replaced local static documentation routes with GitHub repository links
   - Updated Integration Guide link to: https://github.com/metagov/Grants-Gateway-API/blob/main/docs/integration-guide.md
