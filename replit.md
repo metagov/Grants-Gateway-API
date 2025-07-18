@@ -96,6 +96,12 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- January 18, 2025. Enhanced Giveth Applications API with Latest Round Default Behavior
+  - Modified Giveth applications endpoint to always return latest round applications when no poolId is specified
+  - Applications query now automatically selects the most recent QF round by close date
+  - Specific poolId parameter still supported for querying historical round applications
+  - Improved query logic to handle latest round selection efficiently
+  - Sample data aligned with latest round requirement for proper API demonstration
 - January 15, 2025. Updated Documentation Links to GitHub and Added Stellar/Questbook as Coming Soon Contributors
   - Replaced local static documentation routes with GitHub repository links
   - Updated Integration Guide link to: https://github.com/metagov/Grants-Gateway-API/blob/main/docs/integration-guide.md

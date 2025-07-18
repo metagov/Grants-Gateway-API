@@ -276,14 +276,32 @@ export class GivethAdapter extends BaseAdapter {
     try {
       // For Giveth, applications are implicit through project-QF round relationships
       const projectsList = await this.getProjects({ limit: filters?.limit || 50 });
-      const pools = await this.getPools({ limit: 20 });
+      const allPools = await this.getPools({ limit: 20 });
+      
+      // If no specific poolId is provided, get applications for the latest (most recent) round only
+      let targetPools = allPools;
+      if (!filters?.poolId) {
+        // Find the latest pool by close date
+        const latestPool = allPools.reduce((latest, pool) => {
+          if (!latest) return pool;
+          const latestDate = latest.closeDate ? new Date(latest.closeDate) : new Date(0);
+          const poolDate = pool.closeDate ? new Date(pool.closeDate) : new Date(0);
+          return poolDate > latestDate ? pool : latest;
+        }, allPools[0]);
+        
+        targetPools = latestPool ? [latestPool] : [];
+      } else {
+        // Filter to specific pool if poolId is provided
+        targetPools = allPools.filter(pool => pool.id === filters.poolId);
+      }
+      
       const applications: DAOIP5Application[] = [];
 
       for (const project of projectsList) {
         // Only create applications for projects that actually participated in QF rounds
         const projectQfRounds = project.extensions?.["io.giveth.projectMetadata"]?.qfRounds || [];
         
-        for (const pool of pools) {
+        for (const pool of targetPools) {
           // Check if this project actually participated in this QF round
           const participatedInRound = projectQfRounds.some((qfRound: any) => 
             qfRound.id === pool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId
@@ -328,8 +346,7 @@ export class GivethAdapter extends BaseAdapter {
             }
           };
 
-          // Apply filters
-          if (filters?.poolId && application.grantPoolId !== filters.poolId) continue;
+          // Apply remaining filters (poolId already handled above)
           if (filters?.projectId && application.projectId !== filters.projectId) continue;
           if (filters?.status && application.status !== filters.status) continue;
 
