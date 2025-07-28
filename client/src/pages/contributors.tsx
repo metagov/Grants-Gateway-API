@@ -4,6 +4,7 @@ import {
   Star, 
   Book, 
   CheckCircle, 
+  CircleUserRound,
   Clock, 
   Database 
 } from "lucide-react";
@@ -88,7 +89,7 @@ export default function ContributorsPage() {
               Decentralized grants orchestration platform
             </p>
             <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
-              <CheckCircle className="h-3 w-3 mr-1" />
+              <Clock className="h-3 w-3 mr-1" />
               Type 3 Integration
             </Badge>
           </div>
@@ -117,8 +118,8 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Cross-border payments and financial inclusion platform
             </p>
-            <Badge variant="secondary" className="bg-pink-100 text-yellow-800 dark:bg-pink-900 dark:text-yellow-200">
-              <CheckCircle className="h-3 w-3 mr-1" />
+            <Badge variant="secondary" className="bg-blue-100 text-yellow-800 dark:bg-blue-900 dark:text-yellow-200">
+              <CircleUserRound className="h-3 w-3 mr-1" />
               Type 1 Integration
             </Badge>
           </div>
@@ -133,7 +134,7 @@ export default function ContributorsPage() {
               Open Source Observer for impact measurement
             </p>
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              <Clock className="h-3 w-3 mr-1" />
+              <Database className="h-3 w-3 mr-1" />
               Infrastructure Provider
             </Badge>
           </div>

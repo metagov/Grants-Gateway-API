@@ -1,36 +1,50 @@
+import { useState } from "react";
 import { 
   Building, 
   Layers, 
   FileText, 
   Target,
-  Copy
+  Copy,
+  Check
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
 export default function EndpointsPage() {
-  const copyToClipboard = async (text: string) => {
+  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
+
+  const copyToClipboard = async (text: string, id: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      setCopiedStates(prev => ({ ...prev, [id]: true }));
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [id]: false }));
+      }, 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
 
-  const CodeBlock = ({ children, text }: { children: React.ReactNode; text: string }) => (
-    <div className="relative bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute top-2 right-2 h-8 w-8 p-0"
-        onClick={() => copyToClipboard(text)}
-      >
-        <Copy className="h-3 w-3" />
-      </Button>
-      {children}
-    </div>
-  );
+  const CodeBlock = ({ children, text, id }: { children: React.ReactNode; text: string; id: string }) => {
+    const isCopied = copiedStates[id];
+    
+    return (
+      <div className="relative bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`absolute top-2 right-2 h-8 w-8 p-0 transition-colors ${
+            isCopied ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
+          }`}
+          onClick={() => copyToClipboard(text, id)}
+        >
+          {isCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+        </Button>
+        {children}
+      </div>
+    );
+  };
   return (
     <div className="space-y-8">
       <div>
@@ -64,8 +78,11 @@ export default function EndpointsPage() {
               </TabsList>
               
               <TabsContent value="curl">
-                <CodeBlock text={`curl -X GET "https://api.opengrants.com/api/v1/systems" \\
-  -H "Accept: application/json"`}>
+                <CodeBlock 
+                  text={`curl -X GET "https://api.opengrants.com/api/v1/systems" \\
+  -H "Accept: application/json"`}
+                  id="systems-curl"
+                >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`curl -X GET "https://api.opengrants.com/api/v1/systems" \\
   -H "Accept: application/json"`}</code>
@@ -74,9 +91,12 @@ export default function EndpointsPage() {
               </TabsContent>
               
               <TabsContent value="javascript">
-                <CodeBlock text={`const response = await fetch('/api/v1/systems');
+                <CodeBlock 
+                  text={`const response = await fetch('/api/v1/systems');
 const systems = await response.json();
-console.log(systems);`}>
+console.log(systems);`}
+                  id="systems-javascript"
+                >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`const response = await fetch('/api/v1/systems');
 const systems = await response.json();
@@ -86,7 +106,8 @@ console.log(systems);`}</code>
               </TabsContent>
               
               <TabsContent value="typescript">
-                <CodeBlock text={`interface GrantSystem {
+                <CodeBlock 
+                  text={`interface GrantSystem {
   "@context": string;
   type: string;
   name: string;
@@ -94,7 +115,9 @@ console.log(systems);`}</code>
 }
 
 const response: Response = await fetch('/api/v1/systems');
-const systems: GrantSystem[] = await response.json();`}>
+const systems: GrantSystem[] = await response.json();`}
+                  id="systems-typescript"
+                >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`interface GrantSystem {
   "@context": string;
@@ -110,11 +133,14 @@ const systems: GrantSystem[] = await response.json();`}</code>
               </TabsContent>
               
               <TabsContent value="python">
-                <CodeBlock text={`import requests
+                <CodeBlock 
+                  text={`import requests
 
 response = requests.get('/api/v1/systems')
 systems = response.json()
-print(systems)`}>
+print(systems)`}
+                  id="systems-python"
+                >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`import requests
 
@@ -129,7 +155,8 @@ print(systems)`}</code>
 
           <div>
             <h4 className="font-semibold mb-2">Response Format</h4>
-            <CodeBlock text={`{
+            <CodeBlock 
+              text={`{
   "@context": "http://www.daostar.org/schemas",
   "data": [
     {
@@ -140,7 +167,9 @@ print(systems)`}</code>
       "poolsURI": "/api/v1/pools?system=octant"
     }
   ]
-}`}>
+}`}
+              id="systems-response"
+            >
               <pre className="text-sm overflow-x-auto">
                 <code>{`{
   "@context": "http://www.daostar.org/schemas",
@@ -203,8 +232,11 @@ print(systems)`}</code>
                 </TabsList>
                 
                 <TabsContent value="curl">
-                  <CodeBlock text={`curl -X GET "https://api.opengrants.com/api/v1/pools?system=octant" \\
-  -H "Accept: application/json"`}>
+                  <CodeBlock 
+                    text={`curl -X GET "https://api.opengrants.com/api/v1/pools?system=octant" \\
+  -H "Accept: application/json"`}
+                    id="pools-curl"
+                  >
                     <pre className="text-sm overflow-x-auto">
                       <code>{`curl -X GET "https://api.opengrants.com/api/v1/pools?system=octant" \\
   -H "Accept: application/json"`}</code>
@@ -213,9 +245,12 @@ print(systems)`}</code>
                 </TabsContent>
                 
                 <TabsContent value="javascript">
-                  <CodeBlock text={`const response = await fetch('/api/v1/pools?system=octant');
+                  <CodeBlock 
+                    text={`const response = await fetch('/api/v1/pools?system=octant');
 const pools = await response.json();
-console.log(pools);`}>
+console.log(pools);`}
+                    id="pools-javascript"
+                  >
                     <pre className="text-sm overflow-x-auto">
                       <code>{`const response = await fetch('/api/v1/pools?system=octant');
 const pools = await response.json();
@@ -225,7 +260,8 @@ console.log(pools);`}</code>
                 </TabsContent>
                 
                 <TabsContent value="typescript">
-                  <CodeBlock text={`interface GrantPool {
+                  <CodeBlock 
+                    text={`interface GrantPool {
   "@context": string;
   name: string;
   description: string;
@@ -233,7 +269,9 @@ console.log(pools);`}</code>
 }
 
 const response: Response = await fetch('/api/v1/pools?system=octant');
-const pools: GrantPool[] = await response.json();`}>
+const pools: GrantPool[] = await response.json();`}
+                    id="pools-typescript"
+                  >
                     <pre className="text-sm overflow-x-auto">
                       <code>{`interface GrantPool {
   "@context": string;
@@ -249,11 +287,14 @@ const pools: GrantPool[] = await response.json();`}</code>
                 </TabsContent>
                 
                 <TabsContent value="python">
-                  <CodeBlock text={`import requests
+                  <CodeBlock 
+                    text={`import requests
 
 response = requests.get('/api/v1/pools?system=octant')
 pools = response.json()
-print(pools)`}>
+print(pools)`}
+                    id="pools-python"
+                  >
                     <pre className="text-sm overflow-x-auto">
                       <code>{`import requests
 
@@ -303,8 +344,11 @@ print(pools)`}</code>
                 </div>
               </div>
 
-              <CodeBlock text={`curl -X GET "https://api.opengrants.com/api/v1/projects?system=giveth&search=impact" \\
-  -H "Accept: application/json"`}>
+              <CodeBlock 
+                text={`curl -X GET "https://api.opengrants.com/api/v1/projects?system=giveth&search=impact" \\
+  -H "Accept: application/json"`}
+                id="projects-curl"
+              >
                 <pre className="text-sm overflow-x-auto">
                   <code>{`curl -X GET "https://api.opengrants.com/api/v1/projects?system=giveth&search=impact" \\
   -H "Accept: application/json"`}</code>
@@ -349,8 +393,11 @@ print(pools)`}</code>
                 </div>
               </div>
 
-              <CodeBlock text={`curl -X GET "https://api.opengrants.com/api/v1/applications?system=octant" \\
-  -H "Accept: application/json"`}>
+              <CodeBlock 
+                text={`curl -X GET "https://api.opengrants.com/api/v1/applications?system=octant" \\
+  -H "Accept: application/json"`}
+                id="applications-curl"
+              >
                 <pre className="text-sm overflow-x-auto">
                   <code>{`curl -X GET "https://api.opengrants.com/api/v1/applications?system=octant" \\
   -H "Accept: application/json"`}</code>
@@ -361,7 +408,8 @@ print(pools)`}</code>
 
           <div>
             <h4 className="font-semibold mb-2">Response Format</h4>
-            <CodeBlock text={`{
+            <CodeBlock 
+              text={`{
   "@context": "http://www.daostar.org/schemas",
   "data": [
     {
@@ -381,7 +429,9 @@ print(pools)`}</code>
     "hasNext": true,
     "hasPrevious": false
   }
-}`}>
+}`}
+              id="applications-response"
+            >
               <pre className="text-sm overflow-x-auto">
                 <code>{`{
   "@context": "http://www.daostar.org/schemas",
