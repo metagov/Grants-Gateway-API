@@ -351,7 +351,7 @@ export class OctantAdapter extends BaseAdapter {
                 
                 const application: DAOIP5Application = {
                   type: "GrantApplication",
-                  id: `daoip5:octant:grantApplication:${reward.address}-epoch-${epoch}`,
+                  id: `daoip5:octant:grantPool:${epoch}:grantApplication:${reward.address}`,
                   grantPoolId: `daoip5:octant:grantPool:${epoch}`,
                   grantPoolName: `Octant Epoch ${epoch}`,
                   projectId: projectId,
