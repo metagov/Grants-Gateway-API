@@ -1254,9 +1254,24 @@ response = requests.get(
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                         Decentralized grants orchestration platform
                       </p>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Coming Soon
+                      <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
+                        <CheckLine className="h-3 w-3 mr-1" />
+                        Type 3 Integration
+                      </Badge>
+                    </div>
+
+                    {/* KarmaGAP */}
+                    <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
+                        <Book className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">KarmaGAP</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        Grants Accountablity Platform
+                      </p>
+                      <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
+                        <CheckLine className="h-3 w-3 mr-1" />
+                        Project Identity Provider
                       </Badge>
                     </div>
 
@@ -1269,9 +1284,9 @@ response = requests.get(
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                         Cross-border payments and financial inclusion platform
                       </p>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Coming Soon
+                      <Badge variant="secondary" className="bg-pink-100 text-yellow-800 dark:bg-pink-900 dark:text-yellow-200">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Type 1 Integration
                       </Badge>
                     </div>
 
@@ -1286,7 +1301,7 @@ response = requests.get(
                       </p>
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
                         <Clock className="h-3 w-3 mr-1" />
-                        Coming Soon
+                        Infrastruture Provider
                       </Badge>
                     </div>
                   </div>
@@ -1305,7 +1320,7 @@ response = requests.get(
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
                       <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                        <div className="w-16 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                           <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
@@ -1320,7 +1335,7 @@ response = requests.get(
 
                     <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
                       <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                        <div className="w-16 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
                           <Code className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div>
@@ -1335,7 +1350,7 @@ response = requests.get(
 
                     <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
                       <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                        <div className="w-16 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                           <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
@@ -1350,7 +1365,7 @@ response = requests.get(
 
                     <div className="p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">
                       <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                        <div className="w-16 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
                           <Layers className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                         </div>
                         <div>
