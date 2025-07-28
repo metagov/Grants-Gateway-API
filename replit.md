@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 28, 2025. Split Landing Page into Separate Page Components for Better Maintainability
+  - Created separate page components: OverviewPage, QueryBuilderPage, EndpointsPage, ContributorsPage
+  - Implemented shared Layout component with sidebar navigation and header
+  - Updated routing structure to use individual pages instead of tab-based UI sections
+  - Removed monolithic landing.tsx file (1300+ lines) in favor of modular architecture
+  - Each page can now be edited independently for easier maintenance and development
+  - Preserved all functionality while improving code organization and developer experience
+  - Fixed undefined CheckLine component errors that were preventing app startup
+  - Maintained responsive design and theme support across all new page components
 - January 18, 2025. Added Comprehensive Pagination Support to All API Endpoints
   - Implemented complete pagination system with PaginationMeta interface and paginated response structure
   - Added support for both offset-based (offset/limit) and page-based (page/limit) pagination parameters
