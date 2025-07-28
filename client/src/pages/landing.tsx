@@ -1255,7 +1255,7 @@ response = requests.get(
                         Decentralized grants orchestration platform
                       </p>
                       <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
-                        <CheckLine className="h-3 w-3 mr-1" />
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         Type 3 Integration
                       </Badge>
                     </div>
@@ -1270,7 +1270,7 @@ response = requests.get(
                         Grants Accountablity Platform
                       </p>
                       <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
-                        <CheckLine className="h-3 w-3 mr-1" />
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         Project Identity Provider
                       </Badge>
                     </div>
