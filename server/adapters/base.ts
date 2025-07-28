@@ -3,7 +3,7 @@ export interface DAOIP5System {
   name: string;
   type: string;
   grantPoolsURI?: string;
-  projectsURI?: string;
+
   extensions?: Record<string, any>;
 }
 
@@ -142,13 +142,12 @@ export abstract class BaseAdapter {
   abstract getSystem(id: string): Promise<DAOIP5System | null>;
   abstract getPools(filters?: QueryFilters): Promise<DAOIP5GrantPool[]>;
   abstract getPool(id: string): Promise<DAOIP5GrantPool | null>;
-  abstract getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]>;
-  abstract getProject(id: string): Promise<DAOIP5Project | null>;
+
   abstract getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]>;
   abstract getApplication(id: string): Promise<DAOIP5Application | null>;
 
   // Paginated versions that return total count information
   abstract getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>>;
-  abstract getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>>;
+
   abstract getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>>;
 }

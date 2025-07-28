@@ -184,109 +184,7 @@ export class OctantAdapter extends BaseAdapter {
     return pools.find(pool => pool.id === id) || null;
   }
 
-  async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
-    try {
-      const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
-      if (!currentEpochResponse.ok) {
-        throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
-      }
-      const currentEpochData = await currentEpochResponse.json();
-      const currentEpoch = currentEpochData.currentEpoch;
 
-      // Fetch projects from multiple epochs for comprehensive data
-      const epochsToQuery = [currentEpoch];
-      if (currentEpoch > 1) epochsToQuery.push(currentEpoch - 1);
-      
-      const allProjects = new Map<string, any>(); // Use Map to deduplicate by address
-
-      for (const epoch of epochsToQuery) {
-        try {
-          const projectsResponse = await fetch(`${this.baseUrl}/projects/epoch/${epoch}`);
-          if (!projectsResponse.ok) continue;
-
-          const projectsData = await projectsResponse.json();
-          
-          for (const project of projectsData.projects || []) {
-            if (!allProjects.has(project.address)) {
-              allProjects.set(project.address, project);
-            }
-          }
-        } catch (error) {
-          console.error(`Error fetching projects for epoch ${epoch}:`, error);
-        }
-      }
-
-      const projects: DAOIP5Project[] = [];
-
-      for (const project of Array.from(allProjects.values())) {
-        const socials: Array<{ name: string; value: string }> = [];
-        
-        // Transform social media data
-        if (project.profileImageSmall?.includes('twitter')) {
-          socials.push({ name: "twitter", value: project.website || "" });
-        }
-        if (project.profileImageSmall?.includes('github')) {
-          socials.push({ name: "github", value: project.website || "" });
-        }
-        if (project.website) {
-          socials.push({ name: "website", value: project.website });
-        }
-
-        const daoip5Project: DAOIP5Project = {
-          type: "Project",
-          id: `daoip5:${project.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.address}`,
-          name: project.name || `Project ${project.address.slice(-8)}`,
-          description: project.description || "Ethereum public goods project funded through Octant",
-          contentURI: project.website || `https://octant.app/project/${project.address}`,
-          image: project.profileImageSmall || "",
-          coverImage: project.profileImageMedium || project.profileImageSmall || "",
-          socials: socials.length > 0 ? socials : undefined,
-          relevantTo: [`octant-epoch-${currentEpoch}`],
-          extensions: {
-            "app.octant.projectMetadata": {
-              address: project.address,
-              profileImageSmall: project.profileImageSmall,
-              profileImageMedium: project.profileImageMedium,
-              website: project.website,
-              lastActive: epochsToQuery[0],
-              participatingEpochs: epochsToQuery
-            },
-            "app.octant.funding": {
-              platform: "octant",
-              fundingMechanism: "quadratic_funding",
-              network: "ethereum",
-              chainId: "1"
-            }
-          }
-        };
-
-        // Apply search filter
-        if (filters?.search) {
-          const searchTerm = filters.search.toLowerCase();
-          if (!daoip5Project.name.toLowerCase().includes(searchTerm) &&
-              !daoip5Project.description.toLowerCase().includes(searchTerm) &&
-              !project.address.toLowerCase().includes(searchTerm)) {
-            continue;
-          }
-        }
-
-        projects.push(daoip5Project);
-      }
-
-      // Sort by name for consistent ordering
-      projects.sort((a, b) => a.name.localeCompare(b.name));
-
-      return projects.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
-    } catch (error) {
-      console.error("Error fetching Octant projects:", error);
-      return [];
-    }
-  }
-
-  async getProject(id: string): Promise<DAOIP5Project | null> {
-    const projects = await this.getProjects();
-    return projects.find(project => project.id === id) || null;
-  }
 
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
@@ -427,13 +325,7 @@ export class OctantAdapter extends BaseAdapter {
     };
   }
 
-  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> {
-    const allProjects = await this.getProjects(filters);
-    return {
-      data: allProjects,
-      totalCount: allProjects.length
-    };
-  }
+
 
   async getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>> {
     // For Octant, we need to calculate total without applying limit/offset

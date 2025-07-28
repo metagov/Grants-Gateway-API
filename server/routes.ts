@@ -191,72 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Projects endpoints
-  app.get('/api/v1/projects', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { system, search, category } = req.query;
-      const { limit, offset } = parsePaginationParams(req.query);
 
-      const filters = {
-        search: search as string,
-        category: category as string,
-        limit,
-        offset
-      };
-
-      const selectedAdapters = getAdapter(system as string);
-      let allProjects: any[] = [];
-      let totalCount = 0;
-      
-      for (const adapter of selectedAdapters) {
-        const result = await adapter.getProjectsPaginated(filters);
-        allProjects.push(...result.data);
-        totalCount += result.totalCount;
-      }
-
-      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
-      
-      const response: PaginatedResponse<any> = {
-        "@context": "http://www.daostar.org/schemas",
-        data: allProjects,
-        pagination: paginationMeta
-      };
-
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      res.status(500).json({
-        error: "Internal server error",
-        message: "Failed to fetch projects"
-      });
-    }
-  });
-
-  app.get('/api/v1/projects/:id', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { id } = req.params;
-      const { system } = req.query;
-      const selectedAdapters = getAdapter(system as string);
-      
-      for (const adapter of selectedAdapters) {
-        const project = await adapter.getProject(id);
-        if (project) {
-          return res.json(project);
-        }
-      }
-
-      res.status(404).json({
-        error: "Project not found",
-        message: `Project with ID ${id} not found`
-      });
-    } catch (error) {
-      console.error('Error fetching project:', error);
-      res.status(500).json({
-        error: "Internal server error",
-        message: "Failed to fetch project"
-      });
-    }
-  });
 
   // Health endpoints
   app.get('/api/v1/health', async (req: AuthenticatedRequest, res) => {
@@ -427,7 +362,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       endpoints: {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
-        projects: "/api/v1/projects",
         applications: "/api/v1/applications"
       },
       supportedSystems: Object.keys(adapters),
