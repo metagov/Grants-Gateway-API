@@ -54,6 +54,70 @@ export default function EndpointsPage() {
         </p>
       </div>
 
+      {/* Pagination Documentation */}
+      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-blue-900 dark:text-blue-100">Pagination</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            All collection endpoints support pagination. Use these parameters to control response size and navigate through results.
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h5 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Query Parameters</h5>
+              <div className="space-y-2 text-sm">
+                <div className="flex">
+                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">limit</code>
+                  <span className="text-blue-700 dark:text-blue-300">Number of items per page (default: 10, max: 100)</span>
+                </div>
+                <div className="flex">
+                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">offset</code>
+                  <span className="text-blue-700 dark:text-blue-300">Number of items to skip (default: 0)</span>
+                </div>
+                <div className="flex">
+                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">page</code>
+                  <span className="text-blue-700 dark:text-blue-300">Page number (alternative to offset, starts at 1)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h5 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Response Format</h5>
+              <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
+                <pre className="text-xs text-blue-800 dark:text-blue-200 overflow-x-auto">
+{`{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [...],
+  "pagination": {
+    "totalCount": 25,
+    "totalPages": 3,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}`}
+                </pre>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Example Usage</h5>
+            <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
+              <code className="text-xs text-blue-800 dark:text-blue-200">
+                GET /api/v1/systems?limit=5&offset=10<br/>
+                GET /api/v1/pools?limit=20&page=2<br/>
+                GET /api/v1/applications?system=octant&limit=50
+              </code>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Grant Systems */}
       <Card>
         <CardHeader>
@@ -69,6 +133,15 @@ export default function EndpointsPage() {
               Retrieve all available grant systems following DAOIP-5 specification.
             </p>
             
+            <div className="mb-4">
+              <h5 className="font-medium mb-2">Query Parameters</h5>
+              <div className="text-sm space-y-1">
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
+              </div>
+            </div>
+            
             <Tabs defaultValue="curl" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="curl">cURL</TabsTrigger>
@@ -79,12 +152,22 @@ export default function EndpointsPage() {
               
               <TabsContent value="curl">
                 <CodeBlock 
-                  text={`curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+                  text={`# Get all systems
+curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+  -H "Accept: application/json"
+
+# Get systems with pagination
+curl -X GET "https://grants.daostar.org/api/v1/systems?limit=5&offset=0" \\
   -H "Accept: application/json"`}
                   id="systems-curl"
                 >
                   <pre className="text-sm overflow-x-auto">
-                    <code>{`curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+                    <code>{`# Get all systems
+curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+  -H "Accept: application/json"
+
+# Get systems with pagination
+curl -X GET "https://grants.daostar.org/api/v1/systems?limit=5&offset=0" \\
   -H "Accept: application/json"`}</code>
                   </pre>
                 </CodeBlock>
@@ -204,26 +287,18 @@ print(systems)`}</code>
               Retrieve grant pools with optional filtering by system.
             </p>
             
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-medium mb-2">Query Parameters</h5>
-                <div className="space-y-2 text-sm">
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">system</code>
-                    <span className="text-gray-600 dark:text-gray-300">Filter by grant system (octant, giveth)</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">limit</code>
-                    <span className="text-gray-600 dark:text-gray-300">Number of results (default: 10, max: 100)</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">offset</code>
-                    <span className="text-gray-600 dark:text-gray-300">Pagination offset (default: 0)</span>
-                  </div>
-                </div>
+            <div className="mb-4">
+              <h5 className="font-medium mb-2">Query Parameters</h5>
+              <div className="text-sm space-y-1">
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">isOpen</code> - Filter by pool status (true for open pools)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
               </div>
+            </div>
 
-              <Tabs defaultValue="curl" className="w-full">
+            <Tabs defaultValue="curl" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="curl">cURL</TabsTrigger>
                   <TabsTrigger value="javascript">JavaScript</TabsTrigger>
@@ -233,12 +308,22 @@ print(systems)`}</code>
                 
                 <TabsContent value="curl">
                   <CodeBlock 
-                    text={`curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant" \\
+                    text={`# Get all pools
+curl -X GET "https://grants.daostar.org/api/v1/pools" \\
+  -H "Accept: application/json"
+
+# Get pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant&limit=5&page=1" \\
   -H "Accept: application/json"`}
                     id="pools-curl"
                   >
                     <pre className="text-sm overflow-x-auto">
-                      <code>{`curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant" \\
+                      <code>{`# Get all pools
+curl -X GET "https://grants.daostar.org/api/v1/pools" \\
+  -H "Accept: application/json"
+
+# Get pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant&limit=5&page=1" \\
   -H "Accept: application/json"`}</code>
                     </pre>
                   </CodeBlock>
@@ -306,7 +391,6 @@ print(pools)`}</code>
                 </TabsContent>
               </Tabs>
             </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -327,36 +411,188 @@ print(pools)`}</code>
               Retrieve grant applications with filtering by pool and system.
             </p>
             
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-medium mb-2">Query Parameters</h5>
-                <div className="space-y-2 text-sm">
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[100px]">poolId</code>
-                    <span className="text-gray-600 dark:text-gray-300">Specific grant pool ID (defaults to latest)</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[100px]">system</code>
-                    <span className="text-gray-600 dark:text-gray-300">Filter by grant system</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[100px]">limit</code>
-                    <span className="text-gray-600 dark:text-gray-300">Number of results (default: 10, max: 100)</span>
-                  </div>
-                </div>
+            <div className="mb-4">
+              <h5 className="font-medium mb-2">Query Parameters</h5>
+              <div className="text-sm space-y-1">
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">poolId</code> - Specific grant pool ID (defaults to latest)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">search</code> - Search applications by project name</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
               </div>
-
-              <CodeBlock 
-                text={`curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant" \\
-  -H "Accept: application/json"`}
-                id="applications-curl"
-              >
-                <pre className="text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant" \\
-  -H "Accept: application/json"`}</code>
-                </pre>
-              </CodeBlock>
             </div>
+
+            <Tabs defaultValue="curl" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="curl">cURL</TabsTrigger>
+                <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                <TabsTrigger value="typescript">TypeScript</TabsTrigger>
+                <TabsTrigger value="python">Python</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="curl">
+                <CodeBlock 
+                  text={`# Get all applications
+curl -X GET "https://grants.daostar.org/api/v1/applications" \\
+  -H "Accept: application/json"
+
+# Get applications with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant&limit=20&page=1" \\
+  -H "Accept: application/json"
+
+# Get applications for specific pool with search
+curl -X GET "https://grants.daostar.org/api/v1/applications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
+  -H "Accept: application/json"`}
+                  id="applications-curl"
+                >
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{`# Get all applications
+curl -X GET "https://grants.daostar.org/api/v1/applications" \\
+  -H "Accept: application/json"
+
+# Get applications with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant&limit=20&page=1" \\
+  -H "Accept: application/json"
+
+# Get applications for specific pool with search
+curl -X GET "https://grants.daostar.org/api/v1/applications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
+  -H "Accept: application/json"`}</code>
+                  </pre>
+                </CodeBlock>
+              </TabsContent>
+              
+              <TabsContent value="javascript">
+                <CodeBlock 
+                  text={`// Get applications with pagination
+const response = await fetch('/api/v1/applications?limit=20&page=1');
+const applications = await response.json();
+console.log(applications.data);
+console.log('Total:', applications.pagination.totalCount);
+
+// Get applications for specific system
+const octantApps = await fetch('/api/v1/applications?system=octant');
+const data = await octantApps.json();`}
+                  id="applications-javascript"
+                >
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{`// Get applications with pagination
+const response = await fetch('/api/v1/applications?limit=20&page=1');
+const applications = await response.json();
+console.log(applications.data);
+console.log('Total:', applications.pagination.totalCount);
+
+// Get applications for specific system
+const octantApps = await fetch('/api/v1/applications?system=octant');
+const data = await octantApps.json();`}</code>
+                  </pre>
+                </CodeBlock>
+              </TabsContent>
+              
+              <TabsContent value="typescript">
+                <CodeBlock 
+                  text={`interface Application {
+  id: string;
+  grantPoolId: string;
+  grantPoolName: string;
+  projectName: string;
+  fundsApproved: string;
+  fundsApprovedInUSD: number;
+  status: string;
+}
+
+interface PaginatedResponse<T> {
+  "@context": string;
+  data: T[];
+  pagination: {
+    totalCount: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    offset: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
+}
+
+const response: Response = await fetch('/api/v1/applications?limit=20');
+const applications: PaginatedResponse<Application> = await response.json();`}
+                  id="applications-typescript"
+                >
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{`interface Application {
+  id: string;
+  grantPoolId: string;
+  grantPoolName: string;
+  projectName: string;
+  fundsApproved: string;
+  fundsApprovedInUSD: number;
+  status: string;
+}
+
+interface PaginatedResponse<T> {
+  "@context": string;
+  data: T[];
+  pagination: {
+    totalCount: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+    offset: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
+}
+
+const response: Response = await fetch('/api/v1/applications?limit=20');
+const applications: PaginatedResponse<Application> = await response.json();`}</code>
+                  </pre>
+                </CodeBlock>
+              </TabsContent>
+              
+              <TabsContent value="python">
+                <CodeBlock 
+                  text={`import requests
+
+# Get applications with pagination
+response = requests.get('/api/v1/applications', params={
+    'system': 'octant',
+    'limit': 20,
+    'page': 1
+})
+applications = response.json()
+print(f"Found {applications['pagination']['totalCount']} applications")
+
+# Get applications for specific pool
+pool_response = requests.get('/api/v1/applications', params={
+    'poolId': 'daoip5:octant:grantPool:7',
+    'search': 'protocol'
+})
+pool_apps = pool_response.json()`}
+                  id="applications-python"
+                >
+                  <pre className="text-sm overflow-x-auto">
+                    <code>{`import requests
+
+# Get applications with pagination
+response = requests.get('/api/v1/applications', params={
+    'system': 'octant',
+    'limit': 20,
+    'page': 1
+})
+applications = response.json()
+print(f"Found {applications['pagination']['totalCount']} applications")
+
+# Get applications for specific pool
+pool_response = requests.get('/api/v1/applications', params={
+    'poolId': 'daoip5:octant:grantPool:7',
+    'search': 'protocol'
+})
+pool_apps = pool_response.json()`}</code>
+                  </pre>
+                </CodeBlock>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div>

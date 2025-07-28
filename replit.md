@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 28, 2025. Added Comprehensive Pagination Documentation to API Endpoints
+  - Added detailed pagination section explaining limit, offset, and page parameters
+  - Updated all endpoint documentation with specific query parameter lists
+  - Enhanced cURL examples to show pagination usage patterns
+  - Added TypeScript interfaces for paginated responses in documentation
+  - Documented pagination response format with totalCount, totalPages, currentPage, hasNext, hasPrevious
+  - Provided JavaScript, TypeScript, and Python code examples for pagination
+  - All endpoints now clearly document max limit of 100 items and default of 10
 - July 28, 2025. Removed Projects Endpoint Support and Updated Domain References
   - Completely removed /api/v1/projects and /api/v1/projects/:id endpoints from server routes
   - Removed getProjects, getProject, and getProjectsPaginated methods from all adapters
