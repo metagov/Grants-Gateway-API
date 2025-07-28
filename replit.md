@@ -96,6 +96,12 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 28, 2025. Fixed Application ID Format to DAOIP-5 Specification
+  - Updated Octant adapter to use format: daoip5:octant:grantPool:{epochId}:grantApplication:{projectAddress}
+  - Updated Giveth adapter to use format: daoip5:giveth:grantPool:{qfRoundId}:grantApplication:{projectId}
+  - Both systems now follow consistent DAOIP-5 application ID specification
+  - Application IDs properly reference their parent grant pool in hierarchical format
+  - Ensures proper semantic relationships between pools and applications for better data integrity
 - July 28, 2025. Split Landing Page into Separate Page Components for Better Maintainability
   - Created separate page components: OverviewPage, QueryBuilderPage, EndpointsPage, ContributorsPage
   - Implemented shared Layout component with sidebar navigation and header

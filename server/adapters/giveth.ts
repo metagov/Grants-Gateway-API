@@ -399,7 +399,7 @@ export class GivethAdapter extends BaseAdapter {
 
         const application: DAOIP5Application = {
           type: "GrantApplication",
-          id: `daoip5:giveth:grantApplication:${project.id}-${targetPool.id}`,
+          id: `daoip5:giveth:grantPool:${targetQfRoundId}:grantApplication:${project.id}`,
           grantPoolId: targetPool.id,
           grantPoolName: targetPool.name,
           projectId: `daoip5:${project.title?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.id}`,
