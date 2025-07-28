@@ -56,17 +56,6 @@ class ApiClient {
     return this.makeRequest(`/pools/${id}${queryString}`);
   }
 
-  // Projects API
-  async getProjects(filters?: QueryFilters): Promise<ApiResponse<DAOIP5Project>> {
-    const queryString = filters ? this.buildQueryString(filters) : '';
-    return this.makeRequest(`/projects${queryString ? `?${queryString}` : ''}`);
-  }
-
-  async getProject(id: string, system?: string): Promise<DAOIP5Project> {
-    const queryString = system ? `?system=${system}` : '';
-    return this.makeRequest(`/projects/${id}${queryString}`);
-  }
-
   // Applications API
   async getApplications(filters?: QueryFilters): Promise<ApiResponse<DAOIP5Application>> {
     const queryString = filters ? this.buildQueryString(filters) : '';
@@ -85,8 +74,6 @@ class ApiClient {
         return this.getSystems(filters);
       case 'pools':
         return this.getPools(filters);
-      case 'projects':
-        return this.getProjects(filters);
       case 'applications':
         return this.getApplications(filters);
       default:

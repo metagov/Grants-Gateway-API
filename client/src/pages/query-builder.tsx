@@ -109,16 +109,7 @@ export default function QueryBuilderPage() {
               </Select>
             </div>
 
-            {entityType === "projects" && (
-              <div>
-                <Label htmlFor="search">Search</Label>
-                <Input
-                  placeholder="Search projects by name..."
-                  value={queryFilters.search || ""}
-                  onChange={(e) => setQueryFilters(prev => ({ ...prev, search: e.target.value || undefined }))}
-                />
-              </div>
-            )}
+
 
             {entityType === "applications" && (
               <div>

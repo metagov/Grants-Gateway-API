@@ -176,121 +176,7 @@ export class GivethAdapter extends BaseAdapter {
     return pools.find(pool => pool.id === id) || null;
   }
 
-  async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
-    try {
-      const limit = filters?.limit || 10;
-      const skip = filters?.offset || 0;
-      
-      const query = `
-        query GetAllProjects($skip: Int!, $take: Int!, $limit: Int!, $searchTerm: String, $qfRoundId: Int) {
-          allProjects(
-            skip: $skip
-            take: $take
-            limit: $limit
-            orderBy: { field: GIVPower, direction: DESC }
-            searchTerm: $searchTerm
-            qfRoundId: $qfRoundId
-          ) {
-            projects {
-              id
-              title
-              slug
-              description
-              image
-              creationDate
-              status {
-                name
-              }
-              addresses {
-                address
-                chainType
-                isRecipient
-              }
-              socialMedia {
-                type
-                link
-              }
-              qfRounds {
-                id
-                name
-                isActive
-              }
-            }
-          }
-        }
-      `;
 
-      const variables = {
-        skip,
-        take: limit,
-        limit,
-        searchTerm: filters?.search || null,
-        qfRoundId: null // Will be set dynamically if needed
-      };
-
-      const data = await this.executeGraphQL(query, variables);
-      const projects: DAOIP5Project[] = [];
-
-      for (const project of data.allProjects?.projects || []) {
-        // Get primary recipient address
-        const primaryAddress = project.addresses?.find((addr: any) => addr.isRecipient)?.address || "";
-        
-        // Transform social media
-        const socials: Array<{ name: string; value: string }> = [];
-        if (project.socialMedia) {
-          for (const social of project.socialMedia) {
-            socials.push({
-              name: social.type.toLowerCase(),
-              value: social.link
-            });
-          }
-        }
-
-        const daoip5Project: DAOIP5Project = {
-          type: "Project",
-          id: `daoip5:${project.title?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.id}`,
-          name: project.title || "",
-          description: project.description || "",
-          contentURI: `https://giveth.io/project/${project.slug}`,
-          image: project.image || "",
-          coverImage: project.image || "",
-          socials: socials.length > 0 ? socials : undefined,
-          extensions: {
-            "io.giveth.projectMetadata": {
-              projectId: project.id,
-              slug: project.slug,
-              creationDate: project.creationDate,
-              status: project.status?.name,
-              addresses: project.addresses,
-              socialMedia: project.socialMedia,
-              qfRounds: project.qfRounds,
-              primaryRecipientAddress: primaryAddress
-            },
-            "io.giveth.platform": {
-              platform: "giveth",
-              fundingMechanism: "donations_and_qf",
-              network: "ethereum",
-              chainId: "1",
-              projectUrl: `https://giveth.io/project/${project.slug}`,
-              donationUrl: `https://giveth.io/donate/${project.slug}`
-            }
-          }
-        };
-
-        projects.push(daoip5Project);
-      }
-
-      return projects;
-    } catch (error) {
-      console.error("Error fetching Giveth projects:", error);
-      return [];
-    }
-  }
-
-  async getProject(id: string): Promise<DAOIP5Project | null> {
-    const allProjects = await this.getProjects();
-    return allProjects.find(project => project.id === id) || null;
-  }
 
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
@@ -457,20 +343,7 @@ export class GivethAdapter extends BaseAdapter {
     };
   }
 
-  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> {
-    // For now, use the actual data length as total count
-    // In production, this could be optimized with a proper count query
-    const projects = await this.getProjects(filters);
-    
-    // For projects, we need to estimate total count based on current data
-    // This is a simplified approach - in production you'd want a proper count API
-    const totalCount = projects.length;
-    
-    return {
-      data: projects,
-      totalCount
-    };
-  }
+
 
   async getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>> {
     // Get all pools first to determine the target QF round

@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 28, 2025. Removed Projects Endpoint Support and Updated Domain References
+  - Completely removed /api/v1/projects and /api/v1/projects/:id endpoints from server routes
+  - Removed getProjects, getProject, and getProjectsPaginated methods from all adapters
+  - Updated BaseAdapter interface to remove projects-related abstract methods
+  - Removed projects references from API documentation and query builder interface
+  - Updated all domain references from api.opengrants.com to grants.daostar.org throughout codebase
+  - Updated client-side API examples and documentation with new domain
+  - Simplified API to focus on three core endpoints: systems, pools, and applications
 - July 28, 2025. Fixed Application ID Format to DAOIP-5 Specification
   - Updated Octant adapter to use format: daoip5:octant:grantPool:{epochId}:grantApplication:{projectAddress}
   - Updated Giveth adapter to use format: daoip5:giveth:grantPool:{qfRoundId}:grantApplication:{projectId}

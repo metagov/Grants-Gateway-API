@@ -158,18 +158,20 @@ export default function OverviewPage() {
                     <div className="text-sm text-gray-500">Funding pools with specific criteria</div>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                  <Target className="h-5 w-5 text-primary mr-3" />
-                  <div>
-                    <div className="font-medium">Projects</div>
-                    <div className="text-sm text-gray-500">Initiatives seeking funding</div>
-                  </div>
-                </div>
+
                 <div className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
                   <FileText className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Applications</div>
                     <div className="text-sm text-gray-500">Project applications to pools</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-950 rounded-lg">
+                  <Target className="h-5 w-5 text-primary mr-3" />
+                  <div>
+                    <div className="font-medium">Projects</div>
+                    <div className="text-sm text-gray-500">Initiatives seeking funding</div>
                   </div>
                 </div>
               </div>
@@ -243,7 +245,7 @@ export default function OverviewPage() {
                     <div className="font-medium text-sm">DAOstar Docs</div>
                     <div className="text-xs text-gray-500">API reference and guides</div>
                   </div>
-                </a>
+                </a> 
                 <a
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md"
                   target="_blank"
@@ -257,15 +259,15 @@ export default function OverviewPage() {
                   </div>
                 </a>
                 <a
-                  href="https://github.com/metagov/Grants-Gateway-API/blob/main/docs/field-mappings.md"
+                  href="https://github.com/metagov/daostar/blob/main/DAOIPs/x-daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <GitBranch className="h-5 w-5 text-primary mr-3" />
                   <div>
-                    <div className="font-medium text-sm">Field Mappings</div>
-                    <div className="text-xs text-gray-500">Platform to DAOIP-5 mappings</div>
+                    <div className="font-medium text-sm">DAOIP-5 Extension</div>
+                    <div className="text-xs text-gray-500">Append contextual fields to DAOIP-5</div>
                   </div>
                 </a>
               </div>

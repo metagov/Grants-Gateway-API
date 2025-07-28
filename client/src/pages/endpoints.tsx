@@ -79,12 +79,12 @@ export default function EndpointsPage() {
               
               <TabsContent value="curl">
                 <CodeBlock 
-                  text={`curl -X GET "https://api.opengrants.com/api/v1/systems" \\
+                  text={`curl -X GET "https://grants.daostar.org/api/v1/systems" \\
   -H "Accept: application/json"`}
                   id="systems-curl"
                 >
                   <pre className="text-sm overflow-x-auto">
-                    <code>{`curl -X GET "https://api.opengrants.com/api/v1/systems" \\
+                    <code>{`curl -X GET "https://grants.daostar.org/api/v1/systems" \\
   -H "Accept: application/json"`}</code>
                   </pre>
                 </CodeBlock>
@@ -233,12 +233,12 @@ print(systems)`}</code>
                 
                 <TabsContent value="curl">
                   <CodeBlock 
-                    text={`curl -X GET "https://api.opengrants.com/api/v1/pools?system=octant" \\
+                    text={`curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant" \\
   -H "Accept: application/json"`}
                     id="pools-curl"
                   >
                     <pre className="text-sm overflow-x-auto">
-                      <code>{`curl -X GET "https://api.opengrants.com/api/v1/pools?system=octant" \\
+                      <code>{`curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant" \\
   -H "Accept: application/json"`}</code>
                     </pre>
                   </CodeBlock>
@@ -310,54 +310,7 @@ print(pools)`}</code>
         </CardContent>
       </Card>
 
-      {/* Projects */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Target className="h-5 w-5 mr-2" />
-            Projects
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <h4 className="font-semibold mb-2">GET /api/v1/projects</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Retrieve projects from grant systems with search and filtering capabilities.
-            </p>
-            
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-medium mb-2">Query Parameters</h5>
-                <div className="space-y-2 text-sm">
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">system</code>
-                    <span className="text-gray-600 dark:text-gray-300">Filter by grant system</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">search</code>
-                    <span className="text-gray-600 dark:text-gray-300">Search projects by name or description</span>
-                  </div>
-                  <div className="flex">
-                    <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded mr-3 min-w-[80px]">limit</code>
-                    <span className="text-gray-600 dark:text-gray-300">Number of results (default: 10, max: 100)</span>
-                  </div>
-                </div>
-              </div>
 
-              <CodeBlock 
-                text={`curl -X GET "https://api.opengrants.com/api/v1/projects?system=giveth&search=impact" \\
-  -H "Accept: application/json"`}
-                id="projects-curl"
-              >
-                <pre className="text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://api.opengrants.com/api/v1/projects?system=giveth&search=impact" \\
-  -H "Accept: application/json"`}</code>
-                </pre>
-              </CodeBlock>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Applications */}
       <Card>
@@ -394,12 +347,12 @@ print(pools)`}</code>
               </div>
 
               <CodeBlock 
-                text={`curl -X GET "https://api.opengrants.com/api/v1/applications?system=octant" \\
+                text={`curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant" \\
   -H "Accept: application/json"`}
                 id="applications-curl"
               >
                 <pre className="text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://api.opengrants.com/api/v1/applications?system=octant" \\
+                  <code>{`curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant" \\
   -H "Accept: application/json"`}</code>
                 </pre>
               </CodeBlock>
