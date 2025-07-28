@@ -150,30 +150,56 @@ export default function LandingPage() {
           
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Grant Systems
+              Systems Live
             </div>
             <div className="space-y-1">
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Octant</span>
-              </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Giveth</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center px-4 py-2 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Octant</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Grant System</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center px-4 py-2 text-sm">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Giveth</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Grant System</p>
+                </TooltipContent>
+              </Tooltip>
 
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook (Coming Soon)</span>
-              </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Stellar (Coming Soon)</span>
-              </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
-              </div>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center px-4 py-2 text-sm">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    <span className="text-gray-600 dark:text-gray-300"> Karma </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Project Identity Provider</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center px-4 py-2 text-sm">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    <span className="text-gray-600 dark:text-gray-300">Open Source Observer</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Infrastructure provider</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </nav>
