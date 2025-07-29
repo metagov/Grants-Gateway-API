@@ -81,20 +81,20 @@ export default function QueryBuilderPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-4">Interactive Query Builder</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4">Interactive Query Builder</h1>
         <p className="text-gray-600 dark:text-gray-300">
           Build and test API queries with real-time preview and execution.
         </p>
       </div>
 
       {/* Query Builder and Preview in one row */}
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
         {/* Query Builder Form */}
         <Card>
           <CardHeader>
             <CardTitle>Build Your Query</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6">
           <div>
             <Label htmlFor="entityType">Entity Type</Label>
             <Select value={entityType} onValueChange={setEntityType}>
