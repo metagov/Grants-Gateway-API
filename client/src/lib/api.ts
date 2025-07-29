@@ -45,15 +45,15 @@ class ApiClient {
     return this.makeRequest(`/systems/${id}${queryString}`);
   }
 
-  // Pools API
+  // Grant Pools API
   async getPools(filters?: QueryFilters): Promise<ApiResponse<DAOIP5GrantPool>> {
     const queryString = filters ? this.buildQueryString(filters) : '';
-    return this.makeRequest(`/pools${queryString ? `?${queryString}` : ''}`);
+    return this.makeRequest(`/grantPools${queryString ? `?${queryString}` : ''}`);
   }
 
   async getPool(id: string, system?: string): Promise<DAOIP5GrantPool> {
     const queryString = system ? `?system=${system}` : '';
-    return this.makeRequest(`/pools/${id}${queryString}`);
+    return this.makeRequest(`/grantPools/${id}${queryString}`);
   }
 
   // Applications API
@@ -72,7 +72,7 @@ class ApiClient {
     switch (entityType) {
       case 'systems':
         return this.getSystems(filters);
-      case 'pools':
+      case 'grantPools':
         return this.getPools(filters);
       case 'applications':
         return this.getApplications(filters);
