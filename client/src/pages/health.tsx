@@ -303,7 +303,7 @@ export default function HealthPage() {
                 <CardTitle className="flex items-center">
                   <Database className="h-5 w-5 mr-2" />
                   Database Status
-                  {getStatusBadge(healthData.database.status)}
+            {getStatusBadge(healthData.database.status)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -411,8 +411,8 @@ export default function HealthPage() {
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
-                        <Clock className="h-4 w-4 text-yellow-500 mr-2" />
-                        Coming soon...
+                        <CheckCircle className="h-4 w-4 text-purple-500 mr-2" />
+                        Questbook - Web3 Grants Manager for Protocols
                       </li>
                     </ul>
                   </div>
