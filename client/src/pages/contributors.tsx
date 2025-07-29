@@ -83,64 +83,65 @@ export default function ContributorsPage() {
 
       {/* Coming Soon */}
       <div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Questbook */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
-              <Book className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={questbookLogo} alt="Questbook" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Questbook</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Decentralized grants orchestration platform
             </p>
-            <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
               <Clock className="h-3 w-3 mr-1" />
-              Type 3 Integration
+              Coming Soon
             </Badge>
           </div>
 
           {/* KarmaGAP */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg mb-4 flex items-center justify-center">
-              <Book className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={karmaGapLogo} alt="KARMA GAP" className="w-12 h-12" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">KarmaGAP</h3>
+            <h3 className="text-lg font-semibold mb-2">KARMA GAP</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Grants Accountability Platform
             </p>
-            <Badge variant="secondary" className="bg-purple-100 text-yellow-800 dark:bg-purple-900 dark:text-yellow-200">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Project Identity Provider
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+              <Clock className="h-3 w-3 mr-1" />
+              Coming Soon
             </Badge>
           </div>
 
           {/* Stellar */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg mb-4 flex items-center justify-center">
-              <Star className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={stellarLogo} alt="Stellar" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Stellar</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Cross-border payments and financial inclusion platform
             </p>
-            <Badge variant="secondary" className="bg-blue-100 text-yellow-800 dark:bg-blue-900 dark:text-yellow-200">
-              <CircleUserRound className="h-3 w-3 mr-1" />
-              Type 1 Integration
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+              <Clock className="h-3 w-3 mr-1" />
+              Coming Soon
             </Badge>
           </div>
 
           {/* OSO */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg mb-4 flex items-center justify-center">
-              <Database className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={osoLogo} alt="Open Source Observer" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">OSO</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Open Source Observer for impact measurement
             </p>
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              <Database className="h-3 w-3 mr-1" />
-              Infrastructure Provider
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+              <Clock className="h-3 w-3 mr-1" />
+              Coming Soon
             </Badge>
           </div>
         </div>

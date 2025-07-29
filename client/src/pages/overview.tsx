@@ -103,107 +103,70 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      {/* Supported Systems */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6">Supported Grant Systems</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={octantLogo} alt="Octant" className="w-8 h-8" />
+      {/* Supported Systems - Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center">
+              <Layers className="h-5 w-5 text-primary mr-2" />
+              Grant Systems Integration
+            </span>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = "/grant-systems"}
+              className="flex items-center"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View All Systems
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-green-600 dark:text-green-400">
+                <CheckCircle className="h-5 w-5 inline mr-2" />
+                Active Integrations (2)
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <img src={octantLogo} alt="Octant" className="w-6 h-6 mr-3" />
+                  <span className="font-medium">Octant</span>
+                </div>
+                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <img src={givethLogo} alt="Giveth" className="w-6 h-6 mr-3" />
+                  <span className="font-medium">Giveth</span>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Octant</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Ethereum public goods funding platform with quadratic funding mechanisms.
-              </p>
-              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                <CheckCircle className="h-3 w-3 ml-1 mr-1" />
-                Active Integration
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={givethLogo} alt="Giveth" className="w-8 h-8" />
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-blue-600 dark:text-blue-400">
+                <Clock className="h-5 w-5 inline mr-2" />
+                Coming Soon (4)
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <img src={stellarLogo} alt="Stellar" className="w-5 h-5 mr-2" />
+                  <span className="text-sm">Stellar</span>
+                </div>
+                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <img src={karmaGapLogo} alt="KARMA GAP" className="w-5 h-5 mr-2" />
+                  <span className="text-sm">KARMA GAP</span>
+                </div>
+                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <img src={questbookLogo} alt="Questbook" className="w-5 h-5 mr-2" />
+                  <span className="text-sm">Questbook</span>
+                </div>
+                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <img src={osoLogo} alt="OSO" className="w-5 h-5 mr-2" />
+                  <span className="text-sm">OSO</span>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Giveth</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Platform for funding public goods projects with transparent donation tracking.
-              </p>
-              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                <CheckCircle className="h-3 w-3 ml-1 mr-1" />
-                Active Integration
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={stellarLogo} alt="Stellar" className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Stellar</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Open-source financial network enabling global access to financial services.
-              </p>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                <Clock className="h-3 w-3 ml-1 mr-1" />
-                Coming Soon
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={karmaGapLogo} alt="KARMA GAP" className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">KARMA GAP</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Decentralized grant reporting and impact measurement platform.
-              </p>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                <Clock className="h-3 w-3 ml-1 mr-1" />
-                Coming Soon
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={questbookLogo} alt="Questbook" className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Questbook</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Decentralized grant management platform for Web3 communities.
-              </p>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                <Clock className="h-3 w-3 ml-1 mr-1" />
-                Coming Soon
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="w-12 h-12 bg-white rounded-lg mb-4 flex items-center justify-center border">
-                <img src={osoLogo} alt="Open Source Observer" className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Open Source Observer</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Data platform tracking impact and funding in open source ecosystems.
-              </p>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                <Clock className="h-3 w-3 ml-1 mr-1" />
-                Coming Soon
-              </Badge>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* API Overview */}
       <Card>
