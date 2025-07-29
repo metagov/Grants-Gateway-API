@@ -8,7 +8,7 @@ import Layout from "@/components/layout";
 import OverviewPage from "@/pages/overview";
 import QueryBuilderPage from "@/pages/query-builder";
 import EndpointsPage from "@/pages/endpoints";
-import IntegrationsPage from "@/pages/integrations";
+
 import ContributorsPage from "@/pages/contributors";
 import HealthPage from "@/pages/health";
 import NotFound from "@/pages/not-found";
@@ -19,7 +19,7 @@ function Router() {
       <Route path="/" component={() => <Layout><OverviewPage /></Layout>} />
       <Route path="/query-builder" component={() => <Layout><QueryBuilderPage /></Layout>} />
       <Route path="/endpoints" component={() => <Layout><EndpointsPage /></Layout>} />
-      <Route path="/integrations" component={() => <Layout><IntegrationsPage /></Layout>} />
+
       <Route path="/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
       <Route path="/health" component={HealthPage} />
       <Route component={NotFound} />
