@@ -76,6 +76,35 @@ export default function Layout({ children }: LayoutProps) {
             })}
           </div>
           
+          {/* Systems Live Section */}
+          <div className="pt-6">
+            <p className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Systems Live
+            </p>
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600 dark:text-gray-300">Octant</span>
+                </div>
+                <span className="text-xs text-gray-500">Active</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600 dark:text-gray-300">Giveth</span>
+                </div>
+                <span className="text-xs text-gray-500">Active</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600 dark:text-gray-300">Questbook</span>
+                </div>
+                <span className="text-xs text-gray-500">Active</span>
+              </div>
+            </div>
+          </div>
 
         </nav>
       </div>

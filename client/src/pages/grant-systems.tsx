@@ -67,7 +67,7 @@ export default function GrantSystemsPage() {
       logo: questbookLogo,
       description: "Decentralized grant management platform for Web3 communities.",
       detailedDescription: "Questbook offers end-to-end grant management for DAOs and protocols, including application processing, milestone tracking, and payment automation.",
-      status: "Coming Soon",
+      status: "Active Integration",
       website: "https://questbook.app",
       features: ["Grant Management", "DAO Integration", "Milestone Payments", "Community Tools"]
     },
