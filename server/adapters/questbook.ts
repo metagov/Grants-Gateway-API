@@ -14,7 +14,7 @@ export class QuestbookAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Questbook",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=questbook",
+      grantPoolsURI: "/api/v1/grantPools?system=questbook",
       extensions: {
         "app.questbook.systemMetadata": {
           platform: "questbook",

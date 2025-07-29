@@ -43,11 +43,7 @@ export class MySystemAdapter extends BaseAdapter {
     // Implement pool fetching and transformation
   }
 
-  async getProjects(): Promise<Project[]> {
-    // Implement project fetching and transformation
-  }
-
-  async getApplications(): Promise<Application[]> {
+  async getGrantApplications(): Promise<Application[]> {
     // Implement application fetching and transformation
   }
 }
@@ -67,7 +63,17 @@ const adapters: { [key: string]: BaseAdapter } = {
 };
 ```
 
-### 4. Environment Configuration
+### 4. Update API Endpoints
+
+The OpenGrants Gateway API uses grant-prefixed endpoints for consistency:
+
+- `/api/v1/grantSystems` - Get grant systems metadata
+- `/api/v1/grantPools` - Get funding pools/rounds  
+- `/api/v1/grantApplications` - Get grant applications
+
+Make sure your adapter implements methods that align with these endpoints.
+
+### 5. Environment Configuration
 
 Add any required environment variables to `.env`:
 
