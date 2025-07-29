@@ -1,5 +1,6 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
+import { karmaService } from "../services/karma";
 
 interface OctantProject {
   address: string;
@@ -247,13 +248,17 @@ export class OctantAdapter extends BaseAdapter {
                   socials.push({ platform: "Website", url: projectData.website });
                 }
                 
+                // Fetch KARMA GAP UID for the project
+                const projectName = projectData?.name || `Project ${reward.address.slice(-8)}`;
+                const karmaUID = await karmaService.searchProjectUID(projectName);
+                
                 const application: DAOIP5Application = {
                   type: "GrantApplication",
                   id: `daoip5:octant:grantPool:${epoch}:grantApplication:${reward.address}`,
                   grantPoolId: `daoip5:octant:grantPool:${epoch}`,
                   grantPoolName: `Octant Epoch ${epoch}`,
                   projectId: projectId,
-                  projectName: projectData?.name || `Project ${reward.address.slice(-8)}`,
+                  projectName: projectName,
                   createdAt: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
                   contentURI: projectData?.website || `https://octant.app/project/${reward.address}`,
                   socials: socials.length > 0 ? socials : undefined,
@@ -281,7 +286,9 @@ export class OctantAdapter extends BaseAdapter {
                       profileImageMedium: projectData?.profileImageMedium,
                       description: projectData?.description,
                       website: projectData?.website
-                    }
+                    },
+                    // Add KARMA GAP UID if found
+                    ...(karmaUID ? { "x-karmagap-uid": karmaUID } : {})
                   }
                 };
 

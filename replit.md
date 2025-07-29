@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Added KARMA GAP Integration for Enhanced Project Metadata
+  - Created KARMA service (server/services/karma.ts) to fetch project UIDs from https://gapapi.karmahq.xyz/search API
+  - Enhanced all application endpoints with KARMA GAP UIDs in extensions field as "x-karmagap-uid" 
+  - Updated Octant and Giveth adapters to search KARMA for each project name and include UID when found
+  - Added intelligent caching with 1-hour TTL to minimize API calls and improve performance
+  - Batch processing support with rate limiting to be respectful to KARMA API
+  - Applications now include cross-platform project identification through KARMA GAP integration
+  - Provides enriched metadata linking projects across grant platforms and KARMA's impact tracking system
 - July 29, 2025. Added Questbook Integration with Health Monitoring and Systems Live Sidebar
   - Created QuestbookAdapter with Direct DAOIP-5 endpoint health check at https://api.questbook.app/daoip-5
   - Updated health service to test real external API endpoints (getPools) instead of static getSystems for accurate response times
