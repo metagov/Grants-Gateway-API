@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Enhanced KarmaGAP Project Identity Matching as Prominent Feature
+  - Created dedicated KarmaGAP feature page highlighting cross-platform project identification capabilities
+  - Enhanced integration descriptions and tooltips to emphasize Project Identity Matching functionality
+  - Added prominent KarmaGAP feature section to API Endpoints documentation with extension field details
+  - Updated query builder description to mention KarmaGAP UIDs in all grant applications
+  - Enhanced integrations sidebar with "🔗 Project Identity Matching" description
+  - Elevated KarmaGAP from infrastructure service to featured capability throughout frontend
+  - Highlighted "x-karmagap-uid" extension field presence in every grant application response
 - July 29, 2025. Updated All API Endpoints to Use Grant-Prefixed Naming Convention
   - Changed /api/v1/systems to /api/v1/grantSystems throughout codebase and documentation
   - Changed /api/v1/applications to /api/v1/grantApplications throughout codebase and documentation

@@ -265,7 +265,7 @@ export default function OverviewPage() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Provides cross-platform project identification through unique project UIDs, enabling seamless project tracking across different grant systems and impact measurement platforms.</p>
+                    <p><strong>Project Identity Matching:</strong> Every grant application includes "x-karmagap-uid" extension field. Provides cross-platform project identification through unique project UIDs, enabling seamless project tracking across different grant systems.</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -324,7 +324,7 @@ export default function OverviewPage() {
                   <div>
                     <div className="font-medium">Projects</div>
                     <div className="text-sm text-gray-500">Initiatives seeking funding</div>
-                    <div className="text-xs font-bold mt-1 text-gray-600">Supported by KarmaGAP</div>
+                    <div className="text-xs font-bold mt-1 text-amber-600 dark:text-amber-400">✨ Enhanced with KarmaGAP UIDs</div>
                   </div>
                 </div>
               </div>
