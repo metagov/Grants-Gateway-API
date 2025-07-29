@@ -37,14 +37,14 @@ export default function IntegrationsSidebar() {
     {
       name: "KARMA GAP",
       type: "Infrastructure",
-      status: "infrastructure", 
+      status: "Project Identity Provider", 
       color: "amber",
       description: "Cross-platform project UIDs for seamless project identification"
     },
     {
       name: "OSO",
       type: "Infrastructure", 
-      status: "infrastructure",
+      status: "Datalake",
       color: "amber",
       description: "Data lake infrastructure for developer activity and impact tracking"
     }
