@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useThemeContext } from "@/components/ui/theme-provider";
 import { Link, useLocation } from "wouter";
+import IntegrationsSidebar from "@/components/integrations-sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export default function Layout({ children }: LayoutProps) {
     { id: "/", label: "Overview", icon: Building, path: "/" },
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
-    { id: "/integrations", label: "Integrations", icon: Layers, path: "/integrations" },
+
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
     { id: "/contributors", label: "Contributors", icon: Heart, path: "/contributors" },
   ];
@@ -76,6 +77,8 @@ export default function Layout({ children }: LayoutProps) {
               );
             })}
           </div>
+          
+          <IntegrationsSidebar />
         </nav>
       </div>
 
