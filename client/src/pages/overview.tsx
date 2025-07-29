@@ -24,6 +24,9 @@ import stellarLogo from "@/assets/stellar-logo.png";
 import karmaGapLogo from "@/assets/karma-gap-logo.png";
 import questbookLogo from "@/assets/questbook-logo.png";
 import osoLogo from "@/assets/oso-logo.png";
+import celoLogo from "@/assets/celo-logo.png";
+import optimismLogo from "@/assets/optimism-logo.png";
+import arbitrumLogo from "@/assets/arbitrum-logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -151,26 +154,69 @@ export default function OverviewPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-blue-600 dark:text-blue-400">
-                <CheckCircle className="h-5 w-5 inline mr-2" />
+              <h3 className="text-lg font-semibold mb-3 text-blue-600 dark:text-blue-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-blue-500" />
                 Type 2: Data Integration
-                <span title="This is when grant systems share all their grant data with us in CSV/JSON format, with consent to translate to DAOIP-5. Data is available at DAOIP-5 and navigates translated files stored at the GitHub repository." className="ml-2 cursor-help">&#x1F6C8;</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that share their data in CSV/JSON format with consent to translate to DAOIP-5. Static data files are stored at <a href="https://daoip5.daostar.org/" className="text-blue-400 underline" target="_blank">daoip5.daostar.org</a></p>
+                  </TooltipContent>
+                </Tooltip>
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Data available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline" target="_blank">DAOIP-5</a></p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Static data files available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
+              </p>
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <img src={stellarLogo} alt="Stellar" className="w-5 h-5 mr-2" />
-                  <span className="text-sm">Stellar</span>
-                </div>
-                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <span className="text-sm">Celo</span>
-                </div>
-                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <span className="text-sm">Optimism</span>
-                </div>
-                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <span className="text-sm">Arbitrum Foundation</span>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={stellarLogo} alt="Stellar" className="w-5 h-5 mr-2" />
+                      <span className="text-sm font-medium">Stellar</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Cross-border payments and financial inclusion platform with grant programs for blockchain development and financial infrastructure</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={celoLogo} alt="Celo" className="w-5 h-5 mr-2" />
+                      <span className="text-sm font-medium">Celo</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Mobile-first blockchain platform focused on financial inclusion with public goods funding and ecosystem grants</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={optimismLogo} alt="Optimism" className="w-5 h-5 mr-2" />
+                      <span className="text-sm font-medium">Optimism</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Ethereum Layer 2 scaling solution with retroactive public goods funding and the Optimism Collective governance system</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={arbitrumLogo} alt="Arbitrum" className="w-5 h-5 mr-2" />
+                      <span className="text-sm font-medium">Arbitrum</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Ethereum Layer 2 optimistic rollup with grants and incentive programs for ecosystem development and DeFi innovation</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
             <div>

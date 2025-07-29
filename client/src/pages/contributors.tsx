@@ -15,6 +15,9 @@ import stellarLogo from "@/assets/stellar-logo.png";
 import karmaGapLogo from "@/assets/karma-gap-logo.png";
 import questbookLogo from "@/assets/questbook-logo.png";
 import osoLogo from "@/assets/oso-logo.png";
+import celoLogo from "@/assets/celo-logo.png";
+import optimismLogo from "@/assets/optimism-logo.png";
+import arbitrumLogo from "@/assets/arbitrum-logo.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -118,38 +121,91 @@ export default function ContributorsPage() {
         </div>
       </div>
 
-      {/* Coming Soon */}
+      {/* Type 2: Data Integration Systems */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
+        <h2 className="text-2xl font-bold mb-6">Type 2: Data Integration Systems</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          These platforms share grant data in CSV/JSON format, available as static files at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
+        </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Stellar */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={stellarLogo} alt="Stellar" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Stellar</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Cross-border payments and financial inclusion platform
             </p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-              <Clock className="h-3 w-3 mr-1" />
-              Coming Soon
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+              Type 2 Data
             </Badge>
           </div>
 
+          {/* Celo */}
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
+              <img src={celoLogo} alt="Celo" className="w-12 h-12" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Celo</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Mobile-first blockchain platform focused on financial inclusion
+            </p>
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+              Type 2 Data
+            </Badge>
+          </div>
+
+          {/* Optimism */}
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
+              <img src={optimismLogo} alt="Optimism" className="w-12 h-12" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Optimism</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Ethereum L2 with retroactive public goods funding
+            </p>
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+              Type 2 Data
+            </Badge>
+          </div>
+
+          {/* Arbitrum */}
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
+              <img src={arbitrumLogo} alt="Arbitrum" className="w-12 h-12" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Arbitrum</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Ethereum L2 optimistic rollup with ecosystem grants
+            </p>
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+              Type 2 Data  
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Future Integrations */}
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Future Integrations</h2>
+        <div className="grid md:grid-cols-1 gap-6">
           {/* OSO */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow max-w-md mx-auto">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
               <img src={osoLogo} alt="Open Source Observer" className="w-12 h-12" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">OSO Integration</h3>
+            <h3 className="text-lg font-semibold mb-2">Enhanced OSO Integration</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Enhanced data lake integration for deeper project insights
+              Advanced data lake integration for deeper project impact insights and developer activity tracking
             </p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300">
               <Clock className="h-3 w-3 mr-1" />
-              Coming Soon
+              Future Enhancement
             </Badge>
           </div>
         </div>
