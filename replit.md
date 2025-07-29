@@ -96,6 +96,15 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Added Questbook Integration with Health Monitoring and Systems Live Sidebar
+  - Created QuestbookAdapter with Direct DAOIP-5 endpoint health check at https://api.questbook.app/daoip-5
+  - Updated health service to test real external API endpoints (getPools) instead of static getSystems for accurate response times
+  - Added Questbook to all active integrations: routes, health monitoring, query builder, and grant systems page
+  - Added Systems Live sidebar section showing real-time status of all 3 active integrations (Octant, Giveth, Questbook)
+  - Updated Grant Systems page to show Questbook as "Active Integration" instead of "Coming Soon"
+  - Fixed health response times displaying actual values: Octant ~3.6s, Giveth ~440ms, Database ~200ms, Questbook pending
+  - Now supports 3 active integrations with comprehensive health monitoring across all platforms
+  - Maintained Grant Systems page as single source of truth while adding live status in sidebar navigation
 - July 29, 2025. Created Unified Grant Systems Page and Updated All Logos
   - Updated all contributor page logos to use authentic platform branding with white backgrounds
   - Created comprehensive Grant Systems page combining overview and detailed platform information

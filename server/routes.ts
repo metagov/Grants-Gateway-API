@@ -5,6 +5,7 @@ import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middlew
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
+import { QuestbookAdapter } from "./adapters/questbook";
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
 import { PaginatedResponse } from "../shared/schema";
@@ -29,6 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const adapters: { [key: string]: BaseAdapter } = {
     octant: new OctantAdapter(),
     giveth: new GivethAdapter(),
+    questbook: new QuestbookAdapter(),
   };
 
   // Helper function to get adapter
