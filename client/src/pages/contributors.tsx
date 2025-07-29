@@ -8,6 +8,12 @@ import {
   Clock, 
   Database 
 } from "lucide-react";
+import octantLogo from "@/assets/octant-logo.png";
+import givethLogo from "@/assets/giveth-logo.png";
+import stellarLogo from "@/assets/stellar-logo.png";
+import karmaGapLogo from "@/assets/karma-gap-logo.png";
+import questbookLogo from "@/assets/questbook-logo.png";
+import osoLogo from "@/assets/oso-logo.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -45,8 +51,8 @@ export default function ContributorsPage() {
         <div className="grid md:grid-cols-2 gap-6">
           {/* Octant */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg mb-4 flex items-center justify-center">
-              <Building className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={octantLogo} alt="Octant" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Octant</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
@@ -60,8 +66,8 @@ export default function ContributorsPage() {
 
           {/* Giveth */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg mb-4 flex items-center justify-center">
-              <Heart className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+              <img src={givethLogo} alt="Giveth" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Giveth</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">

@@ -71,13 +71,14 @@ export default function QueryBuilderPage() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Query Builder Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Build Your Query</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+      <div className="grid lg:grid-cols-2 gap-8 lg:h-[calc(100vh-200px)]">
+        {/* Query Builder Form - Fixed width panel */}
+        <div className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle>Build Your Query</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
             <div>
               <Label htmlFor="entityType">Entity Type</Label>
               <Select value={entityType} onValueChange={setEntityType}>
@@ -145,8 +146,9 @@ export default function QueryBuilderPage() {
               )}
               Execute Query
             </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Query Preview and Results */}
         <div className="space-y-6">

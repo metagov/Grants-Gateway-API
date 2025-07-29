@@ -96,6 +96,13 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Updated Grant Platform Logos and Improved Query Builder Layout
+  - Updated logos for all grant platforms: Giveth (white background), Octant, Stellar, KARMA GAP, Questbook, Open Source Observer
+  - Replaced gradient background placeholders with actual platform logos in overview and contributors pages
+  - Added coming soon platforms with proper logos and descriptions
+  - Fixed Query Builder layout to use two-column design with sticky/fixed builder panel
+  - Improved responsive design to prevent expansion issues when receiving query responses
+  - Enhanced user experience with cleaner visual organization and authentic branding
 - July 28, 2025. Added Comprehensive Pagination Documentation to API Endpoints
   - Added detailed pagination section explaining limit, offset, and page parameters
   - Updated all endpoint documentation with specific query parameter lists
