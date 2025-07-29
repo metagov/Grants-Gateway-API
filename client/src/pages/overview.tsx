@@ -119,11 +119,11 @@ export default function OverviewPage() {
             </span>
             <Button 
               variant="outline" 
-              onClick={() => window.location.href = "/endpoints"}
+              onClick={() => window.location.href = "/integrations"}
               className="flex items-center"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              View API Docs
+              View All Integrations
             </Button>
           </CardTitle>
         </CardHeader>
