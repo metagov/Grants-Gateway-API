@@ -194,17 +194,27 @@ export default function HealthPage() {
 
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook (Health Monitor Only)</span>
+                <span className="text-gray-600 dark:text-gray-300">Questbook </span>
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-pink-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Stellar (Type 1 Integration)</span>
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Stellar </span>
               </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
+
+              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+              <span className="text-gray-600 dark:text-gray-300">Celo </span>
               </div>
+
+            <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+            <span className="text-gray-600 dark:text-gray-300">Arbitrum Foundation </span>
             </div>
+
+          <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+          <span className="text-gray-600 dark:text-gray-300">Optimism </span>
+          </div>
+      </div>
+    </div>
+    
           </div>
         </nav>
       </div>
@@ -391,24 +401,24 @@ export default function HealthPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <h3 className="text-sm md:text-base font-semibold">Type 1: Full API Integrations</h3>
+                    <h3 className="text-sm md:text-base font-semibold">Type 1: API Integrations</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                       These adapters fetch data from custom APIs and transform it to DAOIP-5 format, providing unified access through our API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        Octant - Ethereum public goods funding
+                        Octant 
                       </li>
                       <li className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        Giveth - Donation platform for public goods
+                        Giveth
                       </li>
                     </ul>
                   </div>
 
                   <div className="space-y-3">
-                      <h3 className="text-sm md:text-base font-semibold">Type 2: Static File Integration</h3>
+                      <h3 className="text-sm md:text-base font-semibold">Type 2: Data Integration</h3>
                       <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                         Grants Systems who provide grant data files in CSV/JSON which are then translated to DAOIP-5, this data can be accesed via daoip5.daostar.org endpoint:
                       </p>
@@ -426,12 +436,12 @@ export default function HealthPage() {
                   <div className="space-y-3">
                     <h3 className="text-sm md:text-base font-semibold">Type 3: Endpoint Integrations</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                      These systems already provide DAOIP-5 compliant endpoints. We monitor their connectivity but don't integrate them into our unified API:
+                      These systems provide DAOIP-5 compliant endpoints. We monitor their connectivity but don't integrate them into our unified API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-purple-500 mr-2" />
-                        Questbook - Direct DAOIP-5 implementation
+                        Questbook 
                       </li>
                     </ul>
                   </div>
