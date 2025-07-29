@@ -27,6 +27,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const sidebarItems = [
     { id: "/", label: "Overview", icon: Building, path: "/" },
+    { id: "/grant-systems", label: "Grant Systems", icon: Layers, path: "/grant-systems" },
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
