@@ -67,7 +67,7 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <CodeBlock
-              code="GET https://grants.daostar.org/api/v1/systems"
+              code="GET https://grants.daostar.org/api/v1/grantSystems"
               title="Get all grant systems"
               language="http"
             />

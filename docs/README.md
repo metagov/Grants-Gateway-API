@@ -12,14 +12,14 @@ All API requests require authentication using an API key in the Authorization he
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-  "https://grant-metadata-api.replit.app/api/v1/systems"
+  "https://grant-metadata-api.replit.app/api/v1/grantSystems"
 ```
 
 ### Basic Usage
 
 ```bash
 # Get all grant systems
-GET /api/v1/systems
+GET /api/v1/grantSystems
 
 # Get grant pools from specific system
 GET /api/v1/grantPools?system=octant
@@ -28,7 +28,7 @@ GET /api/v1/grantPools?system=octant
 GET /api/v1/projects?system=giveth&limit=10
 
 # Get applications for a grant pool
-GET /api/v1/applications?poolId=daoip5:octant:grantPool:7
+GET /api/v1/grantApplications?poolId=daoip5:octant:grantPool:7
 ```
 
 ## Supported Systems
@@ -49,10 +49,10 @@ GET /api/v1/applications?poolId=daoip5:octant:grantPool:7
 
 | Endpoint | Description | Parameters |
 |----------|-------------|------------|
-| `GET /api/v1/systems` | List all grant systems | `system` (optional) |
+| `GET /api/v1/grantSystems` | List all grant systems | `system` (optional) |
 | `GET /api/v1/grantPools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
 | `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `search` |
-| `GET /api/v1/applications` | List applications | `system`, `poolId`, `limit`, `offset` |
+| `GET /api/v1/grantApplications` | List applications | `system`, `poolId`, `limit`, `offset` |
 | `GET /api/v1/health` | API health status | `refresh` (optional) |
 
 ### Response Format

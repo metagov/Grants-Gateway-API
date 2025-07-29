@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Updated All API Endpoints to Use Grant-Prefixed Naming Convention
+  - Changed /api/v1/systems to /api/v1/grantSystems throughout codebase and documentation
+  - Changed /api/v1/applications to /api/v1/grantApplications throughout codebase and documentation
+  - Updated query builder to use new entity types: grantSystems, grantPools, grantApplications
+  - Modified API client methods to call correct endpoints with updated paths
+  - Updated all documentation examples (cURL, JavaScript, TypeScript, Python) to use new endpoints
+  - Enhanced API consistency with grant-prefixed naming for all major resources
+  - Maintained backward compatibility through proper route updates in server/routes.ts
 - July 29, 2025. Updated API Endpoints from /pools to /grantPools and Enhanced Integration References
   - Changed all API endpoint references from /api/v1/pools to /api/v1/grantPools throughout codebase
   - Updated server routes.ts to serve Grant Pools endpoint at /api/v1/grantPools instead of /pools

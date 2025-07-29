@@ -34,15 +34,15 @@ class ApiClient {
     return params.toString();
   }
 
-  // Systems API
+  // Grant Systems API
   async getSystems(filters?: QueryFilters): Promise<ApiResponse<DAOIP5System>> {
     const queryString = filters ? this.buildQueryString(filters) : '';
-    return this.makeRequest(`/systems${queryString ? `?${queryString}` : ''}`);
+    return this.makeRequest(`/grantSystems${queryString ? `?${queryString}` : ''}`);
   }
 
   async getSystem(id: string, system?: string): Promise<DAOIP5System> {
     const queryString = system ? `?system=${system}` : '';
-    return this.makeRequest(`/systems/${id}${queryString}`);
+    return this.makeRequest(`/grantSystems/${id}${queryString}`);
   }
 
   // Grant Pools API
@@ -56,25 +56,25 @@ class ApiClient {
     return this.makeRequest(`/grantPools/${id}${queryString}`);
   }
 
-  // Applications API
+  // Grant Applications API
   async getApplications(filters?: QueryFilters): Promise<ApiResponse<DAOIP5Application>> {
     const queryString = filters ? this.buildQueryString(filters) : '';
-    return this.makeRequest(`/applications${queryString ? `?${queryString}` : ''}`);
+    return this.makeRequest(`/grantApplications${queryString ? `?${queryString}` : ''}`);
   }
 
   async getApplication(id: string, system?: string): Promise<DAOIP5Application> {
     const queryString = system ? `?system=${system}` : '';
-    return this.makeRequest(`/applications/${id}${queryString}`);
+    return this.makeRequest(`/grantApplications/${id}${queryString}`);
   }
 
   // Execute a custom query for the query builder
   async executeQuery(entityType: string, filters: QueryFilters): Promise<any> {
     switch (entityType) {
-      case 'systems':
+      case 'grantSystems':
         return this.getSystems(filters);
       case 'grantPools':
         return this.getPools(filters);
-      case 'applications':
+      case 'grantApplications':
         return this.getApplications(filters);
       default:
         throw new Error(`Unknown entity type: ${entityType}`);
