@@ -20,11 +20,11 @@ export default function QueryBuilderPage() {
   // Query builder state
   const [entityType, setEntityType] = useState("systems");
   const [queryFilters, setQueryFilters] = useState<QueryFilters>({});
-  const [queryPreview, setQueryPreview] = useState("/api/v1/systems");
+  const [queryPreview, setQueryPreview] = useState("https://grants.daostar.org/api/v1/systems");
 
   // Update query preview when filters change
   useEffect(() => {
-    let query = `/api/v1/${entityType}`;
+    let query = `https://grants.daostar.org/api/v1/${entityType}`;
     const params = new URLSearchParams();
     
     Object.entries(queryFilters).forEach(([key, value]) => {
