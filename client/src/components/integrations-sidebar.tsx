@@ -29,7 +29,7 @@ export default function IntegrationsSidebar() {
       type: "Type 3", 
       status: "active",
       color: "purple",
-      description: "Native DAOIP-5 endpoint at api.questbook.app/daoip-5 - health monitoring only"
+      description: "Native DAOIP-5 endpoint - view at https://api.questbook.app/daoip-5"
     }
   ];
 

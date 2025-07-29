@@ -22,7 +22,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 GET /api/v1/systems
 
 # Get grant pools from specific system
-GET /api/v1/pools?system=octant
+GET /api/v1/grantPools?system=octant
 
 # Get projects
 GET /api/v1/projects?system=giveth&limit=10
@@ -50,7 +50,7 @@ GET /api/v1/applications?poolId=daoip5:octant:grantPool:7
 | Endpoint | Description | Parameters |
 |----------|-------------|------------|
 | `GET /api/v1/systems` | List all grant systems | `system` (optional) |
-| `GET /api/v1/pools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
+| `GET /api/v1/grantPools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
 | `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `search` |
 | `GET /api/v1/applications` | List applications | `system`, `poolId`, `limit`, `offset` |
 | `GET /api/v1/health` | API health status | `refresh` (optional) |
