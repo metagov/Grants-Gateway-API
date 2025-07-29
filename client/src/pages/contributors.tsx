@@ -6,7 +6,8 @@ import {
   CheckCircle, 
   CircleUserRound,
   Clock, 
-  Database 
+  Database,
+  Circle
 } from "lucide-react";
 import octantLogo from "@/assets/octant-logo.png";
 import givethLogo from "@/assets/giveth-logo.png";
@@ -50,32 +51,68 @@ export default function ContributorsPage() {
         <h2 className="text-2xl font-bold mb-6">Active Integrations</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {/* Octant */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200 dark:hover:border-green-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={octantLogo} alt="Octant" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Octant</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Ethereum public goods funding platform with quadratic funding
+              Ethereum public goods funding platform with quadratic funding mechanisms
             </p>
-            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Integrated
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+              <Circle className="h-3 w-3 mr-1 fill-green-500" />
+              Type 1 Integration
             </Badge>
           </div>
 
           {/* Giveth */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200 dark:hover:border-green-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={givethLogo} alt="Giveth" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Giveth</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Donation platform for public goods and social impact
+              Donation platform for public goods and social impact projects
             </p>
-            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Integrated
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+              <Circle className="h-3 w-3 mr-1 fill-green-500" />
+              Type 1 Integration
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Type 3 & Infrastructure */}
+      <div>
+        <h2 className="text-2xl font-bold mb-6">Type 3 & Infrastructure Integrations</h2>
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Questbook */}
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-purple-200 dark:hover:border-purple-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
+              <img src={questbookLogo} alt="Questbook" className="w-12 h-12" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Questbook</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Native DAOIP-5 endpoint for decentralized grants orchestration
+            </p>
+            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800">
+              <Circle className="h-3 w-3 mr-1 fill-purple-500" />
+              Type 3 Integration
+            </Badge>
+          </div>
+
+          {/* KarmaGAP */}
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-amber-200 dark:hover:border-amber-800">
+            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
+              <img src={karmaGapLogo} alt="KARMA GAP" className="w-12 h-12" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">KARMA GAP</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Cross-platform project identification through unique UIDs
+            </p>
+            <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+              <Circle className="h-3 w-3 mr-1 fill-amber-500" />
+              Infrastructure Active
             </Badge>
           </div>
         </div>
@@ -84,36 +121,7 @@ export default function ContributorsPage() {
       {/* Coming Soon */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Questbook */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
-              <img src={questbookLogo} alt="Questbook" className="w-12 h-12" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Questbook</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Decentralized grants orchestration platform
-            </p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-              <Clock className="h-3 w-3 mr-1" />
-              Coming Soon
-            </Badge>
-          </div>
-
-          {/* KarmaGAP */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
-            <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
-              <img src={karmaGapLogo} alt="KARMA GAP" className="w-12 h-12" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">KARMA GAP</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Grants Accountability Platform
-            </p>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-              <Clock className="h-3 w-3 mr-1" />
-              Coming Soon
-            </Badge>
-          </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {/* Stellar */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow">
@@ -135,9 +143,9 @@ export default function ContributorsPage() {
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border">
               <img src={osoLogo} alt="Open Source Observer" className="w-12 h-12" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">OSO</h3>
+            <h3 className="text-lg font-semibold mb-2">OSO Integration</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-              Open Source Observer for impact measurement
+              Enhanced data lake integration for deeper project insights
             </p>
             <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
               <Clock className="h-3 w-3 mr-1" />
