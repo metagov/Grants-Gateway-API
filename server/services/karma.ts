@@ -1,6 +1,16 @@
 interface KarmaSearchResponse {
   uid?: string;
   name?: string;
+  details?: {
+    data?: {
+      title?: string;
+    };
+  };
+}
+
+interface KarmaApiResponse {
+  projects: KarmaSearchResponse[];
+  communities: any[];
 }
 
 interface KarmaSearchResult {
@@ -41,21 +51,23 @@ export async function searchKarmaProject(projectName: string): Promise<KarmaSear
       return { uid: null, error };
     }
 
-    const data: KarmaSearchResponse[] = await response.json();
+    const data: KarmaApiResponse = await response.json();
     
-    // Look for exact or close match
+    // Look for exact or close match in projects array
     let uid: string | null = null;
-    if (Array.isArray(data) && data.length > 0) {
-      // Try to find exact match first
-      const exactMatch = data.find(item => 
-        item.name?.toLowerCase().trim() === cacheKey
-      );
+    if (data.projects && Array.isArray(data.projects) && data.projects.length > 0) {
+      // Try to find exact match first by checking both the title in details and any name field
+      const exactMatch = data.projects.find(item => {
+        const projectTitle = item.details?.data?.title?.toLowerCase().trim();
+        const projectName = item.name?.toLowerCase().trim();
+        return projectTitle === cacheKey || projectName === cacheKey;
+      });
       
       if (exactMatch?.uid) {
         uid = exactMatch.uid;
-      } else if (data[0]?.uid) {
+      } else if (data.projects[0]?.uid) {
         // Use first result if no exact match
-        uid = data[0].uid;
+        uid = data.projects[0].uid;
       }
     }
 

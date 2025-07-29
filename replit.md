@@ -96,6 +96,13 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Fixed and Completed KARMA GAP Integration
+  - Fixed KARMA API response parsing - API returns {projects: []} structure not direct array
+  - KARMA integration now working correctly with UIDs appearing in extensions as "x-karmagap-uid"
+  - Successfully tested with Protocol Guild returning UID: 0xe0177d40df99b2dd4c94735058a283b5e0d44f7a838223fe7d7e589d2e9013bd
+  - Batch processing retrieves UIDs for all projects in single request cycle with rate limiting
+  - Enhanced project matching logic checks both project title and name fields for accuracy
+  - Applications now include verified cross-platform project identification through KARMA GAP
 - July 29, 2025. Added KARMA GAP Integration for Enhanced Project Metadata
   - Created KARMA service (server/services/karma.ts) to fetch project UIDs from https://gapapi.karmahq.xyz/search API
   - Enhanced all application endpoints with KARMA GAP UIDs in extensions field as "x-karmagap-uid" 
