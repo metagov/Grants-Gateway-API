@@ -1,6 +1,6 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
-import { karmaService } from "../services/karma";
+import { searchKarmaProjectsBatch } from "../services/karma";
 
 interface OctantProject {
   address: string;
@@ -222,6 +222,9 @@ export class OctantAdapter extends BaseAdapter {
         }
       }
 
+      // Collect all project names for batch Karma search
+      const allProjects: Array<{ name: string; address: string; epoch: number; reward: any; projectData: any }> = [];
+      
       for (const epoch of epochsToQuery) {
         try {
           // Fetch project rewards for each epoch - focusing on approved applications with funding
@@ -236,72 +239,93 @@ export class OctantAdapter extends BaseAdapter {
               // Only include approved applications (with funding > 0) as requested
               if (amountInEth > 0 && reward.address) {
                 const projectData = projectsMap.get(reward.address);
-                const projectId = `daoip5:${projectData?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${reward.address}`;
-                
-                // Calculate USD amount
-                const ethAmount = amountInEth.toFixed(6);
-                const fundsApprovedInUSD = await currencyService.convertETHToUSD(ethAmount);
-                
-                // Build socials array from project data
-                const socials: Array<{ platform: string; url: string }> = [];
-                if (projectData?.website) {
-                  socials.push({ platform: "Website", url: projectData.website });
-                }
-                
-                // Fetch KARMA GAP UID for the project
                 const projectName = projectData?.name || `Project ${reward.address.slice(-8)}`;
-                const karmaUID = await karmaService.searchProjectUID(projectName);
                 
-                const application: DAOIP5Application = {
-                  type: "GrantApplication",
-                  id: `daoip5:octant:grantPool:${epoch}:grantApplication:${reward.address}`,
-                  grantPoolId: `daoip5:octant:grantPool:${epoch}`,
-                  grantPoolName: `Octant Epoch ${epoch}`,
-                  projectId: projectId,
-                  projectName: projectName,
-                  createdAt: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
-                  contentURI: projectData?.website || `https://octant.app/project/${reward.address}`,
-                  socials: socials.length > 0 ? socials : undefined,
-                  fundsApproved: [{
-                    amount: ethAmount,
-                    denomination: "ETH"
-                  }],
-                  fundsApprovedInUSD: fundsApprovedInUSD,
-                  payoutAddress: {
-                    type: "EthereumAddress",
-                    value: reward.address
-                  },
-                  status: "funded", // Octant applications with rewards are considered funded
-                  extensions: {
-                    "app.octant.applicationMetadata": {
-                      epochNumber: epoch,
-                      rewardAllocation: reward.allocated,
-                      projectAddress: reward.address,
-                      fundingMechanism: "quadratic_funding",
-                      network: "ethereum",
-                      chainId: "1"
-                    },
-                    "app.octant.projectDetails": {
-                      profileImageSmall: projectData?.profileImageSmall,
-                      profileImageMedium: projectData?.profileImageMedium,
-                      description: projectData?.description,
-                      website: projectData?.website
-                    },
-                    // Add KARMA GAP UID if found
-                    ...(karmaUID ? { "x-karmagap-uid": karmaUID } : {})
-                  }
-                };
-
-                // Apply filters
-                if (filters?.poolId && application.grantPoolId !== filters.poolId) continue;
-                if (filters?.projectId && application.projectId !== filters.projectId) continue;
-
-                applications.push(application);
+                allProjects.push({
+                  name: projectName,
+                  address: reward.address,
+                  epoch,
+                  reward,
+                  projectData
+                });
               }
             }
           }
         } catch (error) {
           console.error(`Error fetching rewards for epoch ${epoch}:`, error);
+        }
+      }
+
+      // Batch search Karma UIDs for all projects
+      const projectNames = allProjects.map(p => p.name);
+      const karmaResults = await searchKarmaProjectsBatch(projectNames);
+
+      // Build applications with Karma UIDs
+      for (const project of allProjects) {
+        try {
+          const amountInEth = parseInt(project.reward.allocated) / 1e18;
+          const projectId = `daoip5:${project.projectData?.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.address}`;
+          
+          // Calculate USD amount
+          const ethAmount = amountInEth.toFixed(6);
+          const fundsApprovedInUSD = await currencyService.convertETHToUSD(ethAmount);
+          
+          // Build socials array from project data
+          const socials: Array<{ platform: string; url: string }> = [];
+          if (project.projectData?.website) {
+            socials.push({ platform: "Website", url: project.projectData.website });
+          }
+          
+          // Get Karma UID from batch results
+          const karmaUID = karmaResults.get(project.name);
+          
+          const application: DAOIP5Application = {
+            type: "GrantApplication",
+            id: `daoip5:octant:grantPool:${project.epoch}:grantApplication:${project.address}`,
+            grantPoolId: `daoip5:octant:grantPool:${project.epoch}`,
+            grantPoolName: `Octant Epoch ${project.epoch}`,
+            projectId: projectId,
+            projectName: project.name,
+            createdAt: new Date(Date.now() - (90 * 24 * 60 * 60 * 1000)).toISOString(),
+            contentURI: project.projectData?.website || `https://octant.app/project/${project.address}`,
+            socials: socials.length > 0 ? socials : undefined,
+            fundsApproved: [{
+              amount: ethAmount,
+              denomination: "ETH"
+            }],
+            fundsApprovedInUSD: fundsApprovedInUSD,
+            payoutAddress: {
+              type: "EthereumAddress",
+              value: project.address
+            },
+            status: "funded", // Octant applications with rewards are considered funded
+            extensions: {
+              "app.octant.applicationMetadata": {
+                epochNumber: project.epoch,
+                rewardAllocation: project.reward.allocated,
+                projectAddress: project.address,
+                fundingMechanism: "quadratic_funding",
+                network: "ethereum",
+                chainId: "1"
+              },
+              "app.octant.projectDetails": {
+                profileImageSmall: project.projectData?.profileImageSmall,
+                profileImageMedium: project.projectData?.profileImageMedium,
+                description: project.projectData?.description,
+                website: project.projectData?.website
+              },
+              // Add KARMA GAP UID if found
+              ...(karmaUID ? { "x-karmagap-uid": karmaUID } : {})
+            }
+          };
+
+          // Apply filters
+          if (filters?.poolId && application.grantPoolId !== filters.poolId) continue;
+          if (filters?.projectId && application.projectId !== filters.projectId) continue;
+
+          applications.push(application);
+        } catch (error) {
+          console.error(`Error processing project ${project.name}:`, error);
         }
       }
 

@@ -1,6 +1,6 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
-import { karmaService } from "../services/karma";
+import { searchKarmaProjectsBatch } from "../services/karma";
 
 interface GivethProject {
   id: string;
@@ -269,7 +269,12 @@ export class GivethAdapter extends BaseAdapter {
       const applications: DAOIP5Application[] = [];
       const targetPool = targetPools[0];
 
-      for (const project of data.allProjects?.projects || []) {
+      // Collect all project names for batch Karma search
+      const projects = data.allProjects?.projects || [];
+      const projectNames = projects.map((project: any) => project.title || "");
+      const karmaResults = await searchKarmaProjectsBatch(projectNames);
+
+      for (const project of projects) {
         // Get primary recipient address
         const primaryAddress = project.addresses?.find((addr: any) => addr.isRecipient)?.address || "";
         
@@ -284,9 +289,10 @@ export class GivethAdapter extends BaseAdapter {
           }
         }
 
-        // Fetch KARMA GAP UID for the project
         const projectName = project.title || "";
-        const karmaUID = await karmaService.searchProjectUID(projectName);
+        
+        // Get Karma UID from batch results
+        const karmaUID = karmaResults.get(projectName);
         
         const application: DAOIP5Application = {
           type: "GrantApplication",
