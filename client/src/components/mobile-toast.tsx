@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useMobileDetection } from '@/hooks/use-mobile-detection';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Monitor } from 'lucide-react';
 
 export default function MobileToast() {
-  const isMobile = useMobileDetection();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   useEffect(() => {
