@@ -178,45 +178,7 @@ export default function HealthPage() {
             })}
           </div>
           
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Grant Systems
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Octant</span>
-              </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Giveth</span>
-              </div>
 
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook </span>
-              </div>
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Stellar </span>
-              </div>
-              
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Celo </span>
-              </div>
-
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Arbitrum Foundation </span>
-              </div>
-
-              <div className="flex items-center px-4 py-2 text-sm">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Optimism </span>
-              </div>
-            </div>
-          </div>
         </nav>
       </div>
 
