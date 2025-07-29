@@ -145,6 +145,7 @@ export default function OverviewPage() {
                     <p>Grant systems that provide us direct API access to all their grant data. We fetch and transform this data to DAOIP-5 format in real-time.</p>
                   </TooltipContent>
                 </Tooltip>
+                <p></p>
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
@@ -259,6 +260,7 @@ export default function OverviewPage() {
                     <p>Essential infrastructure services that enhance our data quality and provide cross-platform project identification capabilities.</p>
                   </TooltipContent>
                 </Tooltip>
+                <p></p> 
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 <Tooltip>
