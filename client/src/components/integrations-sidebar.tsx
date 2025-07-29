@@ -50,34 +50,34 @@ export default function IntegrationsSidebar() {
     }
   ];
 
-  const comingSoonSystems: IntegrationItem[] = [
+  const dataIntegrationSystems: IntegrationItem[] = [
     {
       name: "Stellar",
-      type: "Type 1",
-      status: "coming-soon",
-      color: "yellow", 
-      description: "Stellar blockchain ecosystem grants and funding programs"
+      type: "Type 2",
+      status: "active",
+      color: "blue", 
+      description: "Static data files available at daoip5.daostar.org - Stellar blockchain ecosystem grants"
     },
     {
       name: "Celo",
-      type: "Type 1",
-      status: "coming-soon", 
-      color: "yellow",
-      description: "Mobile-first blockchain platform for financial inclusion"
+      type: "Type 2",
+      status: "active", 
+      color: "blue",
+      description: "Static data files available at daoip5.daostar.org - Mobile-first blockchain financial inclusion grants"
     },
     {
       name: "Arbitrum Foundation",
-      type: "Type 1",
-      status: "coming-soon",
-      color: "yellow",
-      description: "Layer 2 scaling solution grant programs and ecosystem funding"
+      type: "Type 2",
+      status: "active",
+      color: "blue",
+      description: "Static data files available at daoip5.daostar.org - Layer 2 scaling solution grant programs"
     },
     {
       name: "Optimism", 
-      type: "Type 1",
-      status: "coming-soon",
-      color: "yellow",
-      description: "Optimistic rollup grants and RetroPGF funding rounds"
+      type: "Type 2",
+      status: "active",
+      color: "blue",
+      description: "Static data files available at daoip5.daostar.org - Optimistic rollup grants and RetroPGF"
     }
   ];
 
@@ -86,6 +86,7 @@ export default function IntegrationsSidebar() {
       green: "bg-green-500",
       purple: "bg-purple-500", 
       amber: "bg-amber-500",
+      blue: "bg-blue-500",
       yellow: "bg-yellow-500"
     };
     return colorMap[color as keyof typeof colorMap] || "bg-gray-500";
@@ -122,9 +123,9 @@ export default function IntegrationsSidebar() {
 
   return (
     <div className="pt-6 space-y-6">
-      <IntegrationGroup title="Integrations" items={integrations} />
+      <IntegrationGroup title="Type 1: API Integration" items={integrations} />
+      <IntegrationGroup title="Type 2: Data Integration" items={dataIntegrationSystems} />
       <IntegrationGroup title="Infrastructure" items={infrastructureServices} />
-      <IntegrationGroup title="Coming Soon" items={comingSoonSystems} />
     </div>
   );
 }

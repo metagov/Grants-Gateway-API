@@ -96,13 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
-- July 29, 2025. Refactored Integrations Sidebar as Separate Component for Better Code Organization
+- July 29, 2025. Refactored Integrations Sidebar and Restructured Query Builder Layout
   - Created dedicated IntegrationsSidebar component (client/src/components/integrations-sidebar.tsx)
-  - Moved integrations content back to sidebar for better UX while maintaining clean code separation
-  - Organized integrations into grouped sections: Integrations, Infrastructure, Coming Soon
-  - Removed standalone integrations page in favor of sidebar-only approach
-  - Enhanced tooltip descriptions and improved visual organization with proper color coding
-  - Maintained single source of truth for integration data in separate component file
+  - Updated integration types: Type 1 (API Integration), Type 2 (Data Integration), Infrastructure
+  - Added Type 2 Data Integration systems: Stellar, Celo, Arbitrum Foundation, Optimism as active (not coming soon)
+  - All Type 2 systems reference static data files available at daoip5.daostar.org
+  - Restructured Query Builder: query builder and preview in two-column row, response section below
+  - Enhanced tooltip descriptions mentioning daoip5.daostar.org for static data availability
+  - Maintained clean code separation with single source of truth for integration data
 - July 29, 2025. Implemented Advanced Performance Optimizations and Error Handling
   - Added smart caching system with stale-while-revalidate pattern for optimal performance
   - Implemented circuit breaker for KARMA API with 5-failure threshold and 5-minute recovery
