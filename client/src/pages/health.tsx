@@ -93,7 +93,8 @@ export default function HealthPage() {
   };
 
   const formatResponseTime = (time?: number) => {
-    if (!time) return 'N/A';
+    if (time === undefined || time === null) return 'N/A';
+    if (time === 0) return '< 1ms';
     return time < 1000 ? `${time}ms` : `${(time / 1000).toFixed(2)}s`;
   };
 
