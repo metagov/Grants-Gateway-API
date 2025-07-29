@@ -96,6 +96,13 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Removed Questbook from API Functionality, Kept for Health Monitoring Only
+  - Removed Questbook from API routes and query builder as it's a direct DAOIP-5 implementation
+  - Updated Grant Systems page to clarify Questbook is "Health Monitoring Only" instead of "Active Integration"
+  - Modified health page integration types to show "Full API Integrations" vs "Health Monitoring Only"
+  - Questbook connectivity is still monitored for ecosystem health but not integrated into unified API
+  - Clarified that systems with native DAOIP-5 endpoints don't need unified API integration
+  - API now supports only Octant and Giveth as full integrations with data transformation
 - July 29, 2025. Added KARMA GAP Integration for Enhanced Project Metadata
   - Created KARMA service (server/services/karma.ts) to fetch project UIDs from https://gapapi.karmahq.xyz/search API
   - Enhanced all application endpoints with KARMA GAP UIDs in extensions field as "x-karmagap-uid" 

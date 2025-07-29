@@ -194,7 +194,7 @@ export default function HealthPage() {
 
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">Questbook (Type 3 Integration)</span>
+                <span className="text-gray-600 dark:text-gray-300">Questbook (Health Monitor Only)</span>
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-pink-400 rounded-full mr-3"></div>
@@ -391,9 +391,9 @@ export default function HealthPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <h3 className="text-sm md:text-base font-semibold">Source API Integrations</h3>
+                    <h3 className="text-sm md:text-base font-semibold">Full API Integrations</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                      These adapters fetch data from custom APIs and transform it to DAOIP-5 format:
+                      These adapters fetch data from custom APIs and transform it to DAOIP-5 format, providing unified access through our API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
@@ -407,14 +407,14 @@ export default function HealthPage() {
                     </ul>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="text-sm md:text-base font-semibold">Direct DAOIP-5 Integrations</h3>
+                    <h3 className="text-sm md:text-base font-semibold">Health Monitoring Only</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                      These systems provide DAOIP-5 compliant endpoints that are cached for performance:
+                      These systems already provide DAOIP-5 compliant endpoints. We monitor their connectivity but don't integrate them into our unified API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
                       <li className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-purple-500 mr-2" />
-                        Questbook - Web3 Grants Manager for Protocols
+                        Questbook - Direct DAOIP-5 implementation
                       </li>
                     </ul>
                   </div>

@@ -65,11 +65,11 @@ export default function GrantSystemsPage() {
     {
       name: "Questbook",
       logo: questbookLogo,
-      description: "Decentralized grant management platform for Web3 communities.",
-      detailedDescription: "Questbook offers end-to-end grant management for DAOs and protocols, including application processing, milestone tracking, and payment automation.",
-      status: "Active Integration",
+      description: "Decentralized grant management platform for Web3 communities (Health Monitoring Only).",
+      detailedDescription: "Questbook offers end-to-end grant management for DAOs and protocols. As a direct DAOIP-5 implementation, it's monitored for connectivity but not integrated into our unified API.",
+      status: "Health Monitoring",
       website: "https://questbook.app",
-      features: ["Grant Management", "DAO Integration", "Milestone Payments", "Community Tools"]
+      features: ["Direct DAOIP-5", "Grant Management", "DAO Integration", "Connectivity Monitoring"]
     },
     {
       name: "Open Source Observer",

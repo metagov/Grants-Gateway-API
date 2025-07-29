@@ -106,7 +106,6 @@ export default function QueryBuilderPage() {
                   <SelectItem value="all">All Systems</SelectItem>
                   <SelectItem value="octant">Octant</SelectItem>
                   <SelectItem value="giveth">Giveth</SelectItem>
-                  <SelectItem value="questbook">Questbook</SelectItem>
                 </SelectContent>
               </Select>
             </div>
