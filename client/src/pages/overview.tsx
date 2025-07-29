@@ -104,6 +104,10 @@ export default function OverviewPage() {
                 <Check className="h-4 w-4 text-green-500 mr-3" />
                 <span>Automated field mapping</span>
               </li>
+              <li className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-3" />
+                <span>KarmaGAP Project identity mapping</span>
+              </li>
             </ul>
           </CardContent>
         </Card>
