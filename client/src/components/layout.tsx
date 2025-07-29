@@ -11,6 +11,7 @@ import {
   Menu,
   X
 } from "lucide-react";
+import SystemsLiveSidebar from "@/components/systems-live-sidebar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useThemeContext } from "@/components/ui/theme-provider";
@@ -27,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const sidebarItems = [
     { id: "/", label: "Overview", icon: Building, path: "/" },
-    { id: "/grant-systems", label: "Grant Systems", icon: Layers, path: "/grant-systems" },
+
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
@@ -76,35 +77,8 @@ export default function Layout({ children }: LayoutProps) {
             })}
           </div>
           
-          {/* Systems Live Section */}
-          <div className="pt-6">
-            <p className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              Systems Live
-            </p>
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600 dark:text-gray-300">Octant</span>
-                </div>
-                <span className="text-xs text-gray-500">Active</span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600 dark:text-gray-300">Giveth</span>
-                </div>
-                <span className="text-xs text-gray-500">Active</span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600 dark:text-gray-300">Questbook</span>
-                </div>
-                <span className="text-xs text-gray-500">Active</span>
-              </div>
-            </div>
-          </div>
+          {/* Systems Live Component */}
+          <SystemsLiveSidebar />
 
         </nav>
       </div>
