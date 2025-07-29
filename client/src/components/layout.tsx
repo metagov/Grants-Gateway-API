@@ -11,7 +11,7 @@ import {
   Menu,
   X
 } from "lucide-react";
-import SystemsLiveSidebar from "@/components/systems-live-sidebar";
+
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useThemeContext } from "@/components/ui/theme-provider";
@@ -77,8 +77,26 @@ export default function Layout({ children }: LayoutProps) {
             })}
           </div>
           
-          {/* Systems Live Component */}
-          <SystemsLiveSidebar />
+          {/* Integrations Section */}
+          <div className="pt-6">
+            <p className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Integrations
+            </p>
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Octant</span>
+                <span className="text-xs text-gray-500">API Integration</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Giveth</span>
+                <span className="text-xs text-gray-500">API Integration</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 text-sm">
+                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
+                <span className="text-xs text-gray-500">Health Monitoring</span>
+              </div>
+            </div>
+          </div>
 
         </nav>
       </div>

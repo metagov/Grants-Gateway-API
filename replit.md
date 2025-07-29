@@ -96,7 +96,20 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
-- July 29, 2025. Replaced Grant Systems Page with Live Systems Sidebar Component
+- July 29, 2025. Added KARMA GAP Integration for Enhanced Project Metadata
+  - Created KARMA service (server/services/karma.ts) to fetch project UIDs from https://gapapi.karmahq.xyz/search API
+  - Enhanced all application endpoints with KARMA GAP UIDs in extensions field as "x-karmagap-uid" 
+  - Updated Octant and Giveth adapters to search KARMA for each project name and include UID when found
+  - Added intelligent caching with 1-hour TTL to minimize API calls and improve performance
+  - Batch processing support with rate limiting to be respectful to KARMA API
+  - Applications now include cross-platform project identification through KARMA GAP integration
+  - Provides enriched metadata linking projects across grant platforms and KARMA's impact tracking system
+- July 29, 2025. Replaced Grant Systems Page with Simple Integrations Sidebar
+  - Removed dedicated Grant Systems page (/grant-systems route) to reduce navigation complexity
+  - Created simple static sidebar section listing integrations and their types
+  - Shows Octant/Giveth as "API Integration" and Questbook as "Health Monitoring"
+  - Updated overview page references to point to API documentation instead of health monitoring
+  - Removed complex live monitoring features in favor of simple, clean integration listing
   - Removed dedicated Grant Systems page (/grant-systems route) to reduce navigation complexity
   - Created dynamic Systems Live sidebar component with real-time health monitoring
   - Integrated live systems status directly into main layout sidebar for all pages
