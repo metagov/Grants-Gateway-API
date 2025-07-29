@@ -29,17 +29,17 @@ export interface SystemHealthStatus {
 class HealthService {
   private healthCache: SystemHealthStatus | null = null;
   private lastHealthCheck: number = 0;
-  private readonly HEALTH_CACHE_TTL = 30 * 1000; // 30 seconds
+  private readonly HEALTH_CACHE_TTL = 10 * 1000; // 10 seconds for more responsive updates
 
   async checkAdapterHealth(adapter: any, adapterName: string): Promise<AdapterHealthStatus> {
     const startTime = Date.now();
     
     try {
-      // Test basic connectivity by fetching systems first
-      await adapter.getSystems();
-      const basicResponseTime = Date.now() - startTime;
+      // Test actual external API connectivity by fetching pools (which makes real API calls)
+      await adapter.getPools({ limit: 1 });
+      const apiResponseTime = Date.now() - startTime;
 
-      // If adapter has health check method, use it for detailed external API monitoring
+      // If adapter has health check method, use it for additional endpoint monitoring
       if (typeof adapter.healthCheck === 'function') {
         const healthCheckStart = Date.now();
         const healthResult = await adapter.healthCheck();
@@ -48,7 +48,7 @@ class HealthService {
         return {
           name: adapterName,
           status: healthResult.status === 'healthy' ? 'healthy' : 'degraded',
-          responseTime: Math.max(basicResponseTime, healthCheckTime),
+          responseTime: Math.max(apiResponseTime, healthCheckTime),
           lastChecked: new Date().toISOString(),
           endpoints: healthResult.endpoints,
           error: healthResult.status !== 'healthy' ? `External API dependency issues detected` : undefined
@@ -57,8 +57,8 @@ class HealthService {
 
       return {
         name: adapterName,
-        status: basicResponseTime < 5000 ? 'healthy' : 'degraded',
-        responseTime: basicResponseTime,
+        status: apiResponseTime < 5000 ? 'healthy' : 'degraded',
+        responseTime: apiResponseTime,
         lastChecked: new Date().toISOString()
       };
     } catch (error) {
@@ -163,6 +163,12 @@ class HealthService {
       };
     }
     return { status: 'unknown' };
+  }
+
+  // Clear cache to force fresh health check
+  clearCache(): void {
+    this.healthCache = null;
+    this.lastHealthCheck = 0;
   }
 }
 
