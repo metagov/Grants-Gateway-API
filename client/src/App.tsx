@@ -8,10 +8,10 @@ import Layout from "@/components/layout";
 import OverviewPage from "@/pages/overview";
 import QueryBuilderPage from "@/pages/query-builder";
 import EndpointsPage from "@/pages/endpoints";
-
 import ContributorsPage from "@/pages/contributors";
 import HealthPage from "@/pages/health";
 import NotFound from "@/pages/not-found";
+import MobileToast from "@/components/mobile-toast";
 
 function Router() {
   return (
@@ -33,6 +33,7 @@ function App() {
       <ThemeProvider>
         <TooltipProvider>
           <Toaster />
+          <MobileToast />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
