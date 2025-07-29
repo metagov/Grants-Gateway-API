@@ -96,6 +96,13 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Replaced Grant Systems Page with Live Systems Sidebar Component
+  - Removed dedicated Grant Systems page (/grant-systems route) to reduce navigation complexity
+  - Created dynamic Systems Live sidebar component with real-time health monitoring
+  - Integrated live systems status directly into main layout sidebar for all pages
+  - Shows real-time status for Database, API Integrations (Octant/Giveth), and Health Monitoring (Questbook)
+  - Auto-refreshes every 30 seconds with manual refresh option and response time display
+  - Consolidated systems information into always-visible sidebar instead of separate page
 - July 29, 2025. Removed Questbook from API Functionality, Kept for Health Monitoring Only
   - Removed Questbook from API routes and query builder as it's a direct DAOIP-5 implementation
   - Updated Grant Systems page to clarify Questbook is "Health Monitoring Only" instead of "Active Integration"
