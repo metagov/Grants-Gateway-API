@@ -115,7 +115,7 @@ export default function ContributorsPage() {
             </p>
             <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
               <Circle className="h-3 w-3 mr-1 fill-amber-500" />
-              Infrastructure Active
+              Project Identity Provider
             </Badge>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function ContributorsPage() {
       <div>
         <h2 className="text-2xl font-bold mb-6">Type 2: Data Integration Systems</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          These platforms share grant data in CSV/JSON format, available as static files at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
+          These platforms share grant data in CSV/JSON format, available as static files after data traslation according to  DAOIP-5 at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
         </p>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Stellar */}
@@ -192,7 +192,7 @@ export default function ContributorsPage() {
 
       {/* Future Integrations */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Future Integrations</h2>
+        <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
         <div className="grid md:grid-cols-1 gap-6">
           {/* OSO */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-shadow max-w-md mx-auto">
@@ -245,6 +245,7 @@ export default function ContributorsPage() {
                   <li>• Help improve API documentation and tooling</li>
                 </ul>
               </div>
+              Reach out to us via email <a href="mailto:rashmi@daostar.org" className="text-primary -mt-6 hover:underline">rashmi@daostar.org</a>
             </div>
           </div>
         </CardContent>
