@@ -200,21 +200,22 @@ export default function HealthPage() {
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
                 <span className="text-gray-600 dark:text-gray-300">Stellar </span>
               </div>
-
-              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-              <span className="text-gray-600 dark:text-gray-300">Celo </span>
+              
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Celo </span>
               </div>
 
-            <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-            <span className="text-gray-600 dark:text-gray-300">Arbitrum Foundation </span>
-            </div>
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Arbitrum Foundation </span>
+              </div>
 
-          <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-          <span className="text-gray-600 dark:text-gray-300">Optimism </span>
-          </div>
-      </div>
-    </div>
-    
+              <div className="flex items-center px-4 py-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">Optimism </span>
+              </div>
+            </div>
           </div>
         </nav>
       </div>
