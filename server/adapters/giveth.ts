@@ -1,5 +1,6 @@
 import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { currencyService } from "../services/currency";
+import { karmaService } from "../services/karma";
 
 interface GivethProject {
   id: string;
@@ -283,13 +284,17 @@ export class GivethAdapter extends BaseAdapter {
           }
         }
 
+        // Fetch KARMA GAP UID for the project
+        const projectName = project.title || "";
+        const karmaUID = await karmaService.searchProjectUID(projectName);
+        
         const application: DAOIP5Application = {
           type: "GrantApplication",
           id: `daoip5:giveth:grantPool:${targetQfRoundId}:grantApplication:${project.id}`,
           grantPoolId: targetPool.id,
           grantPoolName: targetPool.name,
           projectId: `daoip5:${project.title?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}:project:${project.id}`,
-          projectName: project.title || "",
+          projectName: projectName,
           createdAt: project.creationDate ? 
             this.formatDate(project.creationDate) : 
             new Date().toISOString(),
@@ -312,7 +317,9 @@ export class GivethAdapter extends BaseAdapter {
               projectAddresses: project.addresses,
               projectSocialMedia: project.socialMedia,
               qfRounds: project.qfRounds
-            }
+            },
+            // Add KARMA GAP UID if found
+            ...(karmaUID ? { "x-karmagap-uid": karmaUID } : {})
           }
         };
 
