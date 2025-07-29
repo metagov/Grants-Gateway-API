@@ -18,15 +18,17 @@ interface KarmaSearchResult {
   error?: string;
 }
 
-// Simple in-memory cache with 1-hour TTL
-const karmaCache = new Map<string, { uid: string | null; timestamp: number }>();
+import { karmaCache } from './cache.js';
+
+// Fallback for individual requests (batch processing uses smart cache)
+const simpleKarmaCache = new Map<string, { uid: string | null; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export async function searchKarmaProject(projectName: string): Promise<KarmaSearchResult> {
   const cacheKey = projectName.toLowerCase().trim();
   
   // Check cache first
-  const cached = karmaCache.get(cacheKey);
+  const cached = simpleKarmaCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return { uid: cached.uid };
   }
@@ -47,7 +49,7 @@ export async function searchKarmaProject(projectName: string): Promise<KarmaSear
       const error = `Karma API responded with ${response.status}`;
       console.warn(`Karma search failed for "${projectName}": ${error}`);
       // Cache null result to avoid repeated failures
-      karmaCache.set(cacheKey, { uid: null, timestamp: Date.now() });
+      simpleKarmaCache.set(cacheKey, { uid: null, timestamp: Date.now() });
       return { uid: null, error };
     }
 
@@ -72,7 +74,7 @@ export async function searchKarmaProject(projectName: string): Promise<KarmaSear
     }
 
     // Cache the result
-    karmaCache.set(cacheKey, { uid, timestamp: Date.now() });
+    simpleKarmaCache.set(cacheKey, { uid, timestamp: Date.now() });
     
     return { uid };
     
@@ -81,41 +83,116 @@ export async function searchKarmaProject(projectName: string): Promise<KarmaSear
     console.warn(`Karma search failed for "${projectName}": ${errorMsg}`);
     
     // Cache null result to avoid repeated failures
-    karmaCache.set(cacheKey, { uid: null, timestamp: Date.now() });
+    simpleKarmaCache.set(cacheKey, { uid: null, timestamp: Date.now() });
     
     return { uid: null, error: errorMsg };
   }
 }
 
-// Batch search with rate limiting
+// Enhanced batch search with smart caching and circuit breaker
 export async function searchKarmaProjectsBatch(projectNames: string[]): Promise<Map<string, string | null>> {
+  const cacheKey = `batch:${projectNames.sort().join('|')}`;
+  
+  // Try to get cached results first
+  const cachedResults = karmaCache.getWithRefresh(
+    cacheKey,
+    () => performKarmaBatchSearch(projectNames),
+    2 * 60 * 60 * 1000 // Allow 2 hours of stale data
+  );
+  
+  if (cachedResults) {
+    return cachedResults;
+  }
+  
+  // Perform fresh search
+  const freshResults = await performKarmaBatchSearch(projectNames);
+  karmaCache.set(cacheKey, freshResults, 4 * 60 * 60 * 1000); // Cache for 4 hours
+  
+  return freshResults;
+}
+
+// Circuit breaker state
+let circuitBreakerState = {
+  failureCount: 0,
+  lastFailure: 0,
+  isOpen: false
+};
+
+const CIRCUIT_BREAKER_THRESHOLD = 5;
+const CIRCUIT_BREAKER_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+async function performKarmaBatchSearch(projectNames: string[]): Promise<Map<string, string | null>> {
   const results = new Map<string, string | null>();
   
-  // Process in batches of 5 with 200ms delay between requests
-  const batchSize = 5;
-  const delay = 200;
-  
-  for (let i = 0; i < projectNames.length; i += batchSize) {
-    const batch = projectNames.slice(i, i + batchSize);
-    
-    const batchPromises = batch.map(async (projectName) => {
-      const result = await searchKarmaProject(projectName);
-      return { projectName, uid: result.uid };
-    });
-    
-    const batchResults = await Promise.all(batchPromises);
-    
-    batchResults.forEach(({ projectName, uid }) => {
-      results.set(projectName, uid);
-    });
-    
-    // Add delay between batches (except for last batch)
-    if (i + batchSize < projectNames.length) {
-      await new Promise(resolve => setTimeout(resolve, delay));
+  // Check circuit breaker
+  const now = Date.now();
+  if (circuitBreakerState.isOpen) {
+    if (now - circuitBreakerState.lastFailure < CIRCUIT_BREAKER_TIMEOUT) {
+      console.warn('KARMA API circuit breaker is open, skipping batch search');
+      // Return empty results to fail gracefully
+      projectNames.forEach(name => results.set(name, null));
+      return results;
+    } else {
+      // Reset circuit breaker
+      circuitBreakerState.isOpen = false;
+      circuitBreakerState.failureCount = 0;
     }
   }
   
-  return results;
+  try {
+    // Smaller batches with shorter delays for better performance
+    const batchSize = 3;
+    const delay = 100;
+    
+    for (let i = 0; i < projectNames.length; i += batchSize) {
+      const batch = projectNames.slice(i, i + batchSize);
+      
+      const batchPromises = batch.map(async (projectName) => {
+        try {
+          const result = await searchKarmaProject(projectName);
+          return { projectName, uid: result.uid, error: result.error };
+        } catch (error) {
+          return { projectName, uid: null, error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      
+      batchResults.forEach(({ projectName, uid, error }) => {
+        results.set(projectName, uid);
+        if (error) {
+          circuitBreakerState.failureCount++;
+        }
+      });
+      
+      // Add delay between batches (except for last batch)
+      if (i + batchSize < projectNames.length) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    // Reset failure count on successful batch
+    if (circuitBreakerState.failureCount === 0) {
+      circuitBreakerState.lastFailure = 0;
+    }
+    
+    return results;
+    
+  } catch (error) {
+    circuitBreakerState.failureCount++;
+    circuitBreakerState.lastFailure = now;
+    
+    if (circuitBreakerState.failureCount >= CIRCUIT_BREAKER_THRESHOLD) {
+      circuitBreakerState.isOpen = true;
+      console.warn('KARMA API circuit breaker opened due to repeated failures');
+    }
+    
+    console.warn('KARMA batch search failed:', error);
+    
+    // Return empty results to fail gracefully
+    projectNames.forEach(name => results.set(name, null));
+    return results;
+  }
 }
 
 // Clear cache (useful for testing)
