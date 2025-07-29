@@ -65,8 +65,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // Systems endpoints
-  app.get('/api/v1/systems', async (req: AuthenticatedRequest, res) => {
+  // Grant Systems endpoints
+  app.get('/api/v1/grantSystems', async (req: AuthenticatedRequest, res) => {
     try {
       const { system } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/systems/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantSystems/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -166,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/pools/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantPools/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -255,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Applications endpoints
-  app.get('/api/v1/applications', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantApplications', async (req: AuthenticatedRequest, res) => {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -314,7 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/applications/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantApplications/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;

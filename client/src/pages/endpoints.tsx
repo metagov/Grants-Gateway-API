@@ -109,9 +109,9 @@ export default function EndpointsPage() {
             <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Example Usage</h5>
             <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
               <code className="text-xs text-blue-800 dark:text-blue-200">
-                GET /api/v1/systems?limit=5&offset=10<br/>
+                GET /api/v1/grantSystems?limit=5&offset=10<br/>
                 GET /api/v1/pools?limit=20&page=2<br/>
-                GET /api/v1/applications?system=octant&limit=50
+                GET /api/v1/grantApplications?system=octant&limit=50
               </code>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function EndpointsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h4 className="font-semibold mb-2">GET /api/v1/systems</h4>
+            <h4 className="font-semibold mb-2">GET /api/v1/grantSystems</h4>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Retrieve all available grant systems following DAOIP-5 specification.
             </p>
@@ -153,21 +153,21 @@ export default function EndpointsPage() {
               <TabsContent value="curl">
                 <CodeBlock 
                   text={`# Get all systems
-curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems" \\
   -H "Accept: application/json"
 
 # Get systems with pagination
-curl -X GET "https://grants.daostar.org/api/v1/systems?limit=5&offset=0" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems?limit=5&offset=0" \\
   -H "Accept: application/json"`}
                   id="systems-curl"
                 >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`# Get all systems
-curl -X GET "https://grants.daostar.org/api/v1/systems" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems" \\
   -H "Accept: application/json"
 
 # Get systems with pagination
-curl -X GET "https://grants.daostar.org/api/v1/systems?limit=5&offset=0" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems?limit=5&offset=0" \\
   -H "Accept: application/json"`}</code>
                   </pre>
                 </CodeBlock>
@@ -175,13 +175,13 @@ curl -X GET "https://grants.daostar.org/api/v1/systems?limit=5&offset=0" \\
               
               <TabsContent value="javascript">
                 <CodeBlock 
-                  text={`const response = await fetch('/api/v1/systems');
+                  text={`const response = await fetch('/api/v1/grantSystems');
 const systems = await response.json();
 console.log(systems);`}
                   id="systems-javascript"
                 >
                   <pre className="text-sm overflow-x-auto">
-                    <code>{`const response = await fetch('/api/v1/systems');
+                    <code>{`const response = await fetch('/api/v1/grantSystems');
 const systems = await response.json();
 console.log(systems);`}</code>
                   </pre>
@@ -197,7 +197,7 @@ console.log(systems);`}</code>
   description: string;
 }
 
-const response: Response = await fetch('/api/v1/systems');
+const response: Response = await fetch('/api/v1/grantSystems');
 const systems: GrantSystem[] = await response.json();`}
                   id="systems-typescript"
                 >
@@ -209,7 +209,7 @@ const systems: GrantSystem[] = await response.json();`}
   description: string;
 }
 
-const response: Response = await fetch('/api/v1/systems');
+const response: Response = await fetch('/api/v1/grantSystems');
 const systems: GrantSystem[] = await response.json();`}</code>
                   </pre>
                 </CodeBlock>
@@ -219,7 +219,7 @@ const systems: GrantSystem[] = await response.json();`}</code>
                 <CodeBlock 
                   text={`import requests
 
-response = requests.get('/api/v1/systems')
+response = requests.get('/api/v1/grantSystems')
 systems = response.json()
 print(systems)`}
                   id="systems-python"
@@ -227,7 +227,7 @@ print(systems)`}
                   <pre className="text-sm overflow-x-auto">
                     <code>{`import requests
 
-response = requests.get('/api/v1/systems')
+response = requests.get('/api/v1/grantSystems')
 systems = response.json()
 print(systems)`}</code>
                   </pre>
@@ -408,7 +408,7 @@ print(pools)`}</code>
       "amountInUsd": "3000000",
       "currency": "ETH",
       "token": "0xA0b86a33E6417A302C7b029B5b642D49292b5A5d",
-      "grantApplicationsURI": "/api/v1/applications?poolId=daoip5:octant:grantPool:1:7",
+      "grantApplicationsURI": "/api/v1/grantApplications?poolId=daoip5:octant:grantPool:1:7",
       "strategy": "AllocationVoting",
       "isOpen": false,
       "extensions": {
@@ -446,7 +446,7 @@ print(pools)`}</code>
       "amountInUsd": "3000000",
       "currency": "ETH",
       "token": "0xA0b86a33E6417A302C7b029B5b642D49292b5A5d",
-      "grantApplicationsURI": "/api/v1/applications?poolId=daoip5:octant:grantPool:1:7",
+      "grantApplicationsURI": "/api/v1/grantApplications?poolId=daoip5:octant:grantPool:1:7",
       "strategy": "AllocationVoting",
       "isOpen": false,
       "extensions": {
@@ -486,7 +486,7 @@ print(pools)`}</code>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h4 className="font-semibold mb-2">GET /api/v1/applications</h4>
+            <h4 className="font-semibold mb-2">GET /api/v1/grantApplications</h4>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Retrieve grant applications with filtering by pool and system.
             </p>
@@ -514,29 +514,29 @@ print(pools)`}</code>
               <TabsContent value="curl">
                 <CodeBlock 
                   text={`# Get all applications
-curl -X GET "https://grants.daostar.org/api/v1/applications" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications" \\
   -H "Accept: application/json"
 
 # Get applications with filters and pagination
-curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant&limit=20&page=1" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?system=octant&limit=20&page=1" \\
   -H "Accept: application/json"
 
 # Get applications for specific pool with search
-curl -X GET "https://grants.daostar.org/api/v1/applications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
   -H "Accept: application/json"`}
                   id="applications-curl"
                 >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`# Get all applications
-curl -X GET "https://grants.daostar.org/api/v1/applications" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications" \\
   -H "Accept: application/json"
 
 # Get applications with filters and pagination
-curl -X GET "https://grants.daostar.org/api/v1/applications?system=octant&limit=20&page=1" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?system=octant&limit=20&page=1" \\
   -H "Accept: application/json"
 
 # Get applications for specific pool with search
-curl -X GET "https://grants.daostar.org/api/v1/applications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?poolId=daoip5:octant:grantPool:7&search=protocol" \\
   -H "Accept: application/json"`}</code>
                   </pre>
                 </CodeBlock>
@@ -545,25 +545,25 @@ curl -X GET "https://grants.daostar.org/api/v1/applications?poolId=daoip5:octant
               <TabsContent value="javascript">
                 <CodeBlock 
                   text={`// Get applications with pagination
-const response = await fetch('/api/v1/applications?limit=20&page=1');
+const response = await fetch('/api/v1/grantApplications?limit=20&page=1');
 const applications = await response.json();
 console.log(applications.data);
 console.log('Total:', applications.pagination.totalCount);
 
 // Get applications for specific system
-const octantApps = await fetch('/api/v1/applications?system=octant');
+const octantApps = await fetch('/api/v1/grantApplications?system=octant');
 const data = await octantApps.json();`}
                   id="applications-javascript"
                 >
                   <pre className="text-sm overflow-x-auto">
                     <code>{`// Get applications with pagination
-const response = await fetch('/api/v1/applications?limit=20&page=1');
+const response = await fetch('/api/v1/grantApplications?limit=20&page=1');
 const applications = await response.json();
 console.log(applications.data);
 console.log('Total:', applications.pagination.totalCount);
 
 // Get applications for specific system
-const octantApps = await fetch('/api/v1/applications?system=octant');
+const octantApps = await fetch('/api/v1/grantApplications?system=octant');
 const data = await octantApps.json();`}</code>
                   </pre>
                 </CodeBlock>
@@ -595,7 +595,7 @@ interface PaginatedResponse<T> {
   };
 }
 
-const response: Response = await fetch('/api/v1/applications?limit=20');
+const response: Response = await fetch('/api/v1/grantApplications?limit=20');
 const applications: PaginatedResponse<Application> = await response.json();`}
                   id="applications-typescript"
                 >
@@ -624,7 +624,7 @@ interface PaginatedResponse<T> {
   };
 }
 
-const response: Response = await fetch('/api/v1/applications?limit=20');
+const response: Response = await fetch('/api/v1/grantApplications?limit=20');
 const applications: PaginatedResponse<Application> = await response.json();`}</code>
                   </pre>
                 </CodeBlock>
@@ -635,7 +635,7 @@ const applications: PaginatedResponse<Application> = await response.json();`}</c
                   text={`import requests
 
 # Get applications with pagination
-response = requests.get('/api/v1/applications', params={
+response = requests.get('/api/v1/grantApplications', params={
     'system': 'octant',
     'limit': 20,
     'page': 1
@@ -644,7 +644,7 @@ applications = response.json()
 print(f"Found {applications['pagination']['totalCount']} applications")
 
 # Get applications for specific pool
-pool_response = requests.get('/api/v1/applications', params={
+pool_response = requests.get('/api/v1/grantApplications', params={
     'poolId': 'daoip5:octant:grantPool:7',
     'search': 'protocol'
 })
@@ -655,7 +655,7 @@ pool_apps = pool_response.json()`}
                     <code>{`import requests
 
 # Get applications with pagination
-response = requests.get('/api/v1/applications', params={
+response = requests.get('/api/v1/grantApplications', params={
     'system': 'octant',
     'limit': 20,
     'page': 1
@@ -664,7 +664,7 @@ applications = response.json()
 print(f"Found {applications['pagination']['totalCount']} applications")
 
 # Get applications for specific pool
-pool_response = requests.get('/api/v1/applications', params={
+pool_response = requests.get('/api/v1/grantApplications', params={
     'poolId': 'daoip5:octant:grantPool:7',
     'search': 'protocol'
 })

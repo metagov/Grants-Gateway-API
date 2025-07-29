@@ -18,9 +18,9 @@ import { QueryFilters } from "@/types/daoip5";
 
 export default function QueryBuilderPage() {
   // Query builder state
-  const [entityType, setEntityType] = useState("systems");
+  const [entityType, setEntityType] = useState("grantSystems");
   const [queryFilters, setQueryFilters] = useState<QueryFilters>({});
-  const [queryPreview, setQueryPreview] = useState("https://grants.daostar.org/api/v1/systems");
+  const [queryPreview, setQueryPreview] = useState("https://grants.daostar.org/api/v1/grantSystems");
 
   // Update query preview when filters change
   useEffect(() => {
@@ -86,9 +86,9 @@ export default function QueryBuilderPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="systems">Grant Systems</SelectItem>
+                <SelectItem value="grantSystems">Grant Systems</SelectItem>
                 <SelectItem value="grantPools">Grant Pools</SelectItem>
-                <SelectItem value="applications">Applications</SelectItem>
+                <SelectItem value="grantApplications">Grant Applications</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -110,7 +110,7 @@ export default function QueryBuilderPage() {
             </Select>
           </div>
 
-          {entityType === "applications" && (
+          {entityType === "grantApplications" && (
             <div>
               <Label htmlFor="poolId" className="flex items-center">
                 Grant Pool ID
