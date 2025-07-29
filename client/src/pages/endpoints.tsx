@@ -50,44 +50,9 @@ export default function EndpointsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-4">API Endpoints</h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Complete reference for all available API endpoints with DAOIP-5 compliant responses and KarmaGAP Project Identity integration.
+          Complete reference for all available API endpoints with DAOIP-5 compliant responses.
         </p>
       </div>
-
-      {/* KarmaGAP Feature */}
-      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
-        <CardHeader>
-          <CardTitle className="text-amber-900 dark:text-amber-100 flex items-center">
-            ✨ KarmaGAP Project Identity Matching
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            Every grant application automatically includes cross-platform project identification through KarmaGAP integration.
-          </p>
-          
-          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-            <div>
-              <h5 className="font-medium mb-3 text-amber-900 dark:text-amber-100">Extension Field</h5>
-              <div className="space-y-2 text-sm">
-                <div className="flex">
-                  <code className="bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-1 rounded mr-3 min-w-[120px]">x-karmagap-uid</code>
-                  <span className="text-amber-700 dark:text-amber-300">Unique project identifier for cross-platform tracking</span>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h5 className="font-medium mb-3 text-amber-900 dark:text-amber-100">Benefits</h5>
-              <div className="space-y-1 text-sm text-amber-700 dark:text-amber-300">
-                <div>• Track projects across multiple grant systems</div>
-                <div>• Build comprehensive impact analytics</div>
-                <div>• Deduplicate projects in aggregation tools</div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Pagination Documentation */}
       <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
