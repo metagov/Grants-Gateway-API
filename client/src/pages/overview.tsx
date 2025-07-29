@@ -72,7 +72,7 @@ export default function OverviewPage() {
               language="http"
             />
             <CodeBlock
-              code="GET https://grants.daostar.org/api/v1/pools?system=octant"
+              code="GET https://grants.daostar.org/api/v1/grantPools?system=octant"
               title="Get grant pools from Octant"
               language="http"
             />
@@ -233,6 +233,9 @@ export default function OverviewPage() {
                 </Tooltip>
               </h3>
               <div className="space-y-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Questbook Data available at <a href="https://api.questbook.app/daoip-5" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">api.questbook.app/daoip-5</a>
+                </p>
                 <div className="flex items-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
                   <img src={questbookLogo} alt="Questbook" className="w-5 h-5 mr-2" />
                   <span className="text-sm">Questbook</span>
