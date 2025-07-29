@@ -96,6 +96,14 @@ Implements the adapter pattern for different grant systems:
 
 ```
 Changelog:
+- July 29, 2025. Updated API Endpoints from /pools to /grantPools and Enhanced Integration References
+  - Changed all API endpoint references from /api/v1/pools to /api/v1/grantPools throughout codebase
+  - Updated server routes.ts to serve Grant Pools endpoint at /api/v1/grantPools instead of /pools
+  - Enhanced API documentation with comprehensive response format example for Grant Pools endpoint
+  - Updated Questbook integration reference to include direct link to https://api.questbook.app/daoip-5
+  - Modified all cURL, JavaScript, TypeScript, and Python code examples to use new grantPools endpoint
+  - Updated grantPoolsURI references in systems responses to point to correct /grantPools endpoint
+  - Ensured consistency across client documentation, server routes, and external documentation files
 - July 29, 2025. Refactored Integrations Sidebar and Restructured Query Builder Layout
   - Created dedicated IntegrationsSidebar component (client/src/components/integrations-sidebar.tsx)
   - Updated integration types: Type 1 (API Integration), Type 2 (Data Integration), Infrastructure

@@ -125,8 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Pools endpoints
-  app.get('/api/v1/pools', async (req: AuthenticatedRequest, res) => {
+  // Grant Pools endpoints
+  app.get('/api/v1/grantPools', async (req: AuthenticatedRequest, res) => {
     try {
       const { system, isOpen, mechanism } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);

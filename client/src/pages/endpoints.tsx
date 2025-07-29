@@ -247,7 +247,7 @@ print(systems)`}</code>
       "name": "Octant",
       "description": "Ethereum public goods funding platform",
       "uri": "daoip5:octant:grantSystem",
-      "poolsURI": "/api/v1/pools?system=octant"
+      "grantPoolsURI": "/api/v1/grantPools?system=octant"
     }
   ]
 }`}
@@ -262,7 +262,7 @@ print(systems)`}</code>
       "name": "Octant",
       "description": "Ethereum public goods funding platform",
       "uri": "daoip5:octant:grantSystem",
-      "poolsURI": "/api/v1/pools?system=octant"
+      "grantPoolsURI": "/api/v1/grantPools?system=octant"
     }
   ]
 }`}</code>
@@ -282,7 +282,7 @@ print(systems)`}</code>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h4 className="font-semibold mb-2">GET /api/v1/pools</h4>
+            <h4 className="font-semibold mb-2">GET /api/v1/grantPools</h4>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Retrieve grant pools with optional filtering by system.
             </p>
@@ -308,22 +308,22 @@ print(systems)`}</code>
                 
                 <TabsContent value="curl">
                   <CodeBlock 
-                    text={`# Get all pools
-curl -X GET "https://grants.daostar.org/api/v1/pools" \\
+                    text={`# Get all grant pools
+curl -X GET "https://grants.daostar.org/api/v1/grantPools" \\
   -H "Accept: application/json"
 
-# Get pools with filters and pagination
-curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant&limit=5&page=1" \\
+# Get grant pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantPools?system=octant&limit=5&page=1" \\
   -H "Accept: application/json"`}
                     id="pools-curl"
                   >
                     <pre className="text-sm overflow-x-auto">
-                      <code>{`# Get all pools
-curl -X GET "https://grants.daostar.org/api/v1/pools" \\
+                      <code>{`# Get all grant pools
+curl -X GET "https://grants.daostar.org/api/v1/grantPools" \\
   -H "Accept: application/json"
 
-# Get pools with filters and pagination
-curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant&limit=5&page=1" \\
+# Get grant pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantPools?system=octant&limit=5&page=1" \\
   -H "Accept: application/json"`}</code>
                     </pre>
                   </CodeBlock>
@@ -331,13 +331,13 @@ curl -X GET "https://grants.daostar.org/api/v1/pools?system=octant&limit=5&page=
                 
                 <TabsContent value="javascript">
                   <CodeBlock 
-                    text={`const response = await fetch('/api/v1/pools?system=octant');
+                    text={`const response = await fetch('/api/v1/grantPools?system=octant');
 const pools = await response.json();
 console.log(pools);`}
                     id="pools-javascript"
                   >
                     <pre className="text-sm overflow-x-auto">
-                      <code>{`const response = await fetch('/api/v1/pools?system=octant');
+                      <code>{`const response = await fetch('/api/v1/grantPools?system=octant');
 const pools = await response.json();
 console.log(pools);`}</code>
                     </pre>
@@ -353,7 +353,7 @@ console.log(pools);`}</code>
   amount: string;
 }
 
-const response: Response = await fetch('/api/v1/pools?system=octant');
+const response: Response = await fetch('/api/v1/grantPools?system=octant');
 const pools: GrantPool[] = await response.json();`}
                     id="pools-typescript"
                   >
@@ -365,7 +365,7 @@ const pools: GrantPool[] = await response.json();`}
   amount: string;
 }
 
-const response: Response = await fetch('/api/v1/pools?system=octant');
+const response: Response = await fetch('/api/v1/grantPools?system=octant');
 const pools: GrantPool[] = await response.json();`}</code>
                     </pre>
                   </CodeBlock>
@@ -375,7 +375,7 @@ const pools: GrantPool[] = await response.json();`}</code>
                   <CodeBlock 
                     text={`import requests
 
-response = requests.get('/api/v1/pools?system=octant')
+response = requests.get('/api/v1/grantPools?system=octant')
 pools = response.json()
 print(pools)`}
                     id="pools-python"
@@ -383,13 +383,93 @@ print(pools)`}
                     <pre className="text-sm overflow-x-auto">
                       <code>{`import requests
 
-response = requests.get('/api/v1/pools?system=octant')
+response = requests.get('/api/v1/grantPools?system=octant')
 pools = response.json()
 print(pools)`}</code>
                     </pre>
                   </CodeBlock>
                 </TabsContent>
               </Tabs>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-2">Response Format</h4>
+              <CodeBlock 
+                text={`{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "type": "GrantPool",
+      "name": "Epoch 7",
+      "description": "Octant funding round for public goods",
+      "uri": "daoip5:octant:grantPool:1:7",
+      "amount": "1500000000000000000000",
+      "amountInUsd": "3000000",
+      "currency": "ETH",
+      "token": "0xA0b86a33E6417A302C7b029B5b642D49292b5A5d",
+      "grantApplicationsURI": "/api/v1/applications?poolId=daoip5:octant:grantPool:1:7",
+      "strategy": "AllocationVoting",
+      "isOpen": false,
+      "extensions": {
+        "app.octant.epochMetadata": {
+          "epochStart": "2024-12-01T00:00:00Z",
+          "epochEnd": "2024-12-31T23:59:59Z",
+          "totalRewards": "150.0"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "totalCount": 15,
+    "totalPages": 2,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}`}
+                id="pools-response"
+              >
+                <pre className="text-sm overflow-x-auto">
+                  <code>{`{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "type": "GrantPool",
+      "name": "Epoch 7",
+      "description": "Octant funding round for public goods",
+      "uri": "daoip5:octant:grantPool:1:7",
+      "amount": "1500000000000000000000",
+      "amountInUsd": "3000000",
+      "currency": "ETH",
+      "token": "0xA0b86a33E6417A302C7b029B5b642D49292b5A5d",
+      "grantApplicationsURI": "/api/v1/applications?poolId=daoip5:octant:grantPool:1:7",
+      "strategy": "AllocationVoting",
+      "isOpen": false,
+      "extensions": {
+        "app.octant.epochMetadata": {
+          "epochStart": "2024-12-01T00:00:00Z",
+          "epochEnd": "2024-12-31T23:59:59Z",
+          "totalRewards": "150.0"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "totalCount": 15,
+    "totalPages": 2,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}`}</code>
+                </pre>
+              </CodeBlock>
             </div>
         </CardContent>
       </Card>
