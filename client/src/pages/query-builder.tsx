@@ -83,7 +83,7 @@ export default function QueryBuilderPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-4">Interactive Query Builder</h1>
         <p className="text-gray-600 dark:text-gray-300">
-          Build and test API queries with real-time preview and response data. All grant applications include KarmaGAP Project Identity UIDs.
+          Build and test API queries with real-time preview and execution.
         </p>
       </div>
 
