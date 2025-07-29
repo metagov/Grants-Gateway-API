@@ -39,7 +39,7 @@ export default function IntegrationsSidebar() {
       type: "Infrastructure",
       status: "infrastructure", 
       color: "amber",
-      description: "🔗 Project Identity Matching: Every grant application includes 'x-karmagap-uid' extension field for cross-platform project tracking"
+      description: "Cross-platform project UIDs for seamless project identification"
     },
     {
       name: "OSO",
