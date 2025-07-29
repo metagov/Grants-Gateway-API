@@ -279,6 +279,8 @@ export class OctantAdapter extends BaseAdapter {
           // Get Karma UID from batch results
           const karmaUID = karmaResults.get(project.name);
           
+
+          
           const application: DAOIP5Application = {
             type: "GrantApplication",
             id: `daoip5:octant:grantPool:${project.epoch}:grantApplication:${project.address}`,
