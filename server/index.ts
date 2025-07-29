@@ -1,10 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { startBackgroundRefresh, preloadCommonData } from "./services/dataRefresh.js";
+import { optimizeResponse, requestTimeout, performanceMonitoring } from "./middleware/responseOptimization.js";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add performance optimization middleware
+app.use(requestTimeout(25000)); // 25 second timeout
+app.use(performanceMonitoring);
+app.use(optimizeResponse);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -37,6 +44,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Start background services for better performance
+  await preloadCommonData();
+  startBackgroundRefresh();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
