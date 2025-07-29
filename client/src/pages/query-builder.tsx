@@ -87,7 +87,7 @@ export default function QueryBuilderPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="systems">Grant Systems</SelectItem>
-                <SelectItem value="pools">Grant Pools</SelectItem>
+                <SelectItem value="grantPools">Grant Pools</SelectItem>
                 <SelectItem value="applications">Applications</SelectItem>
               </SelectContent>
             </Select>
