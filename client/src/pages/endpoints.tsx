@@ -48,7 +48,7 @@ export default function EndpointsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-4">API Endpoints</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4">API Endpoints</h1>
         <p className="text-gray-600 dark:text-gray-300">
           Complete reference for all available API endpoints with DAOIP-5 compliant responses.
         </p>
@@ -64,7 +64,7 @@ export default function EndpointsPage() {
             All collection endpoints support pagination. Use these parameters to control response size and navigate through results.
           </p>
           
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <h5 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Query Parameters</h5>
               <div className="space-y-2 text-sm">
@@ -329,11 +329,11 @@ print(systems)`}</code>
             </div>
 
             <Tabs defaultValue="curl" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="curl">cURL</TabsTrigger>
-                  <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-                  <TabsTrigger value="typescript">TypeScript</TabsTrigger>
-                  <TabsTrigger value="python">Python</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                  <TabsTrigger value="curl" className="text-xs sm:text-sm">cURL</TabsTrigger>
+                  <TabsTrigger value="javascript" className="text-xs sm:text-sm">JavaScript</TabsTrigger>
+                  <TabsTrigger value="typescript" className="text-xs sm:text-sm">TypeScript</TabsTrigger>
+                  <TabsTrigger value="python" className="text-xs sm:text-sm">Python</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="curl">

@@ -25,7 +25,7 @@ export default function ContributorsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-4">Contributors & Supporters</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4">Contributors & Supporters</h1>
         <p className="text-gray-600 dark:text-gray-300">
           Organizations and platforms powering the OpenGrants Gateway ecosystem.
         </p>
@@ -51,8 +51,8 @@ export default function ContributorsPage() {
 
       {/* Active Integrations */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Active Integrations</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6">Active Integrations</h2>
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Octant */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200 dark:hover:border-green-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">

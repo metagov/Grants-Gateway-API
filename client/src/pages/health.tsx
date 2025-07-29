@@ -186,7 +186,7 @@ export default function HealthPage() {
       <div className="flex-1 lg:ml-64">
         {/* Top Bar */}
         <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700">
-          <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             <div className="flex items-center">
               <Button
                 variant="ghost"
@@ -196,7 +196,7 @@ export default function HealthPage() {
               >
                 <Menu className="h-4 w-4" />
               </Button>
-              <h1 className="text-xl font-semibold">API Health Monitor</h1>
+              <h1 className="text-lg sm:text-xl font-semibold hidden sm:block">API Health Monitor</h1>
             </div>
           </div>
         </header>
