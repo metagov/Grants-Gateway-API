@@ -14,7 +14,9 @@ import {
   GitBranch, 
   BookOpen,
   ExternalLink,
-  Clock
+  Clock,
+  Circle,
+  HelpCircle
 } from "lucide-react";
 import octantLogo from "@/assets/octant-logo.png";
 import givethLogo from "@/assets/giveth-logo.png";
@@ -26,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function OverviewPage() {
   return (
@@ -62,7 +65,7 @@ export default function OverviewPage() {
           <CardContent className="space-y-4">
             <CodeBlock
               code="GET https://grants.daostar.org/api/v1/systems"
-              title="Get all grant systems (3 active integrations)"
+              title="Get all grant systems"
               language="http"
             />
             <CodeBlock
@@ -124,44 +127,109 @@ export default function OverviewPage() {
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-green-600 dark:text-green-400">
-                <CheckCircle className="h-5 w-5 inline mr-2" />
-                Active Integrations (2)
+              <h3 className="text-lg font-semibold mb-3 text-green-600 dark:text-green-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-green-500" />
+                Type 1: API Integration
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that provide us direct API access to all their grant data. We fetch and transform this data to DAOIP-5 format in real-time.</p>
+                  </TooltipContent>
+                </Tooltip>
               </h3>
               <div className="space-y-2">
-                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
                   <img src={octantLogo} alt="Octant" className="w-6 h-6 mr-3" />
                   <span className="font-medium">Octant</span>
                 </div>
-                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
                   <img src={givethLogo} alt="Giveth" className="w-6 h-6 mr-3" />
                   <span className="font-medium">Giveth</span>
                 </div>
               </div>
             </div>
-            
             <div>
               <h3 className="text-lg font-semibold mb-3 text-blue-600 dark:text-blue-400">
-                <Clock className="h-5 w-5 inline mr-2" />
-                Coming Soon (4)
+                <CheckCircle className="h-5 w-5 inline mr-2" />
+                Type 2: Data Integration
+                <span title="This is when grant systems share all their grant data with us in CSV/JSON format, with consent to translate to DAOIP-5. Data is available at DAOIP-5 and navigates translated files stored at the GitHub repository." className="ml-2 cursor-help">&#x1F6C8;</span>
               </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Data available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline" target="_blank">DAOIP-5</a></p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <img src={stellarLogo} alt="Stellar" className="w-5 h-5 mr-2" />
                   <span className="text-sm">Stellar</span>
                 </div>
                 <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <img src={karmaGapLogo} alt="KARMA GAP" className="w-5 h-5 mr-2" />
-                  <span className="text-sm">KARMA GAP</span>
+                  <span className="text-sm">Celo</span>
                 </div>
                 <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <span className="text-sm">Optimism</span>
+                </div>
+                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <span className="text-sm">Arbitrum Foundation</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-purple-600 dark:text-purple-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-purple-500" />
+                Type 3: Endpoint Integration
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that provide their own DAOIP-5 compliant API endpoint. Questbook offers direct access at <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">https://api.questbook.app/daoip-5</code></p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
                   <img src={questbookLogo} alt="Questbook" className="w-5 h-5 mr-2" />
                   <span className="text-sm">Questbook</span>
                 </div>
-                <div className="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <img src={osoLogo} alt="OSO" className="w-5 h-5 mr-2" />
-                  <span className="text-sm">OSO</span>
-                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-amber-600 dark:text-amber-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-amber-500" />
+                Infrastructure Providers
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Essential infrastructure services that enhance our data quality and provide cross-platform project identification capabilities.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                      <img src={karmaGapLogo} alt="KARMA GAP" className="w-5 h-5 mr-2" />
+                      <span className="text-sm">Karma GAP</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Provides cross-platform project identification through unique project UIDs, enabling seamless project tracking across different grant systems and impact measurement platforms.</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                      <img src={osoLogo} alt="OSO" className="w-5 h-5 mr-2" />
+                      <span className="text-sm">OSO</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Open Source Observer provides comprehensive data lake infrastructure for tracking developer activity, project impact, and ecosystem growth across the open source community.</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -178,14 +246,14 @@ export default function OverviewPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4">DAOIP-5 Entity Types</h3>
               <div className="space-y-3">
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
                   <Building className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Systems</div>
                     <div className="text-sm text-gray-500">Organizations managing grants</div>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
                   <Layers className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Pools</div>
@@ -193,19 +261,21 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
                   <FileText className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Applications</div>
                     <div className="text-sm text-gray-500">Project applications to pools</div>
+                    
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-950 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
                   <Target className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Projects</div>
                     <div className="text-sm text-gray-500">Initiatives seeking funding</div>
+                    <div className="text-xs font-bold mt-1 text-gray-600">Supported by KarmaGAP</div>
                   </div>
                 </div>
               </div>

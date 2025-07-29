@@ -82,18 +82,68 @@ export default function Layout({ children }: LayoutProps) {
             <p className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Integrations
             </p>
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Octant</span>
-                <span className="text-xs text-gray-500">API Integration</span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Giveth</span>
-                <span className="text-xs text-gray-500">API Integration</span>
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Questbook</span>
-                <span className="text-xs text-gray-500">Health Monitoring</span>
+            <div className="mt-3 space-y-3 px-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 cursor-help hover:text-gray-800 dark:hover:text-gray-100 transition-colors">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></div>
+                    <span>Octant (Type 1)</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>Direct API integration with real-time data transformation to DAOIP-5 format</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 cursor-help hover:text-gray-800 dark:hover:text-gray-100 transition-colors">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 flex-shrink-0"></div>
+                    <span>Giveth (Type 1)</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>GraphQL API integration with quadratic funding round data transformation</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 cursor-help hover:text-gray-800 dark:hover:text-gray-100 transition-colors">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-2 flex-shrink-0"></div>
+                    <span>Questbook (Type 3)</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs">
+                  <p>Native DAOIP-5 endpoint at api.questbook.app/daoip-5 - health monitoring only</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <div className="border-t border-gray-200 dark:border-gray-600 pt-2 mt-3">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">Infrastructure</div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 cursor-help hover:text-gray-800 dark:hover:text-gray-100 transition-colors mb-1">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mr-2 flex-shrink-0"></div>
+                      <span>Karma GAP</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p>Cross-platform project UIDs for seamless project identification</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 cursor-help hover:text-gray-800 dark:hover:text-gray-100 transition-colors">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full mr-2 flex-shrink-0"></div>
+                      <span>OSO</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <p>Data lake infrastructure for developer activity and impact tracking</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
