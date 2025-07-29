@@ -40,7 +40,7 @@ export class OctantAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Octant",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=octant",
+      grantPoolsURI: "/api/v1/grantPools?system=octant",
       extensions: {
         "app.octant.systemMetadata": {
           platform: "octant",

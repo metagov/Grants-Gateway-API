@@ -388,18 +388,6 @@ export default function OverviewPage() {
               <h3 className="text-lg font-semibold mb-3">Documentation</h3>
               <div className="space-y-3">
                 <a
-                  href="https://docs.daostar.org/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <FileText className="h-5 w-5 text-primary mr-3" />
-                  <div>
-                    <div className="font-medium text-sm">DAOstar Docs</div>
-                    <div className="text-xs text-gray-500">API reference and guides</div>
-                  </div>
-                </a> 
-                <a
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"

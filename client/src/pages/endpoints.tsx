@@ -243,13 +243,28 @@ print(systems)`}</code>
   "@context": "http://www.daostar.org/schemas",
   "data": [
     {
+      "@context": "http://www.daostar.org/schemas",
       "type": "DAO",
       "name": "Octant",
-      "description": "Ethereum public goods funding platform",
-      "uri": "daoip5:octant:grantSystem",
-      "grantPoolsURI": "/api/v1/grantPools?system=octant"
+      "grantPoolsURI": "/api/v1/grantPools?system=octant",
+      "extensions": {
+        "app.octant.systemMetadata": {
+          "platform": "octant",
+          "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
+          "website": "https://octant.app"
+        }
+      }
     }
-  ]
+  ],
+  "pagination": {
+    "totalCount": 2,
+    "totalPages": 1,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": false,
+    "hasPrevious": false
+  }
 }`}
               id="systems-response"
             >
@@ -258,13 +273,28 @@ print(systems)`}</code>
   "@context": "http://www.daostar.org/schemas",
   "data": [
     {
+      "@context": "http://www.daostar.org/schemas",
       "type": "DAO",
       "name": "Octant",
-      "description": "Ethereum public goods funding platform",
-      "uri": "daoip5:octant:grantSystem",
-      "grantPoolsURI": "/api/v1/grantPools?system=octant"
+      "grantPoolsURI": "/api/v1/grantPools?system=octant",
+      "extensions": {
+        "app.octant.systemMetadata": {
+          "platform": "octant",
+          "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
+          "website": "https://octant.app"
+        }
+      }
     }
-  ]
+  ],
+  "pagination": {
+    "totalCount": 2,
+    "totalPages": 1,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": false,
+    "hasPrevious": false
+  }
 }`}</code>
               </pre>
             </CodeBlock>
@@ -706,19 +736,31 @@ pool_apps = pool_response.json()`}</code>
   "@context": "http://www.daostar.org/schemas",
   "data": [
     {
-      "grantPoolId": "daoip5:octant:grantPool:7",
-      "grantPoolName": "Octant Epoch 7",
-      "projectId": "daoip5:protocol-guild:project:0x...",
+      "@context": "http://www.daostar.org/schemas",
+      "type": "GrantApplication",
+      "id": "daoip5:octant:grantPool:1:7:grantApplication:0x1234...",
+      "grantPoolId": "daoip5:octant:grantPool:1:7",
+      "grantPoolName": "Epoch 7",
       "projectName": "Protocol Guild",
+      "createdAt": "2024-07-01T00:00:00Z",
       "fundsApproved": "50000000000000000000",
-      "fundsApprovedInUSD": 150000,
-      "status": "Approved"
+      "fundsApprovedInUSD": 100000,
+      "payoutAddress": "eip155:1:0x1234567890123456789012345678901234567890",
+      "status": "Approved",
+      "extensions": {
+        "app.octant.applicationMetadata": {
+          "votes": 15420
+        },
+        "x-karmagap-uid": "0xe0177d40df99b2dd4c94735058a283b5e0d44f7a838223fe7d7e589d2e9013bd"
+      }
     }
   ],
   "pagination": {
-    "totalCount": 42,
+    "totalCount": 50,
     "totalPages": 5,
     "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
     "hasNext": true,
     "hasPrevious": false
   }

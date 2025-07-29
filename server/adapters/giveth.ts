@@ -51,7 +51,7 @@ export class GivethAdapter extends BaseAdapter {
       "@context": "http://www.daostar.org/schemas",
       name: "Giveth",
       type: "DAO",
-      grantPoolsURI: "/api/v1/pools?system=giveth",
+      grantPoolsURI: "/api/v1/grantPools?system=giveth",
       extensions: {
         "io.giveth.systemMetadata": {
           platform: "giveth",

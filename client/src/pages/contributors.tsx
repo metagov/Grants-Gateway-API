@@ -245,7 +245,11 @@ export default function ContributorsPage() {
                   <li>• Help improve API documentation and tooling</li>
                 </ul>
               </div>
-              Reach out to us via email <a href="mailto:rashmi@daostar.org" className="text-primary -mt-6 hover:underline">rashmi@daostar.org</a>
+              <div>
+                <span>
+                Reach out to us via email <a href="mailto:rashmi@daostar.org" className="text-primary -mt-6 hover:underline">rashmi@daostar.org</a>
+                  </span>
+              </div>
             </div>
           </div>
         </CardContent>
