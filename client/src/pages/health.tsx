@@ -202,7 +202,7 @@ export default function HealthPage() {
               </div>
               <div className="flex items-center px-4 py-2 text-sm">
                 <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                <span className="text-gray-600 dark:text-gray-300">OSO ()</span>
+                <span className="text-gray-600 dark:text-gray-300">OSO (Coming Soon)</span>
               </div>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function HealthPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   {getStatusIcon(healthData.status)}
-                  <span className="ml-2">System Status</span>
+                  <span className="ml-2 mr-2">System Status</span>
                   {getStatusBadge(healthData.status)}
                 </CardTitle>
                 <CardDescription>
@@ -391,7 +391,7 @@ export default function HealthPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
-                    <h3 className="text-sm md:text-base font-semibold">Full API Integrations</h3>
+                    <h3 className="text-sm md:text-base font-semibold">Type 1: Full API Integrations</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                       These adapters fetch data from custom APIs and transform it to DAOIP-5 format, providing unified access through our API:
                     </p>
@@ -406,8 +406,25 @@ export default function HealthPage() {
                       </li>
                     </ul>
                   </div>
+
                   <div className="space-y-3">
-                    <h3 className="text-sm md:text-base font-semibold">Health Monitoring Only</h3>
+                      <h3 className="text-sm md:text-base font-semibold">Type 2: Static File Integration</h3>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                        Grants Systems who provide grant data files in CSV/JSON which are then translated to DAOIP-5, this data can be accesed via daoip5.daostar.org endpoint:
+                      </p>
+                      <ul className="text-xs md:text-sm space-y-1">
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          Stellar Community Fund
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          Celo Public Goods
+                        </li>
+                      </ul>
+                    </div>
+                  <div className="space-y-3">
+                    <h3 className="text-sm md:text-base font-semibold">Type 3: Endpoint Integrations</h3>
                     <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
                       These systems already provide DAOIP-5 compliant endpoints. We monitor their connectivity but don't integrate them into our unified API:
                     </p>
