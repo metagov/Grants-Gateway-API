@@ -300,10 +300,12 @@ export default function HealthPage() {
             {/* Database Status */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Database className="h-5 w-5 mr-2" />
-                  Database Status
-            {getStatusBadge(healthData.database.status)}
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Database className="h-5 w-5 mr-2" />
+                    Database Status
+                  </div>
+                  {getStatusBadge(healthData.database.status)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
