@@ -13,7 +13,7 @@ export default function MobileToast() {
       const timer = setTimeout(() => {
         toast({
           title: "Best Experience on Desktop",
-          description: "While this app works on mobile, it's optimized for desktop usage with better query building and data visualization.",
+          description: "While this app works on mobile, it's optimized for desktop usage for better experience.",
           duration: 8000,
           action: (
             <div className="flex items-center">
