@@ -132,167 +132,161 @@ export default function OverviewPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* First Column */}
-            <div className="space-y-8">
-              {/* Type 1: API Integration */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-green-600 dark:text-green-400 flex items-center">
-                  <Circle className="h-4 w-4 inline mr-2 fill-green-500" />
-                  Type 1: API Integration
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Grant systems that provide us direct API access to all their grant data. We fetch and transform this data to DAOIP-5 format in real-time.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                    <img src={octantLogo} alt="Octant" className="w-8 h-8 mr-3" />
-                    <span className="font-medium">Octant</span>
-                  </div>
-                  <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
-                    <img src={givethLogo} alt="Giveth" className="w-8 h-8 mr-3" />
-                    <span className="font-medium">Giveth</span>
-                  </div>
+          <div className="space-y-8">
+            {/* Type 1: API Integration */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-green-600 dark:text-green-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-green-500" />
+                Type 1: API Integration
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that provide us direct API access to all their grant data. We fetch and transform this data to DAOIP-5 format in real-time.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                  <img src={octantLogo} alt="Octant" className="w-8 h-8 mr-3" />
+                  <span className="font-medium">Octant</span>
                 </div>
-              </div>
-
-              {/* Type 3: Endpoint Integration */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-purple-600 dark:text-purple-400 flex items-center">
-                  <Circle className="h-4 w-4 inline mr-2 fill-purple-500" />
-                  Type 3: Endpoint Integration
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Grant systems that provide their own DAOIP-5 compliant API endpoint. Questbook offers direct access at <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">https://api.questbook.app/daoip-5</code></p>
-                    </TooltipContent>
-                  </Tooltip>
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Questbook Data available at <a href="https://api.questbook.app/daoip-5" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">api.questbook.app/daoip-5</a>
-                </p>
-                <div className="flex items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
-                  <img src={questbookLogo} alt="Questbook" className="w-8 h-8 mr-3" />
-                  <span className="font-medium">Questbook</span>
+                <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                  <img src={givethLogo} alt="Giveth" className="w-8 h-8 mr-3" />
+                  <span className="font-medium">Giveth</span>
                 </div>
               </div>
             </div>
 
-            {/* Second Column */}
-            <div className="space-y-8">
-              {/* Type 2: Data Integration */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-blue-600 dark:text-blue-400 flex items-center">
-                  <Circle className="h-4 w-4 inline mr-2 fill-blue-500" />
-                  Type 2: Data Integration
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Grant systems that share their data in CSV/JSON format with consent to translate to DAOIP-5. Static data files are stored at <a href="https://daoip5.daostar.org/" className="text-blue-400 underline" target="_blank">daoip5.daostar.org</a></p>
-                    </TooltipContent>
-                  </Tooltip>
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Static data files available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
-                        <img src={stellarLogo} alt="Stellar" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">Stellar</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Cross-border payments and financial inclusion platform with grant programs for blockchain development and financial infrastructure</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
-                        <img src={celoLogo} alt="Celo" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">Celo</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Mobile-first blockchain platform focused on financial inclusion with public goods funding and ecosystem grants</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
-                        <img src={optimismLogo} alt="Optimism" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">Optimism</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Ethereum Layer 2 scaling solution with retroactive public goods funding and the Optimism Collective governance system</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
-                        <img src={arbitrumLogo} alt="Arbitrum" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">Arbitrum</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Ethereum Layer 2 optimistic rollup with grants and incentive programs for ecosystem development and DeFi innovation</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+            {/* Type 2: Data Integration */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-blue-600 dark:text-blue-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-blue-500" />
+                Type 2: Data Integration
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that share their data in CSV/JSON format with consent to translate to DAOIP-5. Static data files are stored at <a href="https://daoip5.daostar.org/" className="text-blue-400 underline" target="_blank">daoip5.daostar.org</a></p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Static data files available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={stellarLogo} alt="Stellar" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Stellar</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Cross-border payments and financial inclusion platform with grant programs for blockchain development and financial infrastructure</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={celoLogo} alt="Celo" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Celo</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Mobile-first blockchain platform focused on financial inclusion with public goods funding and ecosystem grants</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={optimismLogo} alt="Optimism" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Optimism</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Ethereum Layer 2 scaling solution with retroactive public goods funding and the Optimism Collective governance system</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                      <img src={arbitrumLogo} alt="Arbitrum" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Arbitrum</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Ethereum Layer 2 optimistic rollup with grants and incentive programs for ecosystem development and DeFi innovation</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
+            </div>
 
-              {/* Infrastructure Providers */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-amber-600 dark:text-amber-400 flex items-center">
-                  <Circle className="h-4 w-4 inline mr-2 fill-amber-500" />
-                  Infrastructure Providers
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Essential infrastructure services that enhance our data quality and provide cross-platform project identification capabilities.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
-                        <img src={karmaGapLogo} alt="KARMA GAP" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">Karma GAP</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Provides cross-platform project identification through unique project UIDs, enabling seamless project tracking across different grant systems and impact measurement platforms.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
-                        <img src={osoLogo} alt="OSO" className="w-6 h-6 mr-2" />
-                        <span className="text-sm font-medium">OSO</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>Open Source Observer provides comprehensive data lake infrastructure for tracking developer activity, project impact, and ecosystem growth across the open source community.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+            {/* Type 3: Endpoint Integration */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-purple-600 dark:text-purple-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-purple-500" />
+                Type 3: Endpoint Integration
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Grant systems that provide their own DAOIP-5 compliant API endpoint. Questbook offers direct access at <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">https://api.questbook.app/daoip-5</code></p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Questbook Data available at <a href="https://api.questbook.app/daoip-5" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">api.questbook.app/daoip-5</a>
+              </p>
+              <div className="flex items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                <img src={questbookLogo} alt="Questbook" className="w-8 h-8 mr-3" />
+                <span className="font-medium">Questbook</span>
+              </div>
+            </div>
+
+            {/* Infrastructure Providers */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-amber-600 dark:text-amber-400 flex items-center">
+                <Circle className="h-4 w-4 inline mr-2 fill-amber-500" />
+                Infrastructure Providers
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Essential infrastructure services that enhance our data quality and provide cross-platform project identification capabilities.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                      <img src={karmaGapLogo} alt="KARMA GAP" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Karma GAP</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Provides cross-platform project identification through unique project UIDs, enabling seamless project tracking across different grant systems and impact measurement platforms.</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                      <img src={osoLogo} alt="OSO" className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">OSO</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Open Source Observer provides comprehensive data lake infrastructure for tracking developer activity, project impact, and ecosystem growth across the open source community.</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
