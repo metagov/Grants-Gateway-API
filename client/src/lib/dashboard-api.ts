@@ -250,22 +250,45 @@ export const dashboardApi = {
           // Use conservative approach to avoid rate limits and ensure systems appear
           console.log(`Loading data for ${source.name} with rate limit consideration`);
           
-          // Accurate data based on real DAOIP5 dataset numbers
-          const systemData: Record<string, any> = {
-            'stellar': { totalFunding: 46180000, totalApplications: 2939, totalPools: 39, approvalRate: 23.7 },
-            'optimism': { totalFunding: 30000000, totalApplications: 850, totalPools: 9, approvalRate: 45 },
-            'arbitrumfoundation': { totalFunding: 18000000, totalApplications: 320, totalPools: 4, approvalRate: 55 },
-            'celo-org': { totalFunding: 8500000, totalApplications: 280, totalPools: 6, approvalRate: 70 },
-            'clrfund': { totalFunding: 1200000, totalApplications: 120, totalPools: 10, approvalRate: 85 },
-            'dao-drops-dorgtech': { totalFunding: 850000, totalApplications: 65, totalPools: 2, approvalRate: 75 }
-          };
-
-          const data = systemData[source.id] || { 
-            totalFunding: 500000, 
-            totalApplications: 50, 
-            totalPools: 3,
-            approvalRate: 60 
-          };
+          // Try to get real calculated data from iterative cache service
+          let data = { totalFunding: 0, totalApplications: 0, totalPools: 0, approvalRate: 0 };
+          
+          try {
+            const { iterativeCacheService } = await import('./iterative-cache-service');
+            const cachedData = await iterativeCacheService.getSystemData(source.id);
+            
+            if (cachedData) {
+              data = {
+                totalFunding: cachedData.totalFunding,
+                totalApplications: cachedData.totalApplications,
+                totalPools: cachedData.totalPools,
+                approvalRate: cachedData.approvalRate
+              };
+              console.log(`✅ Using cached calculated data for ${source.id}:`, data);
+            } else {
+              // Fallback to estimated data while iterative fetch is in progress
+              const fallbackData: Record<string, any> = {
+                'stellar': { totalFunding: 46180000, totalApplications: 2939, totalPools: 39, approvalRate: 23.7 },
+                'optimism': { totalFunding: 30000000, totalApplications: 850, totalPools: 9, approvalRate: 45 },
+                'arbitrumfoundation': { totalFunding: 18000000, totalApplications: 320, totalPools: 4, approvalRate: 55 },
+                'celo-org': { totalFunding: 8500000, totalApplications: 280, totalPools: 6, approvalRate: 70 },
+                'clrfund': { totalFunding: 1200000, totalApplications: 120, totalPools: 10, approvalRate: 85 },
+                'dao-drops-dorgtech': { totalFunding: 850000, totalApplications: 65, totalPools: 2, approvalRate: 75 }
+              };
+              
+              data = fallbackData[source.id] || { 
+                totalFunding: 500000, 
+                totalApplications: 50, 
+                totalPools: 3,
+                approvalRate: 60 
+              };
+              console.log(`⏳ Using fallback data for ${source.id} while fetching...`);
+            }
+          } catch (error) {
+            console.error('Error accessing iterative cache service:', error);
+            // Use fallback data
+            data = { totalFunding: 500000, totalApplications: 50, totalPools: 3, approvalRate: 60 };
+          }
 
           return {
             name: source.name,
@@ -533,3 +556,25 @@ export const getSystemColor = (systemName: string): string => {
   
   return colors[systemName.toLowerCase()] || colors.default;
 };
+
+// Initialize iterative caching for DAOIP5 systems on startup
+let cacheInitialized = false;
+const initializeIterativeCache = async () => {
+  if (cacheInitialized) return;
+  cacheInitialized = true;
+  
+  try {
+    const { iterativeCacheService } = await import('./iterative-cache-service');
+    const daoip5Systems = ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
+    
+    console.log('🚀 Starting background iterative cache for DAOIP5 systems...');
+    iterativeCacheService.preloadSystems(daoip5Systems);
+  } catch (error) {
+    console.error('Failed to initialize iterative cache:', error);
+  }
+};
+
+// Auto-initialize on import
+if (typeof window !== 'undefined') {
+  setTimeout(initializeIterativeCache, 2000); // Start after 2 seconds
+}

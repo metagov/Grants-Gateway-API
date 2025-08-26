@@ -136,7 +136,7 @@ class DataSourceRegistry {
       endpoints: {
         pools: 'https://daoip5.daostar.org/stellar',
         applications: 'https://daoip5.daostar.org/stellar/search',
-        system: 'https://daoip5.daostar.org/stellar/system.json'
+        systems: 'https://daoip5.daostar.org/stellar/system.json'
       },
       standardization: {
         version: "DAOIP-5 v1.0",
