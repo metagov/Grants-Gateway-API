@@ -115,12 +115,13 @@ export const openGrantsApi = {
 };
 
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
+// Using server-side proxy to handle CORS issues
 export const daoip5Api = {
-  baseUrl: 'https://daoip5.daostar.org',
+  baseUrl: '/api/proxy/daoip5',
 
   async getSystems(): Promise<string[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/`, {
+      const response = await fetch(this.baseUrl, {
         headers: { 'Accept': 'application/json' }
       });
       if (!response.ok) {
@@ -150,9 +151,9 @@ export const daoip5Api = {
 
   async getPoolData(system: string, filename: string): Promise<any> {
     try {
-      // Remove .json extension if present, the API handles it
+      // Remove .json extension if present, the proxy handles it
       const cleanFilename = filename.replace('.json', '');
-      const response = await fetch(`${this.baseUrl}/${system}/${cleanFilename}.json`, {
+      const response = await fetch(`${this.baseUrl}/${system}/${cleanFilename}`, {
         headers: { 'Accept': 'application/json' }
       });
       if (!response.ok) {
@@ -167,7 +168,8 @@ export const daoip5Api = {
 
   async searchApplications(projectName?: string): Promise<any> {
     try {
-      const url = projectName ? `${this.baseUrl}/search/${encodeURIComponent(projectName)}` : `${this.baseUrl}/search/`;
+      // Note: Search endpoint not yet implemented in proxy
+      const url = projectName ? `/search/${encodeURIComponent(projectName)}` : '/search/';
       const response = await fetch(url, {
         headers: { 'Accept': 'application/json' }
       });
