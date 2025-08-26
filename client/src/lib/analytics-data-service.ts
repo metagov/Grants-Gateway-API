@@ -3,7 +3,6 @@ import { queryClient } from './queryClient';
 import { dataSourceRegistry } from './data-source-registry';
 import { openGrantsApi, daoip5Api } from './dashboard-api';
 import { iterativeDataFetcher } from './iterative-data-fetcher';
-import { githubDataFetcher } from './github-data-fetcher';
 
 // Centralized data structures
 export interface SystemDataCache {
