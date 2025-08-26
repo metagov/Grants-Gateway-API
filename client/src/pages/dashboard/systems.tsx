@@ -266,78 +266,7 @@ export default function GrantSystems() {
         </Card>
       )}
 
-      {/* DAOIP-5 Value Proposition */}
-      <Card className="bg-gradient-to-r from-[#800020]/5 to-green-500/5 border-[#800020]/20">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Building2 className="h-5 w-5 text-[#800020] mr-2" />
-            DAOIP-5 Standardization Impact
-          </CardTitle>
-          <CardDescription>
-            How standardization enables automatic integration and comparison
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900 flex items-center">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
-                Auto-Discovery
-              </h4>
-              <p className="text-sm text-gray-600">
-                New grant systems are automatically detected and added to the dashboard 
-                without manual configuration, thanks to DAOIP-5 compliance.
-              </p>
-              <div className="text-xs text-green-600 font-medium">
-                {systems?.filter(s => s.addedDate && new Date(s.addedDate).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000).length || 0} new systems this month
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900 flex items-center">
-                <div className="h-2 w-2 bg-blue-500 rounded-full mr-2"></div>
-                Unified Analysis
-              </h4>
-              <p className="text-sm text-gray-600">
-                DAOIP-5 standardization enables meaningful comparison across diverse 
-                ecosystems with different funding mechanisms.
-              </p>
-              <div className="text-xs text-blue-600 font-medium">
-                {systems?.length || 0} systems comparable
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900 flex items-center">
-                <div className="h-2 w-2 bg-purple-500 rounded-full mr-2"></div>
-                Compatibility Scoring
-              </h4>
-              <p className="text-sm text-gray-600">
-                Each system's DAOIP-5 compatibility is automatically assessed, 
-                ensuring data quality and integration reliability.
-              </p>
-              <div className="text-xs text-purple-600 font-medium">
-                Avg: {Math.round((systems?.reduce((sum, s) => sum + (s.compatibility || 0), 0) / (systems?.length || 1)) || 0)}% compatible
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="flex items-start space-x-3">
-              <div className="h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                ✓
-              </div>
-              <div>
-                <h5 className="font-medium text-gray-900">Proven Value</h5>
-                <p className="text-sm text-gray-600 mt-1">
-                  By standardizing grant data with DAOIP-5, we can automatically integrate 
-                  new ecosystems and enable cross-system analysis that was previously impossible. 
-                  This dashboard proves that diverse grant ecosystems become comparable and 
-                  analyzable when following a common standard.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 }
