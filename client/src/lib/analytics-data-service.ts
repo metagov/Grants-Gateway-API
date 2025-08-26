@@ -405,23 +405,43 @@ class AnalyticsDataService {
     const fallbackData: Record<string, any> = {
       'stellar': {
         pools: [
-          { id: 'scf-1', name: 'Stellar Community Fund Round 1', totalFunding: 1000000, mechanism: 'Direct Grant' },
-          { id: 'scf-2', name: 'Stellar Community Fund Round 2', totalFunding: 1500000, mechanism: 'Direct Grant' }
+          { id: 'scf-24', name: 'Stellar Community Fund 24', totalFunding: 100000, mechanism: 'Direct Grant' },
+          { id: 'scf-25', name: 'Stellar Community Fund 25', totalFunding: 100000, mechanism: 'Direct Grant' }
         ],
         applications: [
-          { id: 'stellar-1', projectName: 'Stellar Wallet Infrastructure', poolId: 'scf-1', status: 'funded', fundingUSD: 200000, createdAt: '2024-01-15' },
-          { id: 'stellar-2', projectName: 'Cross-border Payment Tools', poolId: 'scf-1', status: 'funded', fundingUSD: 300000, createdAt: '2024-01-20' },
-          { id: 'stellar-3', name: 'DeFi Integration Platform', poolId: 'scf-2', status: 'approved', fundingUSD: 250000, createdAt: '2024-02-10' }
+          { id: 'stellar-1', projectName: 'Stellar Wallet', poolId: 'scf-24', status: 'funded', fundingUSD: 25000, createdAt: '2024-01-15' },
+          { id: 'stellar-2', projectName: 'Payment Gateway', poolId: 'scf-24', status: 'funded', fundingUSD: 30000, createdAt: '2024-01-20' },
+          { id: 'stellar-3', name: 'DeFi Bridge', poolId: 'scf-25', status: 'approved', fundingUSD: 35000, createdAt: '2024-02-10' }
         ]
       },
       'optimism': {
         pools: [
           { id: 'retro-3', name: 'RetroPGF Round 3', totalFunding: 30000000, mechanism: 'Retroactive Public Goods' },
-          { id: 'retro-4', name: 'RetroPGF Round 4', totalFunding: 20000000, mechanism: 'Retroactive Public Goods' }
+          { id: 'retro-4', name: 'RetroPGF Round 4', totalFunding: 10000000, mechanism: 'Retroactive Public Goods' }
         ],
         applications: [
-          { id: 'op-1', projectName: 'Layer 2 Bridge Security', poolId: 'retro-3', status: 'funded', fundingUSD: 2000000, createdAt: '2024-01-10' },
-          { id: 'op-2', projectName: 'Optimism Block Explorer', poolId: 'retro-3', status: 'funded', fundingUSD: 1500000, createdAt: '2024-01-25' }
+          { id: 'op-1', projectName: 'Protocol Development', poolId: 'retro-3', status: 'funded', fundingUSD: 150000, createdAt: '2024-01-10' },
+          { id: 'op-2', projectName: 'Infrastructure Tools', poolId: 'retro-3', status: 'funded', fundingUSD: 250000, createdAt: '2024-01-25' },
+          { id: 'op-3', projectName: 'Developer Education', poolId: 'retro-4', status: 'funded', fundingUSD: 100000, createdAt: '2024-03-15' }
+        ]
+      },
+      'arbitrumfoundation': {
+        pools: [
+          { id: 'stip', name: 'Arbitrum STIP', totalFunding: 50000000, mechanism: 'Direct Grant' },
+          { id: 'ltip', name: 'Arbitrum LTIP', totalFunding: 45000000, mechanism: 'Direct Grant' }
+        ],
+        applications: [
+          { id: 'arb-1', projectName: 'DEX Protocol', poolId: 'stip', status: 'funded', fundingUSD: 750000, createdAt: '2024-01-05' },
+          { id: 'arb-2', projectName: 'Lending Platform', poolId: 'ltip', status: 'funded', fundingUSD: 500000, createdAt: '2024-02-20' }
+        ]
+      },
+      'celo-org': {
+        pools: [
+          { id: 'cgp-100', name: 'Celo Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
+        ],
+        applications: [
+          { id: 'celo-1', projectName: 'Mobile Wallet', poolId: 'cgp-100', status: 'funded', fundingUSD: 50000, createdAt: '2024-01-12' },
+          { id: 'celo-2', projectName: 'ReFi Platform', poolId: 'cgp-100', status: 'funded', fundingUSD: 75000, createdAt: '2024-02-08' }
         ]
       }
     };
