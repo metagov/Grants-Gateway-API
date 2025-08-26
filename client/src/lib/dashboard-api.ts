@@ -54,31 +54,67 @@ export const openGrantsApi = {
   baseUrl: 'https://grants.daostar.org/api/v1',
 
   async getSystems(): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}/grantSystems`);
-    if (!response.ok) throw new Error('Failed to fetch systems');
-    const data = await response.json();
-    return data.data || [];
+    try {
+      const response = await fetch(`${this.baseUrl}/grantSystems`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch systems`);
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching systems:', error);
+      return [];
+    }
   },
 
   async getPools(system?: string): Promise<any[]> {
-    const url = system 
-      ? `${this.baseUrl}/grantPools?system=${system}&limit=100`
-      : `${this.baseUrl}/grantPools?limit=100`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch pools');
-    const data = await response.json();
-    return data.data || [];
+    try {
+      const url = system 
+        ? `${this.baseUrl}/grantPools?system=${system}&limit=100`
+        : `${this.baseUrl}/grantPools?limit=100`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch pools`);
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching pools:', error);
+      return [];
+    }
   },
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
-    let url = `${this.baseUrl}/grantApplications?limit=1000`;
-    if (system) url += `&system=${system}`;
-    if (poolId) url += `&poolId=${poolId}`;
-    
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch applications');
-    const data = await response.json();
-    return data.data || [];
+    try {
+      let url = `${this.baseUrl}/grantApplications?limit=1000`;
+      if (system) url += `&system=${system}`;
+      if (poolId) url += `&poolId=${poolId}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch applications`);
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      return [];
+    }
   }
 };
 
@@ -87,21 +123,54 @@ export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
 
   async getSystems(): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/`);
-    if (!response.ok) throw new Error('Failed to fetch DAOIP5 systems');
-    return await response.json();
+    try {
+      const response = await fetch(`${this.baseUrl}/`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch DAOIP5 systems`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching DAOIP5 systems:', error);
+      return [];
+    }
   },
 
   async getSystemPools(system: string): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/${system}`);
-    if (!response.ok) throw new Error(`Failed to fetch pools for ${system}`);
-    return await response.json();
+    try {
+      const response = await fetch(`${this.baseUrl}/${system}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch pools for ${system}`);
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching pools for ${system}:`, error);
+      return [];
+    }
   },
 
   async getPoolData(system: string, filename: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/${system}/${filename}.json`);
-    if (!response.ok) throw new Error(`Failed to fetch pool data for ${system}/${filename}`);
-    return await response.json();
+    try {
+      const response = await fetch(`${this.baseUrl}/${system}/${filename}.json`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch pool data for ${system}/${filename}`);
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching pool data for ${system}/${filename}:`, error);
+      return null;
+    }
   },
 
   async searchApplications(projectName?: string): Promise<any> {
