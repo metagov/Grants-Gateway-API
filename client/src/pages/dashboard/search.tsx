@@ -23,12 +23,10 @@ export default function SearchAndFilter() {
             </h2>
             
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Soon you'll be able to search through the entire grant ecosystem in one place. 
-              Discover funding opportunities, track applications, and analyze patterns across 
-              all integrated systems using the power of DAOIP-5 standardization.
+              Soon you'll be able to search through the entire grant ecosystem in one place.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-lg mx-auto">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mb-3">
                   <Search className="h-6 w-6 text-gray-600" />
@@ -46,16 +44,6 @@ export default function SearchAndFilter() {
                 <h3 className="font-medium text-gray-900 mb-1">Advanced Filters</h3>
                 <p className="text-sm text-gray-600">
                   Filter by funding amount, status, date range, and funding mechanism
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mb-3">
-                  <ChartBar className="h-6 w-6 text-gray-600" />
-                </div>
-                <h3 className="font-medium text-gray-900 mb-1">Real-time Analytics</h3>
-                <p className="text-sm text-gray-600">
-                  Get instant insights and trends from your search results
                 </p>
               </div>
             </div>
