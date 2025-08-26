@@ -348,14 +348,25 @@ class AnalyticsDataService {
       const poolFiles = await daoip5Api.getSystemPools(source.id);
       console.log(`Found ${poolFiles.length} pool files for ${source.id}:`, poolFiles);
       
-      // Fetch each pool's data
-      const poolDataPromises = poolFiles.map(async (file) => {
+      // Fetch each pool's data with throttling to respect rate limits
+      const poolData = [];
+      for (let i = 0; i < poolFiles.length; i++) {
+        const file = poolFiles[i];
         const filename = file.replace('.json', '');
-        console.log(`Fetching ${source.id}/${filename}`);
-        return await daoip5Api.getPoolData(source.id, filename);
-      });
-      
-      const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+        console.log(`Fetching ${source.id}/${filename} (${i + 1}/${poolFiles.length})`);
+        
+        try {
+          const data = await daoip5Api.getPoolData(source.id, filename);
+          if (data) poolData.push(data);
+        } catch (error) {
+          console.warn(`Failed to fetch ${source.id}/${filename}:`, error);
+        }
+        
+        // Add delay between requests to avoid rate limiting
+        if (i < poolFiles.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+        }
+      }
       console.log(`Loaded ${poolData.length} pools for ${source.name}`);
 
       // Extract pools and applications from the DAOIP5 data
