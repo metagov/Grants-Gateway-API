@@ -140,8 +140,8 @@ function ApplicationStatusChart({ applications }: { applications: any[] }) {
 
   const chartData = Object.entries(statusCounts).map(([status, count]) => ({
     name: status.charAt(0).toUpperCase() + status.slice(1),
-    value: count,
-    percentage: ((count / applications.length) * 100).toFixed(1)
+    value: count as number,
+    percentage: (((count as number) / applications.length) * 100).toFixed(1)
   }));
 
   const COLORS = {
@@ -193,14 +193,14 @@ function ApplicationStatusChart({ applications }: { applications: any[] }) {
           </div>
           <div className="space-y-2">
             {chartData.map((item, index) => (
-              <div key={item.name} className="flex items-center space-x-3">
+              <div key={`${item.name}-${index}`} className="flex items-center space-x-3">
                 <div 
                   className="w-4 h-4 rounded-full"
                   style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] || COLORS.Unknown }}
                 />
                 <span className="text-sm text-gray-600">{item.name}</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {item.value} ({item.percentage}%)
+                  {String(item.value)} ({String(item.percentage)}%)
                 </span>
               </div>
             ))}

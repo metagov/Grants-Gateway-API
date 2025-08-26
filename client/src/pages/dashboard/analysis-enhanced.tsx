@@ -222,7 +222,7 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
           </div>
           <div className="space-y-3">
             {chartData.map((item, index) => (
-              <div key={item.name} className="flex items-center justify-between space-x-4 min-w-[300px]">
+              <div key={`${item.name}-${index}`} className="flex items-center justify-between space-x-4 min-w-[300px]">
                 <div className="flex items-center space-x-3">
                   <div 
                     className="w-4 h-4 rounded-full"
@@ -466,8 +466,8 @@ export default function CrossSystemAnalysisEnhanced() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {systemComparison.map((system) => (
-                      <Card key={system.systemName} className="hover:shadow-md transition-shadow">
+                    {systemComparison.map((system, index) => (
+                      <Card key={`${system.systemName}-${index}`} className="hover:shadow-md transition-shadow">
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-lg capitalize">{system.systemName}</CardTitle>
