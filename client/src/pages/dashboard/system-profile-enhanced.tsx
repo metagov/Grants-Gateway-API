@@ -293,12 +293,52 @@ function FundingTimelineChart({ applications }: { applications: any[] }) {
   );
 }
 
-function GrantPoolCard({ pool, applications }: { 
+function GrantPoolCard({ pool, applications, systemId }: { 
   pool: any; 
   applications: any[];
+  systemId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const poolApplications = applications.filter(app => app.grantPoolId === pool.id);
+  const [poolApplications, setPoolApplications] = useState<any[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  
+  // Load applications for this pool when expanded
+  const loadPoolApplications = async () => {
+    if (poolApplications.length > 0) return; // Already loaded
+    
+    setLoadingApps(true);
+    try {
+      if (systemId && pool.id) {
+        // Try to fetch real pool applications from DAOIP5 API  
+        const response = await fetch(`/api/proxy/daoip5/${systemId}/${pool.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const apps = Array.isArray(data) ? data : 
+                      data.applications || 
+                      (data.data && Array.isArray(data.data) ? data.data : []);
+          setPoolApplications(apps);
+        } else {
+          // Fallback to filtered applications
+          setPoolApplications(applications.filter(app => app.grantPoolId === pool.id));
+        }
+      } else {
+        // Filter applications for this specific pool
+        setPoolApplications(applications.filter(app => app.grantPoolId === pool.id));
+      }
+    } catch (error) {
+      console.warn('Failed to load pool applications:', error);
+      setPoolApplications(applications.filter(app => app.grantPoolId === pool.id));
+    }
+    setLoadingApps(false);
+  };
+
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      loadPoolApplications();
+    }
+  };
+
   const approvedApps = poolApplications.filter(app => 
     app.status === 'funded' || app.status === 'approved'
   );
@@ -309,7 +349,7 @@ function GrantPoolCard({ pool, applications }: {
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={handleToggle}>
         <CollapsibleTrigger className="w-full">
           <CardHeader className="hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between w-full">
@@ -350,7 +390,12 @@ function GrantPoolCard({ pool, applications }: {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0">
-            {poolApplications.length > 0 ? (
+            {loadingApps ? (
+              <div className="text-center py-8">
+                <div className="text-sm text-gray-600 mb-2">Loading applications...</div>
+                <Skeleton className="h-4 w-48 mx-auto" />
+              </div>
+            ) : poolApplications.length > 0 ? (
               <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -428,11 +473,31 @@ export default function SystemProfileEnhanced() {
   const [, params] = useRoute("/dashboard/systems/:systemName");
   const systemName = params?.systemName || '';
   
+  // Map display names to system IDs to fix URL encoding issues
+  const systemIdMap: Record<string, string> = {
+    'stellar': 'stellar',
+    'stellar-community-fund': 'stellar',
+    'optimism': 'optimism', 
+    'optimism-retropgf': 'optimism',
+    'arbitrum-foundation': 'arbitrumfoundation',
+    'arbitrumfoundation': 'arbitrumfoundation',
+    'celo': 'celo-org',
+    'celo-foundation': 'celo-org',
+    'celo-org': 'celo-org',
+    'clr-fund': 'clrfund',
+    'clrfund': 'clrfund',
+    'dao-drops': 'dao-drops-dorgtech',
+    'octant': 'octant',
+    'giveth': 'giveth'
+  };
+  
+  const systemId = systemIdMap[systemName.toLowerCase()] || systemName.toLowerCase();
+  
   const { data: systemData, isLoading, error } = useQuery({
-    queryKey: ['dashboard-system-details', systemName],
-    queryFn: () => dashboardApi.getSystemDetails(systemName),
+    queryKey: ['dashboard-system-details', systemId],
+    queryFn: () => dashboardApi.getSystemDetails(systemId),
     staleTime: 5 * 60 * 1000,
-    enabled: !!systemName,
+    enabled: !!systemId,
   });
 
   const systemColor = getSystemColor(systemName);
@@ -586,6 +651,7 @@ export default function SystemProfileEnhanced() {
                   key={pool.id} 
                   pool={pool} 
                   applications={applications}
+                  systemId={systemId}
                 />
               ))}
           </div>
