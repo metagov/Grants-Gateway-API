@@ -116,6 +116,37 @@ export default function SearchAndFilter() {
 
   return (
     <div className="space-y-6">
+      {/* Coming Soon Banner */}
+      <Card className="bg-gradient-to-r from-[#800020]/10 to-blue-500/10 border-[#800020]/20">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#800020]/10 rounded-full mb-4">
+              <Search className="h-8 w-8 text-[#800020]" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Coming Soon</h2>
+            <p className="text-gray-600 mb-4 max-w-2xl mx-auto">
+              Advanced search and filtering across all integrated grant systems is currently in development. 
+              This feature will allow you to discover grants, track applications, and analyze funding patterns 
+              across the entire ecosystem.
+            </p>
+            <div className="flex justify-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center">
+                <Building2 className="h-4 w-4 mr-2" />
+                Cross-system search
+              </div>
+              <div className="flex items-center">
+                <Filter className="h-4 w-4 mr-2" />
+                Advanced filtering
+              </div>
+              <div className="flex items-center">
+                <Download className="h-4 w-4 mr-2" />
+                Export results
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Search & Filter</h1>

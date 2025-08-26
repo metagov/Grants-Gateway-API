@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import React, { useMemo } from "react";
+import { Link } from "wouter";
 import { 
   DollarSign, 
   Building2, 
@@ -7,12 +8,18 @@ import {
   TrendingUp,
   Calendar,
   Award,
-  Target
+  Target,
+  ArrowRight,
+  Activity,
+  Globe
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { dashboardApi, formatCurrency } from "@/lib/dashboard-api";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { formatCurrency } from "@/lib/dashboard-api";
+import { useCrossSystemAnalytics, useFundingTrends } from "@/lib/analytics-hooks";
 
 // Stats card component
 function StatsCard({ 
@@ -152,26 +159,49 @@ function RecentSystems({ systems }: { systems: any[] }) {
 }
 
 export default function DashboardOverview() {
-  // Fetch ecosystem statistics
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['dashboard-ecosystem-stats'],
-    queryFn: dashboardApi.getEcosystemStats,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  // Fetch funding trends
-  const { data: trends, isLoading: trendsLoading } = useQuery({
-    queryKey: ['dashboard-funding-trends'],
-    queryFn: dashboardApi.getFundingTrends,
-    staleTime: 15 * 60 * 1000, // 15 minutes
-  });
-
-  // Fetch systems
-  const { data: systems, isLoading: systemsLoading } = useQuery({
-    queryKey: ['dashboard-all-systems'],
-    queryFn: dashboardApi.getAllSystems,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Use optimized analytics hooks for real data
+  const { analytics, derivedData, isLoading: analyticsLoading } = useCrossSystemAnalytics();
+  const { trends, isLoading: trendsLoading } = useFundingTrends();
+  
+  // Memoize computed values
+  const stats = useMemo(() => {
+    if (!analytics) return null;
+    return {
+      totalFunding: analytics.totals.funding,
+      totalGrantRounds: analytics.totals.pools,
+      totalSystems: analytics.totals.systems,
+      totalProjects: analytics.systems.reduce((sum, system) => {
+        // Estimate unique projects based on applications and system overlap
+        return sum + Math.ceil(system.metrics.totalApplications * 0.8);
+      }, 0),
+      totalApplications: analytics.totals.applications,
+      averageApprovalRate: analytics.totals.avgApprovalRate
+    };
+  }, [analytics]);
+  
+  const trendsData = useMemo(() => {
+    if (!trends?.trends) return [];
+    return trends.trends.map(trend => ({
+      quarter: trend.period,
+      funding: trend.totals.funding,
+      applications: trend.totals.applications
+    }));
+  }, [trends]);
+  
+  const topSystems = useMemo(() => {
+    if (!analytics) return [];
+    return analytics.comparisons
+      .sort((a, b) => b.metrics.totalFunding - a.metrics.totalFunding)
+      .slice(0, 6);
+  }, [analytics]);
+  
+  const healthScore = useMemo(() => {
+    if (!derivedData) return 0;
+    return derivedData.healthScore;
+  }, [derivedData]);
+  
+  const statsLoading = analyticsLoading;
+  const systemsLoading = analyticsLoading;
 
   return (
     <div className="space-y-6">
@@ -208,18 +238,18 @@ export default function DashboardOverview() {
         />
         <StatsCard
           title="Projects Funded"
-          value={stats?.totalProjects || 0}
-          description="Unique projects receiving grants"
+          value={stats?.totalProjects.toLocaleString() || 0}
+          description="Estimated unique projects"
           icon={Users}
           loading={statsLoading}
         />
       </div>
 
       {/* Additional Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
         <StatsCard
           title="Total Applications"
-          value={stats?.totalApplications || 0}
+          value={stats?.totalApplications.toLocaleString() || 0}
           description="Applications processed"
           icon={FileText}
           loading={statsLoading}
@@ -231,13 +261,20 @@ export default function DashboardOverview() {
           icon={Award}
           loading={statsLoading}
         />
+        <StatsCard
+          title="Ecosystem Health"
+          value={`${healthScore}/100`}
+          description="Overall system health"
+          icon={Activity}
+          loading={statsLoading}
+        />
       </div>
 
       {/* Charts and Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Funding Trends */}
-        {trends && trends.length > 0 ? (
-          <FundingTrendsChart data={trends} />
+        {trendsData && trendsData.length > 0 ? (
+          <FundingTrendsChart data={trendsData} />
         ) : (
           <Card>
             <CardHeader>
@@ -257,57 +294,142 @@ export default function DashboardOverview() {
           </Card>
         )}
 
-        {/* Recent Systems */}
-        {systems && systems.length > 0 ? (
-          <RecentSystems systems={systems} />
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Grant Systems</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {systemsLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                </div>
-              ) : (
-                <p className="text-gray-600">No systems data available</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Top Performing Systems */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Building2 className="h-5 w-5 text-[#800020] mr-2" />
+              Top Grant Systems
+            </CardTitle>
+            <CardDescription>
+              Highest performing systems by total funding distributed
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {systemsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : topSystems.length > 0 ? (
+              <div className="space-y-3">
+                {topSystems.map((system, index) => (
+                  <Link key={system.systemName} href={`/dashboard/systems/${system.systemName.toLowerCase()}`}>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group">
+                      <div className="flex items-center space-x-3">
+                        <Badge variant="outline" className="text-xs min-w-[24px] text-center">#{index + 1}</Badge>
+                        <div className="h-10 w-10 bg-[#800020] rounded-lg flex items-center justify-center">
+                          <Building2 className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 group-hover:text-[#800020] transition-colors">{system.systemName}</div>
+                          <div className="text-sm text-gray-600">
+                            {system.metrics.totalApplications} applications • {system.metrics.approvalRate.toFixed(1)}% approval
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <div className="font-bold text-sm">{formatCurrency(system.metrics.totalFunding)}</div>
+                          <Badge variant="outline" className="text-xs">
+                            {system.source === 'opengrants' ? 'Type 1' : 'Type 2'}
+                          </Badge>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-[#800020] transition-colors" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-600">No systems data available</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Target className="h-5 w-5 text-[#800020] mr-2" />
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-              <Building2 className="h-8 w-8 text-[#800020] mb-2" />
-              <h3 className="font-medium text-gray-900">Explore Grant Systems</h3>
-              <p className="text-sm text-gray-600">View detailed profiles of each system</p>
+      {/* DAOIP-5 Standardization Impact & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Globe className="h-5 w-5 text-[#800020] mr-2" />
+              DAOIP-5 Standardization Impact
+            </CardTitle>
+            <CardDescription>
+              How standardization enables unified grant analytics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Overall Compatibility</span>
+                <span className="text-lg font-bold text-[#800020]">
+                  {analytics ? Math.round(analytics.systems.reduce((sum, s) => sum + s.compatibility, 0) / analytics.systems.length) : 0}%
+                </span>
+              </div>
+              <Progress 
+                value={analytics ? analytics.systems.reduce((sum, s) => sum + s.compatibility, 0) / analytics.systems.length : 0} 
+                className="h-3" 
+              />
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="font-medium text-gray-900">Type 1 Systems</div>
+                  <div className="text-gray-600">{analytics?.systems.filter(s => s.source === 'opengrants').length || 0} live APIs</div>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">Type 2 Systems</div>
+                  <div className="text-gray-600">{analytics?.systems.filter(s => s.source === 'daoip5').length || 0} static sources</div>
+                </div>
+              </div>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-              <TrendingUp className="h-8 w-8 text-[#800020] mb-2" />
-              <h3 className="font-medium text-gray-900">Cross-System Analysis</h3>
-              <p className="text-sm text-gray-600">Compare and analyze overlaps</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Target className="h-5 w-5 text-[#800020] mr-2" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Link href="/dashboard/systems">
+                <Button variant="ghost" className="w-full justify-start h-auto p-4">
+                  <Building2 className="h-6 w-6 text-[#800020] mr-3" />
+                  <div className="text-left">
+                    <div className="font-medium">Explore Grant Systems</div>
+                    <div className="text-sm text-gray-600">View detailed profiles of each system</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
+                </Button>
+              </Link>
+              <Link href="/dashboard/analysis">
+                <Button variant="ghost" className="w-full justify-start h-auto p-4">
+                  <TrendingUp className="h-6 w-6 text-[#800020] mr-3" />
+                  <div className="text-left">
+                    <div className="font-medium">Cross-System Analysis</div>
+                    <div className="text-sm text-gray-600">Compare and analyze overlaps</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
+                </Button>
+              </Link>
+              <Link href="/dashboard/search">
+                <Button variant="ghost" className="w-full justify-start h-auto p-4">
+                  <FileText className="h-6 w-6 text-[#800020] mr-3" />
+                  <div className="text-left">
+                    <div className="font-medium">Search Applications</div>
+                    <div className="text-sm text-gray-600">Find specific grants and projects</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
+                </Button>
+              </Link>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-              <FileText className="h-8 w-8 text-[#800020] mb-2" />
-              <h3 className="font-medium text-gray-900">Search Applications</h3>
-              <p className="text-sm text-gray-600">Find specific grants and projects</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
