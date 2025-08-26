@@ -11,11 +11,11 @@ import QueryBuilderPage from "@/pages/query-builder";
 import EndpointsPage from "@/pages/endpoints";
 import ContributorsPage from "@/pages/contributors";
 import HealthPage from "@/pages/health";
-import DashboardOverview from "@/pages/dashboard/overview";
+import EcosystemOverview from "@/pages/dashboard/analysis-enhanced";
 import GrantSystems from "@/pages/dashboard/systems";
 import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
 import SearchAndFilter from "@/pages/dashboard/search";
-import CrossSystemAnalysis from "@/pages/dashboard/analysis-enhanced";
+import DashboardOverviewArchived from "@/pages/dashboard/overview-archived";
 import NotFound from "@/pages/not-found";
 import MobileToast from "@/components/mobile-toast";
 
@@ -30,11 +30,11 @@ function Router() {
       <Route path="/health" component={HealthPage} />
       
       {/* Dashboard Routes */}
-      <Route path="/dashboard" component={() => <DashboardLayout><DashboardOverview /></DashboardLayout>} />
+      <Route path="/dashboard" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
       <Route path="/dashboard/systems" component={() => <DashboardLayout><GrantSystems /></DashboardLayout>} />
       <Route path="/dashboard/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
       <Route path="/dashboard/search" component={() => <DashboardLayout><SearchAndFilter /></DashboardLayout>} />
-      <Route path="/dashboard/analysis" component={() => <DashboardLayout><CrossSystemAnalysis /></DashboardLayout>} />
+      <Route path="/dashboard/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
       
       {/* Catch all */}
       <Route component={NotFound} />

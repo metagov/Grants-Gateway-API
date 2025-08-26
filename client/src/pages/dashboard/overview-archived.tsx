@@ -366,6 +366,16 @@ export default function DashboardOverview() {
                   <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
               </Link>
+              <Link href="/dashboard/analysis">
+                <Button variant="ghost" className="w-full justify-start h-auto p-4">
+                  <TrendingUp className="h-6 w-6 text-[#800020] mr-3" />
+                  <div className="text-left">
+                    <div className="font-medium">Cross-System Analysis</div>
+                    <div className="text-sm text-gray-600">Compare and analyze overlaps</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
+                </Button>
+              </Link>
               <Link href="/dashboard/search">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <FileText className="h-6 w-6 text-[#800020] mr-3" />

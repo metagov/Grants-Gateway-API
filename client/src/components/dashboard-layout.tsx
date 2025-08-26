@@ -19,7 +19,7 @@ interface DashboardLayoutProps {
 
 const navigation = [
   {
-    name: "Overview",
+    name: "Ecosystem Overview",
     href: "/dashboard",
     icon: Home,
     description: "Ecosystem statistics and trends"
@@ -29,12 +29,6 @@ const navigation = [
     href: "/dashboard/systems",
     icon: Building2,
     description: "Individual grant system profiles"
-  },
-  {
-    name: "Cross-System Analysis",
-    href: "/dashboard/analysis", 
-    icon: TrendingUp,
-    description: "Compare systems and analyze overlaps"
   },
   {
     name: "Search & Filter",
