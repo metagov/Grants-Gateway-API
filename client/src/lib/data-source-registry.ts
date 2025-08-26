@@ -194,74 +194,7 @@ class DataSourceRegistry {
       },
     });
 
-    this.register({
-      id: "arbitrum",
-      name: "Arbitrum Foundation",
-      description: "Grant programs for Arbitrum ecosystem growth",
-      type: "static",
-      source: "daoip5",
-      endpoints: {
-        systems: "https://daoip5.daostar.org/",
-        pools: "https://daoip5.daostar.org/arbitrumfoundation",
-      },
-      standardization: {
-        version: "DAOIP-5 v1.0",
-        mappings: {
-          id: "id",
-          name: "projectName",
-          status: "status",
-          fundsApprovedInUSD: "fundsApprovedInUSD",
-        },
-        compatibility: 88,
-      },
-      features: {
-        fundingMechanism: ["Direct Grants", "Milestone-Based"],
-        dataRefreshRate: "monthly",
-        historicalData: true,
-      },
-      metadata: {
-        addedDate: "2024-03-01",
-        lastUpdated: new Date().toISOString(),
-        status: "active",
-        network: ["arbitrum"],
-        currency: ["ARB", "ETH"],
-      },
-    });
-
-    this.register({
-      id: "celo",
-      name: "Celo Foundation",
-      description:
-        "Grants for financial inclusion and mobile-first blockchain solutions",
-      type: "static",
-      source: "daoip5",
-      endpoints: {
-        systems: "https://daoip5.daostar.org/",
-        pools: "https://daoip5.daostar.org/celo-org",
-      },
-      standardization: {
-        version: "DAOIP-5 v1.0",
-        mappings: {
-          id: "id",
-          name: "projectName",
-          status: "status",
-          fundsApprovedInUSD: "fundsApprovedInUSD",
-        },
-        compatibility: 85,
-      },
-      features: {
-        fundingMechanism: ["Direct Grants"],
-        dataRefreshRate: "monthly",
-        historicalData: true,
-      },
-      metadata: {
-        addedDate: "2024-03-15",
-        lastUpdated: new Date().toISOString(),
-        status: "active",
-        network: ["celo"],
-        currency: ["CELO", "cUSD"],
-      },
-    });
+    // Removed duplicate Arbitrum and Celo registrations to avoid conflicts with autoDiscover
   }
 
   // Register a new data source
@@ -566,7 +499,7 @@ class DataSourceRegistry {
         addedDate: '2024-02-01'
       },
       'celo-org': {
-        name: 'Celo',
+        name: 'Celo Foundation',
         description: 'Celo Foundation grants for financial inclusion',
         compatibility: 85,
         mechanisms: ['Direct Grants'],
