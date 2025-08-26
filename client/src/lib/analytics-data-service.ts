@@ -342,15 +342,71 @@ class AnalyticsDataService {
 
   private async _loadDaoip5SystemData(source: any): Promise<SystemData> {
     try {
-      // For now, return sample data for DAOIP5 systems to avoid CORS issues
-      // TODO: Implement proper CORS handling or server-side proxy
-      console.warn(`Using sample data for ${source.name} to avoid CORS errors`);
+      console.log(`🔄 Fetching real data from daoip5.daostar.org for ${source.name}`);
       
-      const sampleData = this._getSampleDaoip5Data(source);
-      return sampleData;
+      // Get list of pool files from DAOIP5 API
+      const poolFiles = await daoip5Api.getSystemPools(source.id);
+      console.log(`Found ${poolFiles.length} pool files for ${source.id}:`, poolFiles);
+      
+      // Fetch each pool's data
+      const poolDataPromises = poolFiles.map(async (file) => {
+        const filename = file.replace('.json', '');
+        console.log(`Fetching ${source.id}/${filename}`);
+        return await daoip5Api.getPoolData(source.id, filename);
+      });
+      
+      const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+      console.log(`Loaded ${poolData.length} pools for ${source.name}`);
+
+      // Extract pools and applications from the DAOIP5 data
+      const pools: PoolData[] = poolData
+        .filter((data: any) => data && (data.type === 'GrantPool' || !data.type))
+        .map((pool: any) => ({
+          id: pool.id || pool.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown',
+          name: pool.name || 'Unknown Pool',
+          system: source.id,
+          totalFunding: parseFloat(pool.totalGrantPoolSizeUSD || pool.totalFunding || '0'),
+          isOpen: pool.isOpen || false,
+          closeDate: pool.closeDate,
+          mechanism: pool.grantFundingMechanism || 'Direct Grant'
+        }));
+
+      const applications: ApplicationData[] = poolData.flatMap((data: any) => {
+        if (Array.isArray(data)) {
+          return data.filter((item: any) => item.type === 'GrantApplication');
+        }
+        if (data && data.data && Array.isArray(data.data)) {
+          return data.data.filter((item: any) => item.type === 'GrantApplication');
+        }
+        return [];
+      }).map((app: any) => ({
+        id: app.id || 'unknown',
+        projectName: app.projectName || app.name || 'Unknown Project',
+        system: source.id,
+        poolId: app.grantPoolId || app.poolId || 'unknown',
+        status: this._normalizeStatus(app.status || 'pending'),
+        fundingUSD: parseFloat(app.fundsApprovedInUSD || app.fundingUSD || '0'),
+        createdAt: app.createdAt || new Date().toISOString()
+      }));
+
+      const metrics = this._calculateSystemMetrics(applications, pools);
+
+      return {
+        id: source.id,
+        name: source.name,
+        type: source.type,
+        source: 'daoip5',
+        pools,
+        applications,
+        metrics,
+        compatibility: source.standardization.compatibility,
+        fundingMechanisms: source.features.fundingMechanism || ['Direct Grant']
+      };
     } catch (error) {
       console.error(`Failed to load DAOIP5 data for ${source.name}:`, error);
-      throw error; // Re-throw to be handled by the calling function
+      // Fall back to sample data if API fails
+      console.warn(`Falling back to sample data for ${source.name}`);
+      return this._getSampleDaoip5Data(source);
     }
   }
 

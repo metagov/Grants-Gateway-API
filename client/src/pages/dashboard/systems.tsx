@@ -203,32 +203,11 @@ export default function GrantSystems() {
         </Card>
       </div>
 
-      {/* API Integrated Systems */}
-      {apiSystems.length > 0 && (
+      {/* All Systems */}
+      {systems && systems.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Type 1: Live API Integrations</h2>
-            <Badge variant="secondary" className="text-xs">Real-time data</Badge>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {apiSystems.map((system) => (
-              <SystemCard key={system.name} system={system} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Static Data Systems */}
-      {staticSystems.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Type 2: Data Integrations</h2>
-            <Badge variant="secondary" className="text-xs">Static data files</Badge>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {staticSystems.map((system) => (
+            {systems.map((system) => (
               <SystemCard key={system.name} system={system} />
             ))}
           </div>

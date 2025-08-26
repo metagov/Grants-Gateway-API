@@ -216,6 +216,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DAOIP5 API Proxy endpoints to handle CORS
+  app.get('/api/proxy/daoip5', async (req, res) => {
+    try {
+      const response = await fetch('https://daoip5.daostar.org/', {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Failed to fetch DAOIP5 systems:', error);
+      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
+    }
+  });
+
+  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const response = await fetch(`https://daoip5.daostar.org/${system}`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 pools for ${req.params.system}:`, error);
+      res.status(500).json({ error: `Failed to fetch pools for ${req.params.system}` });
+    }
+  });
+
+  app.get('/api/proxy/daoip5/:system/:filename', async (req, res) => {
+    try {
+      const { system, filename } = req.params;
+      const response = await fetch(`https://daoip5.daostar.org/${system}/${filename}.json`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.filename}:`, error);
+      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
+    }
+  });
+
   app.get('/api/v1/health/:adapter', async (req: AuthenticatedRequest, res) => {
     try {
       const { healthService } = await import('./services/health');
