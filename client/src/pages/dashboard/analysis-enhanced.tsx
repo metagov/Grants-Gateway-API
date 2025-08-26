@@ -443,7 +443,7 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
   );
 }
 
-export default function CrossSystemAnalysisEnhanced() {
+export default function EcosystemOverview() {
   const { data: systemComparison, isLoading: systemLoading } = useQuery({
     queryKey: ['cross-system-comparison'],
     queryFn: getCrossSystemComparison,
@@ -479,9 +479,9 @@ export default function CrossSystemAnalysisEnhanced() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Cross-System Analysis</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Ecosystem Overview</h1>
         <p className="text-gray-600">
-          Comprehensive analysis and comparison across all grant systems using DAOIP-5 standardized data
+          Comprehensive analytics across all integrated grant systems
         </p>
       </div>
 
