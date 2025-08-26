@@ -320,11 +320,46 @@ class DataSourceRegistry {
     return Array.from(this.sources.values());
   }
 
-  // Get active sources
+  // Get active sources, prioritizing Type 1 (OpenGrants API) over Type 2 (DAOIP5 static) for same systems
   getActiveSources(): DataSourceConfig[] {
-    return this.getAllSources().filter(
+    const allSources = this.getAllSources().filter(
       (source) => source.metadata.status === "active",
     );
+    
+    // Group sources by system name (case-insensitive)
+    const sourceGroups = new Map<string, DataSourceConfig[]>();
+    
+    allSources.forEach(source => {
+      const systemKey = source.name.toLowerCase().replace(/[\s-_]/g, '');
+      if (!sourceGroups.has(systemKey)) {
+        sourceGroups.set(systemKey, []);
+      }
+      sourceGroups.get(systemKey)!.push(source);
+    });
+    
+    // For each group, prefer Type 1 (opengrants) over Type 2 (daoip5)
+    const preferredSources: DataSourceConfig[] = [];
+    
+    sourceGroups.forEach(sources => {
+      if (sources.length === 1) {
+        preferredSources.push(sources[0]);
+      } else {
+        // Multiple sources for same system - prefer Type 1
+        const type1Sources = sources.filter(s => s.source === 'opengrants');
+        const type2Sources = sources.filter(s => s.source === 'daoip5');
+        
+        if (type1Sources.length > 0) {
+          // Prefer Type 1 (live API) - can recursively fetch and analyze data
+          preferredSources.push(type1Sources[0]);
+          console.log(`🔄 Prioritizing Type 1 integration for ${type1Sources[0].name} over Type 2 (better data analysis capabilities)`);
+        } else {
+          // Fallback to Type 2 if no Type 1 available
+          preferredSources.push(type2Sources[0]);
+        }
+      }
+    });
+    
+    return preferredSources;
   }
 
   // Get source by ID
