@@ -1,0 +1,110 @@
+
+I want a Grant Ecosystem Analytics Dashboard,
+In the landing page, we will have stats shuch X amount of funding distributed, Y Grant rounds Z grant systems integrated and accross P projects and C categories search filters (date range, amount, etc)
+ visualizations (total funding by quarter breakdown & trend, )
+
+and then I want to have a page called Grant Systems, where each grant systems integrated will have theri own card, upon clicking on tht card it takes me to the Grant system Profile page, where we have indiduval grant system page
+
+I want a side nvigation bar
+
+    - [ ]  Landing page with funding stats 
+    - [ ]  Grant ecosystem profile pages
+        - [ ]  Stellar profile page ( Grant system Profile Page)
+            - [ ]  Stats: total applications, application approval rate
+            - [ ]  Individual rounds (in descending order) with nested tables (projects & amount funding)
+            - [ ]  Visualizations: funding distributed per round
+- [ ]  Build cross-system comparison view and grantee overlap analysis in a differennt page
+
+Here  
+
+To access Stellar Data, here's the API https://daoip5.daostar.org/stellar
+
+
+> > GET /
+> Description: List all grant systems (folders) in the JSON directory.
+> 
+> Parameters: None
+> 
+> Response: A JSON array of grant system names.
+> 
+> ["arbitrumfoundation", "clrfund", "octant-golemfoundation", "optimism", "stellar"]
+> GET /<grant_system>
+> Description: List all grant pools (JSON files) within a specific grant system folder.
+> 
+> Parameters:
+> 
+> grant_system (string): The name of the grant system folder to inspect (e.g., "optimism", "arbitrumfoundation").
+> Response: A JSON array of JSON file names (grant pools) in the specified folder.
+> 
+> ["grants_pool.json", "grants_season_4_applications_uri.json", "retrofunding5_applications_uri.json"]
+> GET /<grant_system>/<filename>.json
+> Description: Retrieve a specific JSON file within a grant system folder.
+> 
+> Parameters:
+> 
+> grant_system (string): The name of the grant system folder.
+> filename (string): The name of the JSON file (without .json extension) to retrieve.
+> Response: The JSON content of the specified file following DAOIP-5 schema.
+> 
+> GET /search/
+> GET /search/<project_name>
+> Description: Search for applications across all grant systems by project name.
+> 
+> Parameters:
+> 
+> project_name (string, optional): The name of the project to search for. If omitted, returns all applications.
+> Response: JSON object containing matching applications with metadata about their source grant system.
+> 
+> GET /help
+> Description: Display this documentation.
+> 
+> Parameters: None
+> 
+
+To Access Giveth And Octant Data
+
+here's API documentatin
+```
+# Get all systems
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems" \
+  -H "Accept: application/json"
+
+# Get systems with pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems?limit=5&offset=0" \
+  -H "Accept: application/json"
+
+# Get all grant pools
+curl -X GET "https://grants.daostar.org/api/v1/grantPools" \
+  -H "Accept: application/json"
+
+# Get grant pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantPools?system=octant&limit=5&page=1" \
+  -H "Accept: application/json"
+
+# Get all applications
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications" \
+  -H "Accept: application/json"
+
+# Get applications with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?system=octant&limit=20&page=1" \
+  -H "Accept: application/json"
+
+# Get applications for specific pool with search
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?poolId=daoip5:octant:grantPool:7&search=protocol" \
+  -H "Accept: application/json"
+
+
+```
+
+For each data point, Fetch Grant Pools, fetch all applications for that grant pools, this is in Grant system page, I want this to be similar to https://retrolist.app/
+
+- Enhancing featues,
+Implement search and filet andadd caching so that the app isn't stuck in loading state
+
+implement modular intergation so that in future I can just drop the URL and you integrate a nw data source, the URL maybe of grants.daostar.org or daoip5.daostar.org
+
+
+Inspiring desing, Ligth mode only with Maroon Accent color
+
+![image](https://hackmd.io/_uploads/S1-0LJjtxl.png)
+![image](https://hackmd.io/_uploads/S12RIyjKex.png)

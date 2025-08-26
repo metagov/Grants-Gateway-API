@@ -1,0 +1,393 @@
+import { useQuery } from "@tanstack/react-query";
+import { useRoute } from "wouter";
+import { Link } from "wouter";
+import { 
+  Building2, 
+  ArrowLeft, 
+  DollarSign, 
+  Users, 
+  TrendingUp,
+  Calendar,
+  Award,
+  ExternalLink,
+  ChevronDown,
+  ChevronRight
+} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
+import { useState } from "react";
+
+function StatsCard({ 
+  title, 
+  value, 
+  description, 
+  icon: Icon, 
+  loading = false 
+}: {
+  title: string;
+  value: string | number;
+  description: string;
+  icon: any;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-8 w-24 mb-2" />
+          <Skeleton className="h-4 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-[#800020]" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-gray-900">{value}</div>
+        <p className="text-xs text-gray-600 mt-1">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function GrantPoolCard({ pool, applications }: { 
+  pool: any; 
+  applications: any[];
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const poolApplications = applications.filter(app => app.grantPoolId === pool.id);
+  const approvedApps = poolApplications.filter(app => 
+    app.status === 'funded' || app.status === 'approved'
+  );
+  
+  const totalFunding = poolApplications.reduce((sum, app) => {
+    return sum + parseFloat(app.fundsApprovedInUSD || '0');
+  }, 0);
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="w-full">
+          <CardHeader className="hover:bg-gray-50 transition-colors">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-left">
+                <CardTitle className="text-lg">{pool.name}</CardTitle>
+                <CardDescription className="flex items-center space-x-4 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {pool.grantFundingMechanism}
+                  </Badge>
+                  <Badge 
+                    variant={pool.isOpen ? "default" : "secondary"} 
+                    className="text-xs"
+                  >
+                    {pool.isOpen ? "Open" : "Closed"}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {poolApplications.length} applications
+                  </span>
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">
+                    {formatCurrency(totalFunding)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {approvedApps.length}/{poolApplications.length} approved
+                  </div>
+                </div>
+                {isOpen ? (
+                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                )}
+              </div>
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="pt-0">
+            {poolApplications.length > 0 ? (
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="font-medium">Project</TableHead>
+                      <TableHead className="font-medium">Status</TableHead>
+                      <TableHead className="font-medium text-right">Funding</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {poolApplications
+                      .sort((a, b) => parseFloat(b.fundsApprovedInUSD || '0') - parseFloat(a.fundsApprovedInUSD || '0'))
+                      .slice(0, 10) // Show top 10
+                      .map((app) => (
+                      <TableRow key={app.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {app.projectName || 'Unknown Project'}
+                            </div>
+                            <div className="text-xs text-gray-500 truncate max-w-xs">
+                              {app.id}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              app.status === 'funded' ? 'default' :
+                              app.status === 'approved' ? 'secondary' :
+                              app.status === 'rejected' ? 'destructive' :
+                              'outline'
+                            }
+                            className="text-xs capitalize"
+                          >
+                            {app.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="font-medium">
+                            {app.fundsApprovedInUSD ? formatCurrency(parseFloat(app.fundsApprovedInUSD)) : '--'}
+                          </div>
+                          {app.fundsApproved && app.fundsApproved[0] && (
+                            <div className="text-xs text-gray-500">
+                              {app.fundsApproved[0].amount} {app.fundsApproved[0].denomination}
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {poolApplications.length > 10 && (
+                  <div className="p-3 bg-gray-50 text-center">
+                    <span className="text-sm text-gray-600">
+                      Showing top 10 of {poolApplications.length} applications
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p>No applications found for this pool</p>
+              </div>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
+}
+
+export default function SystemProfile() {
+  const [, params] = useRoute("/dashboard/systems/:systemName");
+  const systemName = params?.systemName || '';
+  
+  const { data: systemData, isLoading, error } = useQuery({
+    queryKey: ['dashboard-system-details', systemName],
+    queryFn: () => dashboardApi.getSystemDetails(systemName),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!systemName,
+  });
+
+  const systemColor = getSystemColor(systemName);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !systemData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Link href="/dashboard/systems">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Systems
+            </Button>
+          </Link>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">System not found</h3>
+              <p className="text-gray-600 mb-4">
+                Unable to load data for system "{systemName}".
+              </p>
+              <Link href="/dashboard/systems">
+                <Button variant="outline">
+                  Back to Systems
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const { pools, applications, stats } = systemData;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link href="/dashboard/systems">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Systems
+            </Button>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <div 
+              className="h-12 w-12 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: systemColor }}
+            >
+              <Building2 className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 capitalize">{systemName}</h1>
+              <p className="text-gray-600">Grant system profile and funding data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatsCard
+          title="Total Funding"
+          value={formatCurrency(stats.totalFunding)}
+          description="Distributed to projects"
+          icon={DollarSign}
+        />
+        <StatsCard
+          title="Total Applications"
+          value={stats.totalApplications}
+          description="Applications processed"
+          icon={Users}
+        />
+        <StatsCard
+          title="Approval Rate"
+          value={`${stats.approvalRate.toFixed(1)}%`}
+          description="Applications approved/funded"
+          icon={TrendingUp}
+        />
+        <StatsCard
+          title="Grant Rounds"
+          value={pools.length}
+          description="Funding rounds available"
+          icon={Calendar}
+        />
+      </div>
+
+      {/* Grant Pools Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-gray-900">Grant Rounds</h2>
+          <Badge variant="secondary" className="text-sm">
+            {pools.length} rounds
+          </Badge>
+        </div>
+        
+        {pools.length > 0 ? (
+          <div className="space-y-4">
+            {pools
+              .sort((a, b) => {
+                // Sort by close date (most recent first)
+                if (a.closeDate && b.closeDate) {
+                  return new Date(b.closeDate).getTime() - new Date(a.closeDate).getTime();
+                }
+                if (a.closeDate) return -1;
+                if (b.closeDate) return 1;
+                return 0;
+              })
+              .map((pool) => (
+                <GrantPoolCard 
+                  key={pool.id} 
+                  pool={pool} 
+                  applications={applications}
+                />
+              ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No grant rounds found</h3>
+                <p className="text-gray-600">
+                  This system doesn't have any grant rounds available yet.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* System Info */}
+      <Card className="bg-gradient-to-r from-gray-50 to-white">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Building2 className="h-5 w-5 text-[#800020] mr-2" />
+            System Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900">Data Source</h4>
+              <p className="text-sm text-gray-600">
+                This system's data is fetched through our integrated APIs and transformed to the DAOIP-5 standard for consistency.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900">Last Updated</h4>
+              <p className="text-sm text-gray-600">
+                Data is refreshed every 5 minutes to ensure you have the latest grant information.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
