@@ -331,24 +331,64 @@ class AnalyticsDataService {
   }
 
   private async _loadDaoip5SystemData(source: any): Promise<SystemData> {
-    // For DAOIP5 systems, use realistic fallback data since external APIs are disabled
-    const fallbackData = this._getDaoip5FallbackData(source.id);
+    try {
+      // For DAOIP5 systems, fetch real data from their endpoints
+      const poolFiles = await daoip5Api.getSystemPools(source.id);
+      const poolDataPromises = poolFiles.map(async (file) => {
+        const filename = file.replace('.json', '');
+        return await daoip5Api.getPoolData(source.id, filename);
+      });
+      
+      const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+      
+      // Extract pools and applications from the data
+      const pools: PoolData[] = poolData
+        .filter(data => data && (data.type === 'GrantPool' || !data.type))
+        .map(pool => ({
+          id: pool.id || pool.name?.toLowerCase().replace(/\s+/g, '-') || 'unknown',
+          name: pool.name || 'Unknown Pool',
+          system: source.id,
+          totalFunding: parseFloat(pool.totalGrantPoolSizeUSD || pool.totalFunding || '0'),
+          isOpen: pool.isOpen || false,
+          closeDate: pool.closeDate,
+          mechanism: pool.grantFundingMechanism || 'Direct Grant'
+        }));
 
-    const poolData: PoolData[] = fallbackData.pools;
-    const applicationData: ApplicationData[] = fallbackData.applications;
-    const metrics = this._calculateSystemMetrics(applicationData, poolData);
+      const applications: ApplicationData[] = poolData.flatMap(data => {
+        if (Array.isArray(data)) {
+          return data.filter((item: any) => item.type === 'GrantApplication');
+        }
+        if (data && data.data && Array.isArray(data.data)) {
+          return data.data.filter((item: any) => item.type === 'GrantApplication');
+        }
+        return [];
+      }).map(app => ({
+        id: app.id || 'unknown',
+        projectName: app.projectName || app.name || 'Unknown Project',
+        system: source.id,
+        poolId: app.grantPoolId || app.poolId || 'unknown',
+        status: this._normalizeStatus(app.status || 'pending'),
+        fundingUSD: parseFloat(app.fundsApprovedInUSD || app.fundingUSD || '0'),
+        createdAt: app.createdAt || new Date().toISOString()
+      }));
 
-    return {
-      id: source.id,
-      name: source.name,
-      type: source.type,
-      source: 'daoip5',
-      pools: poolData,
-      applications: applicationData,
-      metrics,
-      compatibility: source.standardization.compatibility,
-      fundingMechanisms: source.features.fundingMechanism || ['Direct Grant']
-    };
+      const metrics = this._calculateSystemMetrics(applications, pools);
+
+      return {
+        id: source.id,
+        name: source.name,
+        type: source.type,
+        source: 'daoip5',
+        pools,
+        applications,
+        metrics,
+        compatibility: source.standardization.compatibility,
+        fundingMechanisms: source.features.fundingMechanism || ['Direct Grant']
+      };
+    } catch (error) {
+      console.error(`Failed to load DAOIP5 data for ${source.name}:`, error);
+      throw error; // Re-throw to be handled by the calling function
+    }
   }
 
   private _createEmptySystemData(source: any): SystemData {
@@ -403,70 +443,7 @@ class AnalyticsDataService {
     return 'pending';
   }
 
-  private _getDaoip5FallbackData(systemId: string): { pools: PoolData[], applications: ApplicationData[] } {
-    const fallbackData: Record<string, any> = {
-      'stellar': {
-        pools: [
-          { id: 'scf-24', name: 'Stellar Community Fund 24', totalFunding: 100000, mechanism: 'Direct Grant' },
-          { id: 'scf-25', name: 'Stellar Community Fund 25', totalFunding: 100000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'stellar-1', projectName: 'Stellar Wallet', poolId: 'scf-24', status: 'funded', fundingUSD: 25000, createdAt: '2024-01-15' },
-          { id: 'stellar-2', projectName: 'Payment Gateway', poolId: 'scf-24', status: 'funded', fundingUSD: 30000, createdAt: '2024-01-20' },
-          { id: 'stellar-3', name: 'DeFi Bridge', poolId: 'scf-25', status: 'approved', fundingUSD: 35000, createdAt: '2024-02-10' }
-        ]
-      },
-      'optimism': {
-        pools: [
-          { id: 'retro-3', name: 'RetroPGF Round 3', totalFunding: 30000000, mechanism: 'Retroactive Public Goods' },
-          { id: 'retro-4', name: 'RetroPGF Round 4', totalFunding: 10000000, mechanism: 'Retroactive Public Goods' }
-        ],
-        applications: [
-          { id: 'op-1', projectName: 'Protocol Development', poolId: 'retro-3', status: 'funded', fundingUSD: 150000, createdAt: '2024-01-10' },
-          { id: 'op-2', projectName: 'Infrastructure Tools', poolId: 'retro-3', status: 'funded', fundingUSD: 250000, createdAt: '2024-01-25' },
-          { id: 'op-3', projectName: 'Developer Education', poolId: 'retro-4', status: 'funded', fundingUSD: 100000, createdAt: '2024-03-15' }
-        ]
-      },
-      'arbitrumfoundation': {
-        pools: [
-          { id: 'stip', name: 'Arbitrum STIP', totalFunding: 50000000, mechanism: 'Direct Grant' },
-          { id: 'ltip', name: 'Arbitrum LTIP', totalFunding: 45000000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'arb-1', projectName: 'DEX Protocol', poolId: 'stip', status: 'funded', fundingUSD: 750000, createdAt: '2024-01-05' },
-          { id: 'arb-2', projectName: 'Lending Platform', poolId: 'ltip', status: 'funded', fundingUSD: 500000, createdAt: '2024-02-20' }
-        ]
-      },
-      'celo-org': {
-        pools: [
-          { id: 'cgp-100', name: 'Celo Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'celo-1', projectName: 'Mobile Wallet', poolId: 'cgp-100', status: 'funded', fundingUSD: 50000, createdAt: '2024-01-12' },
-          { id: 'celo-2', projectName: 'ReFi Platform', poolId: 'cgp-100', status: 'funded', fundingUSD: 75000, createdAt: '2024-02-08' }
-        ]
-      }
-    };
-
-    const systemData = fallbackData[systemId] || {
-      pools: [{ id: `${systemId}-1`, name: `${systemId} Grant Pool`, totalFunding: 500000, mechanism: 'Direct Grant' }],
-      applications: [{ id: `${systemId}-app-1`, projectName: `${systemId} Project`, poolId: `${systemId}-1`, status: 'funded', fundingUSD: 100000, createdAt: '2024-01-01' }]
-    };
-
-    return {
-      pools: systemData.pools.map((pool: any) => ({
-        ...pool,
-        system: systemId,
-        isOpen: Math.random() > 0.5,
-        closeDate: new Date(Date.now() + Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString()
-      })),
-      applications: systemData.applications.map((app: any) => ({
-        ...app,
-        system: systemId,
-        projectName: app.projectName || app.name
-      }))
-    };
-  }
+  
 
   // Compute cross-system analytics efficiently
   async getCrossSystemAnalytics(): Promise<CrossSystemAnalytics> {

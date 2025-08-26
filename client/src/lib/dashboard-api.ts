@@ -59,69 +59,54 @@ export const openGrantsApi = {
   baseUrl: 'https://grants.daostar.org/api/v1',
 
   async getSystems(): Promise<any[]> {
-    // Use fallback data directly to avoid CORS errors
-    console.warn('Using known systems directly to avoid CORS errors');
-    return [
-      { name: 'Octant', type: 'DAO', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
-      { name: 'Giveth', type: 'DAO', extensions: { description: 'Donation platform for public goods' }}
-    ];
+    try {
+      const response = await fetch(`${this.baseUrl}/grantSystems`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch systems from OpenGrants API:', error);
+      throw new Error('Unable to fetch grant systems. Please try again later.');
+    }
   },
 
   async getPools(system?: string): Promise<any[]> {
-    // Use sample data directly to avoid CORS errors
-    console.warn('Using sample pools data to avoid CORS errors');
-    return this.getSamplePools(system);
+    try {
+      const url = system ? `${this.baseUrl}/grantPools?system=${system}` : `${this.baseUrl}/grantPools`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch pools for system ${system}:`, error);
+      throw new Error(`Unable to fetch grant pools for ${system || 'systems'}. Please try again later.`);
+    }
   },
   
-  getSamplePools(system?: string): any[] {
-    const pools: Record<string, any[]> = {
-      'octant': [
-        { id: 'epoch-3', name: 'Epoch 3', totalGrantPoolSizeUSD: '2000000', isOpen: true, closeDate: '2024-04-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-2', name: 'Epoch 2', totalGrantPoolSizeUSD: '1500000', isOpen: false, closeDate: '2024-01-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-1', name: 'Epoch 1', totalGrantPoolSizeUSD: '1000000', isOpen: false, closeDate: '2023-10-01', grantFundingMechanism: 'Quadratic Funding' },
-      ],
-      'giveth': [
-        { id: 'qf-round-23', name: 'QF Round 23', totalGrantPoolSizeUSD: '500000', isOpen: true, closeDate: '2024-04-15', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-22', name: 'QF Round 22', totalGrantPoolSizeUSD: '400000', isOpen: false, closeDate: '2024-02-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-21', name: 'QF Round 21', totalGrantPoolSizeUSD: '350000', isOpen: false, closeDate: '2023-12-01', grantFundingMechanism: 'Quadratic Funding' },
-      ]
-    };
-    
-    return pools[system || ''] || [
-      { id: 'pool-1', name: 'Grant Pool 1', totalGrantPoolSizeUSD: '100000', isOpen: true, grantFundingMechanism: 'Direct Grant' },
-    ];
-  },
+  
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
-    // Use sample data directly to avoid CORS errors
-    console.warn(`Using sample applications data for ${system} to avoid CORS errors`);
-    return this.getSampleApplications(system);
+    try {
+      let url = `${this.baseUrl}/grantApplications`;
+      const params = new URLSearchParams();
+      if (system) params.append('system', system);
+      if (poolId) params.append('poolId', poolId);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch applications for system ${system}:`, error);
+      throw new Error(`Unable to fetch grant applications for ${system || 'systems'}. Please try again later.`);
+    }
   },
   
-  getSampleApplications(system?: string): any[] {
-    // Realistic sample data for demo purposes
-    const sampleData: Record<string, any[]> = {
-      'octant': [
-        { id: 'oct-1', projectName: 'Protocol Guild', status: 'funded', fundsApprovedInUSD: '250000', grantPoolId: 'epoch-3', createdAt: '2024-01-15' },
-        { id: 'oct-2', projectName: 'Ethereum Cat Herders', status: 'funded', fundsApprovedInUSD: '180000', grantPoolId: 'epoch-3', createdAt: '2024-01-20' },
-        { id: 'oct-3', projectName: 'Rotki', status: 'funded', fundsApprovedInUSD: '150000', grantPoolId: 'epoch-3', createdAt: '2024-02-01' },
-        { id: 'oct-4', projectName: 'L2BEAT', status: 'funded', fundsApprovedInUSD: '200000', grantPoolId: 'epoch-2', createdAt: '2024-02-15' },
-        { id: 'oct-5', projectName: 'ETH Daily', status: 'approved', fundsApprovedInUSD: '75000', grantPoolId: 'epoch-2', createdAt: '2024-03-01' },
-      ],
-      'giveth': [
-        { id: 'giv-1', projectName: 'Commons Stack', status: 'funded', fundsApprovedInUSD: '120000', grantPoolId: 'qf-round-23', createdAt: '2024-01-10' },
-        { id: 'giv-2', projectName: 'Token Engineering Commons', status: 'funded', fundsApprovedInUSD: '95000', grantPoolId: 'qf-round-23', createdAt: '2024-01-25' },
-        { id: 'giv-3', projectName: 'DAppNode', status: 'funded', fundsApprovedInUSD: '110000', grantPoolId: 'qf-round-22', createdAt: '2024-02-05' },
-        { id: 'giv-4', projectName: 'BrightID', status: 'approved', fundsApprovedInUSD: '65000', grantPoolId: 'qf-round-22', createdAt: '2024-02-20' },
-        { id: 'giv-5', projectName: 'Giveth Matching Pool', status: 'funded', fundsApprovedInUSD: '300000', grantPoolId: 'qf-round-21', createdAt: '2024-03-05' },
-      ]
-    };
-    
-    return sampleData[system || ''] || [
-      { id: 'gen-1', projectName: 'Sample Project 1', status: 'funded', fundsApprovedInUSD: '50000', grantPoolId: 'pool-1', createdAt: '2024-01-01' },
-      { id: 'gen-2', projectName: 'Sample Project 2', status: 'approved', fundsApprovedInUSD: '30000', grantPoolId: 'pool-1', createdAt: '2024-01-15' },
-    ];
-  }
+  
 };
 
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
@@ -129,34 +114,56 @@ export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
 
   async getSystems(): Promise<string[]> {
-    // Use known systems directly to avoid CORS errors
-    console.warn('Using known DAOIP5 systems to avoid CORS errors');
-    return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
+    try {
+      const response = await fetch(`${this.baseUrl}/systems`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch DAOIP5 systems:', error);
+      throw new Error('Unable to fetch DAOIP5 systems. Please try again later.');
+    }
   },
 
   async getSystemPools(system: string): Promise<string[]> {
-    // Use sample pool files directly to avoid CORS errors
-    console.warn(`Using sample pools for ${system} to avoid CORS errors`);
-    return ['pool-1.json', 'pool-2.json'];
+    try {
+      const response = await fetch(`${this.baseUrl}/${system}`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch pools for ${system}:`, error);
+      throw new Error(`Unable to fetch pools for ${system}. Please try again later.`);
+    }
   },
 
   async getPoolData(system: string, filename: string): Promise<any> {
-    // Use sample data directly to avoid CORS errors
-    console.warn(`Using sample data for ${system}/${filename} to avoid CORS errors`);
-    return {
-      type: 'GrantPool',
-      id: filename,
-      name: `${system} Grant Pool`,
-      totalGrantPoolSizeUSD: '1000000',
-      grantFundingMechanism: 'Direct Grant',
-      isOpen: false
-    };
+    try {
+      const response = await fetch(`${this.baseUrl}/${system}/${filename}`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch pool data for ${system}/${filename}:`, error);
+      throw new Error(`Unable to fetch pool data for ${system}. Please try again later.`);
+    }
   },
 
   async searchApplications(projectName?: string): Promise<any> {
-    // Use empty results to avoid CORS errors
-    console.warn('Using empty search results to avoid CORS errors');
-    return { results: [] };
+    try {
+      const url = projectName ? `${this.baseUrl}/search?projectName=${encodeURIComponent(projectName)}` : `${this.baseUrl}/search`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to search applications:', error);
+      throw new Error('Unable to search applications. Please try again later.');
+    }
   }
 };
 
@@ -227,36 +234,54 @@ export const dashboardApi = {
           }
         }),
         ...daoip5Sources.map(async (source) => {
-          // For DAOIP5 systems, provide realistic fallback data since API access is limited
-          const fallbackData = {
-            'stellar': { totalFunding: 2500000, totalApplications: 150, totalPools: 25, approvalRate: 65 },
-            'optimism': { totalFunding: 50000000, totalApplications: 300, totalPools: 6, approvalRate: 45 },
-            'arbitrumfoundation': { totalFunding: 15000000, totalApplications: 200, totalPools: 10, approvalRate: 55 },
-            'celo-org': { totalFunding: 8000000, totalApplications: 120, totalPools: 8, approvalRate: 70 },
-            'clrfund': { totalFunding: 1200000, totalApplications: 80, totalPools: 12, approvalRate: 60 },
-            'dao-drops-dorgtech': { totalFunding: 500000, totalApplications: 40, totalPools: 5, approvalRate: 75 }
-          };
+          try {
+            // For DAOIP5 systems, fetch real data from their endpoints
+            const poolFiles = await daoip5Api.getSystemPools(source.id);
+            const poolDataPromises = poolFiles.map(async (file) => {
+              const filename = file.replace('.json', '');
+              return await daoip5Api.getPoolData(source.id, filename);
+            });
+            
+            const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+            
+            // Extract pools and applications
+            const pools = poolData.filter(data => data && (data.type === 'GrantPool' || !data.type));
+            const applications = poolData.flatMap(data => {
+              if (Array.isArray(data)) {
+                return data.filter((item: any) => item.type === 'GrantApplication');
+              }
+              if (data && data.data && Array.isArray(data.data)) {
+                return data.data.filter((item: any) => item.type === 'GrantApplication');
+              }
+              return [];
+            });
 
-          const systemData = fallbackData[source.id as keyof typeof fallbackData] || {
-            totalFunding: Math.floor(Math.random() * 5000000) + 500000,
-            totalApplications: Math.floor(Math.random() * 100) + 20,
-            totalPools: Math.floor(Math.random() * 10) + 2,
-            approvalRate: Math.floor(Math.random() * 40) + 40
-          };
+            const totalFunding = applications.reduce((sum, app) => {
+              return sum + parseFloat(app.fundsApprovedInUSD || app.fundingUSD || '0');
+            }, 0);
+            
+            const approvedApps = applications.filter(app => 
+              ['funded', 'approved', 'completed', 'successful', 'accepted'].includes(app.status?.toLowerCase())
+            );
+            const approvalRate = applications.length > 0 ? (approvedApps.length / applications.length) * 100 : 0;
 
-          return {
-            name: source.name,
-            type: source.type,
-            source: source.source,
-            totalFunding: systemData.totalFunding,
-            totalApplications: systemData.totalApplications,
-            totalPools: systemData.totalPools,
-            approvalRate: systemData.approvalRate,
-            compatibility: source.standardization.compatibility,
-            fundingMechanisms: source.features.fundingMechanism,
-            description: source.description,
-            addedDate: source.metadata.addedDate
-          };
+            return {
+              name: source.name,
+              type: source.type,
+              source: source.source,
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate,
+              compatibility: source.standardization.compatibility,
+              fundingMechanisms: source.features.fundingMechanism,
+              description: source.description,
+              addedDate: source.metadata.addedDate
+            };
+          } catch (error) {
+            console.error(`Error fetching data for ${source.name}:`, error);
+            throw new Error(`Failed to load data for ${source.name}: ${error.message}`);
+          }
         })
       ]);
 

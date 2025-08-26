@@ -73,7 +73,7 @@ function GrantPoolCard({ pool, applications }: {
   const approvedApps = poolApplications.filter(app => 
     app.status === 'funded' || app.status === 'approved'
   );
-  
+
   const totalFunding = poolApplications.reduce((sum, app) => {
     return sum + parseFloat(app.fundsApprovedInUSD || '0');
   }, 0);
@@ -198,7 +198,7 @@ function GrantPoolCard({ pool, applications }: {
 export default function SystemProfile() {
   const [, params] = useRoute("/dashboard/systems/:systemName");
   const systemName = params?.systemName || '';
-  
+
   const { data: systemData, isLoading, error } = useQuery({
     queryKey: ['dashboard-system-details', systemName],
     queryFn: () => dashboardApi.getSystemDetails(systemName),
@@ -327,7 +327,7 @@ export default function SystemProfile() {
             {pools.length} rounds
           </Badge>
         </div>
-        
+
         {pools.length > 0 ? (
           <div className="space-y-4">
             {pools
