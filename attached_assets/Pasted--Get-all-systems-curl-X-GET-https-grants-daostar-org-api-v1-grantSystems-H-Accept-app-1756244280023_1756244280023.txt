@@ -1,0 +1,157 @@
+# Get all systems
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems" \
+  -H "Accept: application/json"
+
+# Get systems with pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantSystems?limit=5&offset=0" \
+  -H "Accept: application/json"
+Response Format
+
+{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "type": "DAO",
+      "name": "Octant",
+      "grantPoolsURI": "/api/v1/grantPools?system=octant",
+      "extensions": {
+        "app.octant.systemMetadata": {
+          "platform": "octant",
+          "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
+          "website": "https://octant.app"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "totalCount": 2,
+    "totalPages": 1,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": false,
+    "hasPrevious": false
+  }
+}
+Grant Pools
+GET /api/v1/grantPools
+Retrieve grant pools with optional filtering by system.
+
+Query Parameters
+system - Filter by grant system (octant, giveth)
+isOpen - Filter by pool status (true for open pools)
+limit - Items per page (default: 10, max: 100)
+offset - Items to skip (default: 0)
+page - Page number (alternative to offset)
+cURL
+JavaScript
+TypeScript
+Python
+
+# Get all grant pools
+curl -X GET "https://grants.daostar.org/api/v1/grantPools" \
+  -H "Accept: application/json"
+
+# Get grant pools with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantPools?system=octant&limit=5&page=1" \
+  -H "Accept: application/json"
+Response Format
+
+{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "type": "GrantPool",
+      "name": "Epoch 7",
+      "description": "Octant funding round for public goods",
+      "uri": "daoip5:octant:grantPool:1:7",
+      "amount": "1500000000000000000000",
+      "amountInUsd": "3000000",
+      "currency": "ETH",
+      "token": "0xA0b86a33E6417A302C7b029B5b642D49292b5A5d",
+      "grantApplicationsURI": "/api/v1/grantApplications?poolId=daoip5:octant:grantPool:1:7",
+      "strategy": "AllocationVoting",
+      "isOpen": false,
+      "extensions": {
+        "app.octant.epochMetadata": {
+          "epochStart": "2024-12-01T00:00:00Z",
+          "epochEnd": "2024-12-31T23:59:59Z",
+          "totalRewards": "150.0"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "totalCount": 15,
+    "totalPages": 2,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}
+Applications
+GET /api/v1/grantApplications
+Retrieve grant applications with filtering by pool and system.
+
+Query Parameters
+poolId - Specific grant pool ID (defaults to latest)
+system - Filter by grant system (octant, giveth)
+search - Search applications by project name
+limit - Items per page (default: 10, max: 100)
+offset - Items to skip (default: 0)
+page - Page number (alternative to offset)
+cURL
+JavaScript
+TypeScript
+Python
+
+# Get all applications
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications" \
+  -H "Accept: application/json"
+
+# Get applications with filters and pagination
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?system=octant&limit=20&page=1" \
+  -H "Accept: application/json"
+
+# Get applications for specific pool with search
+curl -X GET "https://grants.daostar.org/api/v1/grantApplications?poolId=daoip5:octant:grantPool:7&search=protocol" \
+  -H "Accept: application/json"
+Response Format
+
+{
+  "@context": "http://www.daostar.org/schemas",
+  "data": [
+    {
+      "@context": "http://www.daostar.org/schemas",
+      "type": "GrantApplication",
+      "id": "daoip5:octant:grantPool:1:7:grantApplication:0x1234...",
+      "grantPoolId": "daoip5:octant:grantPool:1:7",
+      "grantPoolName": "Epoch 7",
+      "projectName": "Protocol Guild",
+      "createdAt": "2024-07-01T00:00:00Z",
+      "fundsApproved": "50000000000000000000",
+      "fundsApprovedInUSD": 100000,
+      "payoutAddress": "eip155:1:0x1234567890123456789012345678901234567890",
+      "status": "Approved",
+      "extensions": {
+        "app.octant.applicationMetadata": {
+          "votes": 15420
+        },
+        "x-karmagap-uid": "0xe0177d40df99b2dd4c94735058a283b5e0d44f7a838223fe7d7e589d2e9013bd"
+      }
+    }
+  ],
+  "pagination": {
+    "totalCount": 50,
+    "totalPages": 5,
+    "currentPage": 1,
+    "limit": 10,
+    "offset": 0,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}
