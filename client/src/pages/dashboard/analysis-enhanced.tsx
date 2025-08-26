@@ -393,7 +393,7 @@ export default function CrossSystemAnalysisEnhanced() {
   // Calculate overview metrics
   const totalFunding = systemComparison?.reduce((sum, system) => sum + system.totalFunding, 0) || 0;
   const totalApplications = systemComparison?.reduce((sum, system) => sum + system.totalApplications, 0) || 0;
-  const averageApproval = systemComparison?.length > 0 ? 
+  const averageApproval = (systemComparison && systemComparison.length > 0) ? 
     systemComparison.reduce((sum, system) => sum + system.approvalRate, 0) / systemComparison.length : 0;
   const activeSystems = systemComparison?.filter(system => system.status === 'active').length || 0;
 
