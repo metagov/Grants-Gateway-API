@@ -51,8 +51,8 @@ export async function getCrossSystemComparison(): Promise<SystemComparisonData[]
       totalApplications: system.totalApplications || 0,
       approvalRate: system.approvalRate || 0,
       totalPools: system.totalPools || 0,
-      averageFundingPerProject: system.totalApplications > 0 ? 
-        (system.totalFunding || 0) / system.totalApplications : 0,
+      averageFundingPerProject: (system.totalApplications || 0) > 0 ? 
+        (system.totalFunding || 0) / (system.totalApplications || 0) : 0,
       fundingMechanisms: [], // Will be populated from detailed data
       status: (system.totalPools || 0) > 0 ? 'active' : 'inactive',
       source: (system.source || 'unknown') as 'opengrants' | 'daoip5' | 'unknown'
@@ -75,7 +75,7 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
     }>();
 
     // For now, use known funding mechanisms based on system types
-    const knownMechanisms = {
+    const knownMechanisms: Record<string, string[]> = {
       'octant': ['Quadratic Funding'],
       'giveth': ['Donations', 'Quadratic Funding'],
       'stellar': ['Direct Grants'],
@@ -87,7 +87,7 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
     systems.forEach(system => {
       const mechanisms = knownMechanisms[system.name.toLowerCase()] || ['Direct Grants'];
       
-      mechanisms.forEach(mechanism => {
+      mechanisms.forEach((mechanism: string) => {
         if (!mechanismMap.has(mechanism)) {
           mechanismMap.set(mechanism, {
             systems: new Set(),
