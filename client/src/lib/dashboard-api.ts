@@ -174,18 +174,29 @@ export const daoip5Api = {
   },
 
   async searchApplications(projectName?: string): Promise<any> {
-    const url = projectName 
-      ? `${this.baseUrl}/search/${encodeURIComponent(projectName)}`
-      : `${this.baseUrl}/search/`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to search applications');
-    return await response.json();
+    try {
+      const url = projectName 
+        ? `${this.baseUrl}/search/${encodeURIComponent(projectName)}`
+        : `${this.baseUrl}/search/`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        mode: 'cors'
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to search applications`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error searching applications:', error);
+      return { results: [] };
+    }
   }
 };
 
 // Combined data fetching with caching
 export const dashboardApi = {
-  // Get all grant systems from both APIs
+  // Get all grant systems from both APIs with comprehensive data
   async getAllSystems(): Promise<GrantSystem[]> {
     const cacheKey = 'dashboard-all-systems';
     const cached = queryClient.getQueryData([cacheKey]);
@@ -193,66 +204,128 @@ export const dashboardApi = {
 
     try {
       const [openGrantsSystems, daoip5Systems] = await Promise.all([
-        openGrantsApi.getSystems(),
-        daoip5Api.getSystems()
+        openGrantsApi.getSystems().catch(() => []),
+        daoip5Api.getSystems().catch(() => [])
       ]);
 
-      const systems: GrantSystem[] = [
-        ...openGrantsSystems.map(system => ({
-          name: system.name,
-          type: 'API Integration',
-          source: 'opengrants'
-        })),
-        ...daoip5Systems.map(system => ({
-          name: system,
-          type: 'Data Integration', 
-          source: 'daoip5'
-        }))
-      ];
+      // Get comprehensive stats for each system
+      const systemsWithStats = await Promise.all([
+        ...openGrantsSystems.map(async (system) => {
+          try {
+            const [pools, applications] = await Promise.all([
+              openGrantsApi.getPools(system.name.toLowerCase()).catch(() => []),
+              openGrantsApi.getApplications(system.name.toLowerCase()).catch(() => [])
+            ]);
+            
+            const totalFunding = applications.reduce((sum, app) => {
+              return sum + parseFloat(app.fundsApprovedInUSD || '0');
+            }, 0);
+            
+            const approvalRate = applications.length > 0 ? 
+              (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
 
-      queryClient.setQueryData([cacheKey], systems);
+            return {
+              name: system.name,
+              type: 'API Integration',
+              source: 'opengrants',
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate
+            };
+          } catch (error) {
+            return {
+              name: system.name,
+              type: 'API Integration',
+              source: 'opengrants',
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: 0
+            };
+          }
+        }),
+        ...daoip5Systems.map(async (systemName) => {
+          try {
+            const poolFiles = await daoip5Api.getSystemPools(systemName).catch(() => []);
+            const poolDataPromises = poolFiles.slice(0, 5).map(async (file) => {
+              const filename = file.replace('.json', '');
+              return await daoip5Api.getPoolData(systemName, filename).catch(() => null);
+            });
+            
+            const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+            const applications = poolData.flatMap(data => 
+              Array.isArray(data) ? data.filter((item: any) => item.type === 'GrantApplication') : []
+            );
+            
+            const totalFunding = applications.reduce((sum, app) => {
+              return sum + parseFloat(app.fundsApprovedInUSD || '0');
+            }, 0);
+            
+            const approvalRate = applications.length > 0 ? 
+              (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
 
-      return systems;
+            return {
+              name: systemName,
+              type: 'Data Integration',
+              source: 'daoip5',
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: poolFiles.length,
+              approvalRate
+            };
+          } catch (error) {
+            return {
+              name: systemName,
+              type: 'Data Integration',
+              source: 'daoip5',
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: 0
+            };
+          }
+        })
+      ]);
+
+      queryClient.setQueryData([cacheKey], systemsWithStats);
+      return systemsWithStats;
     } catch (error) {
       console.error('Error fetching systems:', error);
       return [];
     }
   },
 
-  // Get ecosystem-wide statistics
+  // Get comprehensive ecosystem-wide statistics
   async getEcosystemStats(): Promise<EcosystemStats> {
     const cacheKey = 'dashboard-ecosystem-stats';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as EcosystemStats;
 
     try {
-      const [openGrantsPools, openGrantsApps, daoip5Systems] = await Promise.all([
-        openGrantsApi.getPools(),
-        openGrantsApi.getApplications(),
-        daoip5Api.getSystems()
-      ]);
-
-      // Calculate statistics
-      const totalFunding = openGrantsApps.reduce((sum, app) => {
-        const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
-        return sum + fundingUSD;
-      }, 0);
-
-      const approvedApps = openGrantsApps.filter(app => 
-        app.status === 'funded' || app.status === 'approved'
-      ).length;
-
+      const systems = await this.getAllSystems();
+      
       const stats: EcosystemStats = {
-        totalFunding,
-        totalGrantRounds: openGrantsPools.length,
-        totalSystems: 2 + daoip5Systems.length, // OpenGrants + DAOIP5 systems
-        totalProjects: new Set(openGrantsApps.map(app => app.projectId)).size,
-        totalApplications: openGrantsApps.length,
-        averageApprovalRate: openGrantsApps.length > 0 ? (approvedApps / openGrantsApps.length) * 100 : 0
+        totalFunding: systems.reduce((sum, system) => sum + (system.totalFunding || 0), 0),
+        totalGrantRounds: systems.reduce((sum, system) => sum + (system.totalPools || 0), 0),
+        totalSystems: systems.length,
+        totalProjects: 0, // Will be calculated from unique project IDs
+        totalApplications: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
+        averageApprovalRate: systems.length > 0 ? 
+          systems.reduce((sum, system) => sum + (system.approvalRate || 0), 0) / systems.length : 0
       };
 
-      queryClient.setQueryData([cacheKey], stats);
+      // Get unique project count
+      try {
+        const [openGrantsApps] = await Promise.all([
+          openGrantsApi.getApplications().catch(() => [])
+        ]);
+        stats.totalProjects = new Set(openGrantsApps.map(app => app.projectId)).size;
+      } catch (error) {
+        console.error('Error calculating unique projects:', error);
+      }
 
+      queryClient.setQueryData([cacheKey], stats);
       return stats;
     } catch (error) {
       console.error('Error fetching ecosystem stats:', error);
@@ -288,23 +361,34 @@ export const dashboardApi = {
       // Check if it's an OpenGrants system (octant, giveth)
       if (['octant', 'giveth'].includes(systemName.toLowerCase())) {
         [pools, applications] = await Promise.all([
-          openGrantsApi.getPools(systemName),
-          openGrantsApi.getApplications(systemName)
+          openGrantsApi.getPools(systemName).catch(() => []),
+          openGrantsApi.getApplications(systemName).catch(() => [])
         ]);
       } else {
         // Handle DAOIP5 systems (stellar, optimism, arbitrum, etc.)
-        const poolFiles = await daoip5Api.getSystemPools(systemName);
-        const poolData = await Promise.all(
-          poolFiles.map(async (file) => {
+        try {
+          const poolFiles = await daoip5Api.getSystemPools(systemName);
+          const poolDataPromises = poolFiles.map(async (file) => {
             const filename = file.replace('.json', '');
             return await daoip5Api.getPoolData(systemName, filename);
-          })
-        );
-        
-        pools = poolData.filter(data => data.type === 'GrantPool');
-        applications = poolData.flatMap(data => 
-          Array.isArray(data.data) ? data.data.filter((item: any) => item.type === 'GrantApplication') : []
-        );
+          });
+          
+          const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+          
+          // For DAOIP5, pool data can be either GrantPool objects or application arrays
+          pools = poolData.filter(data => data && data.type === 'GrantPool');
+          applications = poolData.flatMap(data => {
+            if (Array.isArray(data)) {
+              return data.filter((item: any) => item.type === 'GrantApplication');
+            }
+            if (data && data.data && Array.isArray(data.data)) {
+              return data.data.filter((item: any) => item.type === 'GrantApplication');
+            }
+            return [];
+          });
+        } catch (error) {
+          console.error(`Error fetching DAOIP5 data for ${systemName}:`, error);
+        }
       }
 
       // Calculate stats

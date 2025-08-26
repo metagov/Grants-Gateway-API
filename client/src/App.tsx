@@ -15,7 +15,7 @@ import DashboardOverview from "@/pages/dashboard/overview";
 import GrantSystems from "@/pages/dashboard/systems";
 import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
 import SearchAndFilter from "@/pages/dashboard/search";
-import CrossSystemAnalysis from "@/pages/dashboard/analysis";
+import CrossSystemAnalysis from "@/pages/dashboard/analysis-enhanced";
 import NotFound from "@/pages/not-found";
 import MobileToast from "@/components/mobile-toast";
 
