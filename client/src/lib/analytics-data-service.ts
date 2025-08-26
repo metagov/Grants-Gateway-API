@@ -114,7 +114,7 @@ class AnalyticsDataService {
     lastUpdated: 0,
     isStale: true
   };
-  
+
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private isLoading = false;
   private loadingPromise: Promise<void> | null = null;
@@ -122,7 +122,7 @@ class AnalyticsDataService {
   // Batch load all system data efficiently
   async loadAllSystemData(forceRefresh = false): Promise<SystemDataCache> {
     const now = Date.now();
-    
+
     // Return cached data if still fresh and not forcing refresh
     if (!forceRefresh && !this.cache.isStale && (now - this.cache.lastUpdated) < this.CACHE_DURATION) {
       return this.cache;
@@ -136,14 +136,14 @@ class AnalyticsDataService {
 
     this.isLoading = true;
     this.loadingPromise = this._performBatchLoad();
-    
+
     try {
       await this.loadingPromise;
     } finally {
       this.isLoading = false;
       this.loadingPromise = null;
     }
-    
+
     return this.cache;
   }
 
@@ -154,7 +154,7 @@ class AnalyticsDataService {
 
       // Get all registered data sources
       const sources = dataSourceRegistry.getActiveSources();
-      
+
       // Batch load data for all systems
       const systemDataPromises = sources.map(async (source): Promise<SystemData> => {
         try {
@@ -171,7 +171,7 @@ class AnalyticsDataService {
 
       // Wait for all data to load
       const systemDataArray = await Promise.allSettled(systemDataPromises);
-      
+
       // Update cache with successful results
       this.cache.systems.clear();
       systemDataArray.forEach(result => {
@@ -185,10 +185,10 @@ class AnalyticsDataService {
 
       const loadTime = performance.now() - startTime;
       console.log(`✅ Batch load completed in ${loadTime.toFixed(2)}ms - loaded ${this.cache.systems.size} systems`);
-      
+
       // Cache in React Query for component access
       queryClient.setQueryData(['analytics-system-data'], this.cache);
-      
+
     } catch (error) {
       console.error('❌ Batch load failed:', error);
       this.cache.isStale = true;
@@ -199,7 +199,7 @@ class AnalyticsDataService {
     // Use iterative fetching for Octant and Giveth for accurate data
     if (source.id === 'octant') {
       const iterativeData = await iterativeDataFetcher.fetchOctantData();
-      
+
       const poolData: PoolData[] = iterativeData.pools.map(pool => ({
         id: pool.id,
         name: pool.name,
@@ -241,10 +241,10 @@ class AnalyticsDataService {
         fundingMechanisms: ['Quadratic Funding']
       };
     }
-    
+
     if (source.id === 'giveth') {
       const iterativeData = await iterativeDataFetcher.fetchGivethData();
-      
+
       const poolData: PoolData[] = iterativeData.pools.map(pool => ({
         id: pool.id,
         name: pool.name,
@@ -331,7 +331,7 @@ class AnalyticsDataService {
   private async _loadDaoip5SystemData(source: any): Promise<SystemData> {
     // For DAOIP5 systems, use realistic fallback data since external APIs are disabled
     const fallbackData = this._getDaoip5FallbackData(source.id);
-    
+
     const poolData: PoolData[] = fallbackData.pools;
     const applicationData: ApplicationData[] = fallbackData.applications;
     const metrics = this._calculateSystemMetrics(applicationData, poolData);
@@ -555,13 +555,13 @@ class AnalyticsDataService {
 
   private _generateTrendData(systems: SystemData[]): TrendData[] {
     const quarters = ['2023-Q4', '2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4'];
-    
+
     return quarters.map(quarter => {
       const systemTrends = systems.map(system => {
         const baseFunding = system.metrics.totalFunding;
         const baseApps = system.metrics.totalApplications;
         const trendFactor = 0.8 + (Math.random() * 0.4); // 0.8 to 1.2 variance
-        
+
         return {
           name: system.name,
           funding: Math.floor(baseFunding * trendFactor / quarters.length),
@@ -589,7 +589,7 @@ class AnalyticsDataService {
     // Calculate mechanism diversity
     const uniqueMechanisms = new Set<string>();
     systems.forEach(s => s.fundingMechanisms.forEach(m => uniqueMechanisms.add(m)));
-    
+
     // Calculate completion rate (how much data we have)
     const expectedFields = systems.length * 6; // 6 key metrics per system
     const actualFields = systems.reduce((sum, s) => {
