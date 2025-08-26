@@ -7,7 +7,9 @@ import {
   Users, 
   DollarSign,
   Calendar,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle,
+  RefreshCw
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-ap
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
-  
+
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
       {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
@@ -81,7 +83,7 @@ function SystemCard({ system }: { system: any }) {
               <span className="ml-1 font-medium">{system.totalPools || 0}</span>
             </div>
           </div>
-          
+
           {system.fundingMechanisms && system.fundingMechanisms.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-1">
@@ -93,7 +95,7 @@ function SystemCard({ system }: { system: any }) {
               </div>
             </div>
           )}
-          
+
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
@@ -175,7 +177,7 @@ export default function GrantSystems() {
             <p className="text-xs text-gray-600 mt-1">Integrated platforms</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Live Integrations</CardTitle>
@@ -187,7 +189,7 @@ export default function GrantSystems() {
             <p className="text-xs text-gray-600 mt-1">Real-time API access</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Data Integrations</CardTitle>
@@ -250,16 +252,14 @@ export default function GrantSystems() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load systems</h3>
+              <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Error</h3>
               <p className="text-gray-600 mb-4">
-                There was an error fetching the grant systems data.
+                Unable to connect to the grant systems API. The OpenGrants API server may be unavailable.
               </p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="outline"
-              >
-                Try Again
+              <Button onClick={() => window.location.reload()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
               </Button>
             </div>
           </CardContent>
@@ -319,7 +319,7 @@ export default function GrantSystems() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
             <div className="flex items-start space-x-3">
               <div className="h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">

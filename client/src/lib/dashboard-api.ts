@@ -217,7 +217,8 @@ export const dashboardApi = {
               addedDate: source.metadata.addedDate
             };
           } catch (error) {
-            console.error(`Error fetching data for ${source.name}:`, error);
+            console.error(`API Error for ${source.name}:`, error);
+            // Return system info but with zero stats to indicate API failure
             return {
               name: source.name,
               type: source.type,
