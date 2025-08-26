@@ -49,7 +49,7 @@ function SystemCard({ system }: { system: any }) {
                     className="text-xs"
                     style={{ borderColor: systemColor, color: systemColor }}
                   >
-                    {system.type}
+                    {system.source === 'opengrants' ? 'Type 1' : 'Type 2'}
                   </Badge>
                   {system.compatibility && (
                     <span className="text-xs text-gray-500">
@@ -97,7 +97,7 @@ function SystemCard({ system }: { system: any }) {
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                {system.source === 'opengrants' ? 'Live API Integration' : 'Static Data Integration'}
+                {system.source === 'opengrants' ? 'Live API' : 'Static Data'}
               </span>
               <div className="flex items-center space-x-1 text-[#800020] text-sm font-medium group-hover:underline">
                 <span>View Details</span>
@@ -206,7 +206,7 @@ export default function GrantSystems() {
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Live API Integrations</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Type 1: Live API Integrations</h2>
             <Badge variant="secondary" className="text-xs">Real-time data</Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -222,7 +222,7 @@ export default function GrantSystems() {
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Data Integrations</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Type 2: Data Integrations</h2>
             <Badge variant="secondary" className="text-xs">Static data files</Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

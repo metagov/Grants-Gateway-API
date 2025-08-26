@@ -277,22 +277,15 @@ class DataSourceRegistry {
   async autoDiscover(): Promise<DataSourceConfig[]> {
     const discovered: DataSourceConfig[] = [];
 
+    // Skip external API calls to avoid CORS issues, use known systems directly
     try {
-      // Check OpenGrants for new systems with proper error handling
-      const response = await fetch(
-        "https://grants.daostar.org/api/v1/grantSystems",
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          mode: 'cors'
-        }
-      ).catch(() => null);
+      // Register known OpenGrants systems without external fetch
+      const knownOpenGrantsSystems = [
+        { name: 'Octant', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
+        { name: 'Giveth', extensions: { description: 'Donation platform for public goods' }}
+      ];
       
-      if (response && response.ok) {
-        const data = await response.json();
-        const systems = data.data || [];
+      const systems = knownOpenGrantsSystems;
 
         systems.forEach((system: any) => {
           const id = system.name.toLowerCase();
@@ -330,7 +323,6 @@ class DataSourceRegistry {
             discovered.push(newSource);
           }
         });
-      }
     } catch (error) {
       console.warn("Could not fetch from OpenGrants API, using existing sources");
     }
