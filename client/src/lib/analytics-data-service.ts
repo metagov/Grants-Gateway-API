@@ -152,11 +152,13 @@ class AnalyticsDataService {
       console.log('🔄 Starting batch data load...');
       const startTime = performance.now();
 
-      // Get all registered data sources
-      const sources = dataSourceRegistry.getActiveSources();
+      // Get active sources from registry, excluding octant-golemfoundation to avoid duplication
+      const activeSources = dataSourceRegistry.getActiveSources().filter(source => 
+        source.id !== 'octant-golemfoundation'
+      );
 
       // Batch load data for all systems
-      const systemDataPromises = sources.map(async (source): Promise<SystemData> => {
+      const systemDataPromises = activeSources.map(async (source): Promise<SystemData> => {
         try {
           if (source.source === 'opengrants') {
             return await this._loadOpenGrantsSystemData(source);

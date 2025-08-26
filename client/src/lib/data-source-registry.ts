@@ -201,9 +201,6 @@ class DataSourceRegistry {
   register(config: DataSourceConfig): void {
     this.sources.set(config.id, config);
     this.notifyListeners();
-    console.log(
-      `📊 Registered new data source: ${config.name} with DAOIP-5 compatibility: ${config.standardization.compatibility}%`,
-    );
   }
 
   // Auto-discover and register new sources from APIs
@@ -265,7 +262,6 @@ class DataSourceRegistry {
       'arbitrumfoundation',
       'clrfund', 
       'dao-drops-dorgtech',
-      'octant-golemfoundation',
       'optimism',
       'stellar',
       'celo-org'
@@ -569,8 +565,6 @@ export const dataSourceRegistry = new DataSourceRegistry();
 // Auto-discover sources on initialization
 if (typeof window !== "undefined") {
   dataSourceRegistry.autoDiscover().then((discovered) => {
-    if (discovered.length > 0) {
-      console.log(`🔍 Auto-discovered ${discovered.length} new data sources`);
-    }
+    // Auto-discovery completed silently
   });
 }
