@@ -163,19 +163,32 @@ export default function DashboardOverview() {
   const { analytics, derivedData, isLoading: analyticsLoading } = useCrossSystemAnalytics();
   const { trends, isLoading: trendsLoading } = useFundingTrends();
   
-  // Memoize computed values
+  // Memoize computed values with accurate calculations
   const stats = useMemo(() => {
     if (!analytics) return null;
+    
+    // Calculate actual totals from system data
+    const actualTotalFunding = analytics.systems.reduce((sum, system) => 
+      sum + (system.metrics.totalFunding || 0), 0
+    );
+    
+    const actualTotalApplications = analytics.systems.reduce((sum, system) => 
+      sum + (system.metrics.totalApplications || 0), 0
+    );
+    
+    const actualTotalPools = analytics.systems.reduce((sum, system) => 
+      sum + (system.metrics.totalPools || 0), 0
+    );
+    
+    // Count actual unique projects (using applications as proxy)
+    const actualProjects = actualTotalApplications; // Each application represents a project
+    
     return {
-      totalFunding: analytics.totals.funding,
-      totalGrantRounds: analytics.totals.pools,
-      totalSystems: analytics.totals.systems,
-      totalProjects: analytics.systems.reduce((sum, system) => {
-        // Estimate unique projects based on applications and system overlap
-        return sum + Math.ceil(system.metrics.totalApplications * 0.8);
-      }, 0),
-      totalApplications: analytics.totals.applications,
-      averageApprovalRate: analytics.totals.avgApprovalRate
+      totalFunding: actualTotalFunding,
+      totalGrantRounds: actualTotalPools,
+      totalSystems: analytics.systems.length,
+      totalProjects: actualProjects,
+      totalApplications: actualTotalApplications
     };
   }, [analytics]);
   
@@ -195,10 +208,7 @@ export default function DashboardOverview() {
       .slice(0, 6);
   }, [analytics]);
   
-  const healthScore = useMemo(() => {
-    if (!derivedData) return 0;
-    return derivedData.healthScore;
-  }, [derivedData]);
+  // Removed ecosystem health score as requested
   
   const statsLoading = analyticsLoading;
   const systemsLoading = analyticsLoading;
@@ -237,35 +247,21 @@ export default function DashboardOverview() {
           loading={statsLoading}
         />
         <StatsCard
-          title="Projects Funded"
+          title="Projects"
           value={stats?.totalProjects.toLocaleString() || 0}
-          description="Estimated unique projects"
+          description="Total grant applications"
           icon={Users}
           loading={statsLoading}
         />
       </div>
 
-      {/* Additional Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+      {/* Additional Stats Row - Removed approval rate and ecosystem health */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <StatsCard
           title="Total Applications"
           value={stats?.totalApplications.toLocaleString() || 0}
-          description="Applications processed"
+          description="Applications submitted across all systems"
           icon={FileText}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Approval Rate"
-          value={stats ? `${stats.averageApprovalRate.toFixed(1)}%` : "Loading..."}
-          description="Average across all systems"
-          icon={Award}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Ecosystem Health"
-          value={`${healthScore}/100`}
-          description="Overall system health"
-          icon={Activity}
           loading={statsLoading}
         />
       </div>
@@ -353,13 +349,20 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Globe className="h-5 w-5 text-[#800020] mr-2" />
-              DAOIP-5 Standardization Impact
-            </CardTitle>
-            <CardDescription>
-              How standardization enables unified grant analytics
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  <Globe className="h-5 w-5 text-[#800020] mr-2" />
+                  DAOIP-5 Standardization Impact
+                </CardTitle>
+                <CardDescription>
+                  How standardization enables unified grant analytics
+                </CardDescription>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                Work in Progress
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
