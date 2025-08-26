@@ -320,7 +320,7 @@ class DataSourceRegistry {
     return Array.from(this.sources.values());
   }
 
-  // Get active sources, prioritizing Type 1 (OpenGrants API) over Type 2 (DAOIP5 static) for same systems
+  // Get active sources, prioritizing grants.daostar.org (Type 1) sources for better data analysis
   getActiveSources(): DataSourceConfig[] {
     const allSources = this.getAllSources().filter(
       (source) => source.metadata.status === "active",
@@ -337,21 +337,32 @@ class DataSourceRegistry {
       sourceGroups.get(systemKey)!.push(source);
     });
     
-    // For each group, prefer Type 1 (opengrants) over Type 2 (daoip5)
+    // For each group, prefer grants.daostar.org (Type 1/opengrants) sources
     const preferredSources: DataSourceConfig[] = [];
     
     sourceGroups.forEach(sources => {
       if (sources.length === 1) {
         preferredSources.push(sources[0]);
       } else {
-        // Multiple sources for same system - prefer Type 1
-        const type1Sources = sources.filter(s => s.source === 'opengrants');
+        // Multiple sources for same system - prefer grants.daostar.org (Type 1)
+        const grantsDAOStarSources = sources.filter(s => 
+          s.source === 'opengrants' && 
+          s.endpoints?.systems?.includes('grants.daostar.org')
+        );
+        const otherType1Sources = sources.filter(s => 
+          s.source === 'opengrants' && 
+          !s.endpoints?.systems?.includes('grants.daostar.org')
+        );
         const type2Sources = sources.filter(s => s.source === 'daoip5');
         
-        if (type1Sources.length > 0) {
-          // Prefer Type 1 (live API) - can recursively fetch and analyze data
-          preferredSources.push(type1Sources[0]);
-          console.log(`🔄 Prioritizing Type 1 integration for ${type1Sources[0].name} over Type 2 (better data analysis capabilities)`);
+        if (grantsDAOStarSources.length > 0) {
+          // First preference: grants.daostar.org sources
+          preferredSources.push(grantsDAOStarSources[0]);
+          console.log(`🎯 Using grants.daostar.org source for ${grantsDAOStarSources[0].name} (best data quality)`);
+        } else if (otherType1Sources.length > 0) {
+          // Second preference: Other Type 1 sources
+          preferredSources.push(otherType1Sources[0]);
+          console.log(`🔄 Using Type 1 API for ${otherType1Sources[0].name}`);
         } else {
           // Fallback to Type 2 if no Type 1 available
           preferredSources.push(type2Sources[0]);

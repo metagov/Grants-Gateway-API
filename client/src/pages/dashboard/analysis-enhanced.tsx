@@ -308,6 +308,33 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
     applications: system.totalApplications
   }));
 
+  // Custom dot component to show system names
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload, index } = props;
+    return (
+      <g>
+        <circle 
+          cx={cx} 
+          cy={cy} 
+          r={6} 
+          fill={CHART_COLORS[index % CHART_COLORS.length]} 
+          stroke="#fff"
+          strokeWidth={2}
+        />
+        <text 
+          x={cx} 
+          y={cy - 10} 
+          fill="#374151" 
+          fontSize={11}
+          textAnchor="middle"
+          fontWeight="500"
+        >
+          {payload.name}
+        </text>
+      </g>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -316,49 +343,100 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
           System Efficiency Analysis
         </CardTitle>
         <CardDescription>
-          Approval rate vs average funding per project
+          Each point represents a grant system - higher and further right means better efficiency
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                type="number" 
-                dataKey="x" 
-                name="Avg Funding per Project"
-                tickFormatter={(value) => formatCurrency(value)}
-                fontSize={12}
-              />
-              <YAxis 
-                type="number" 
-                dataKey="y" 
-                name="Approval Rate"
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-                fontSize={12}
-              />
-              <Tooltip 
-                cursor={{ strokeDasharray: '3 3' }}
-                formatter={(value: any, name: any) => [
-                  name === 'Avg Funding per Project' ? formatCurrency(value) : `${value}%`,
-                  name
-                ]}
-                labelFormatter={(label, payload) => {
-                  if (payload && payload[0]) {
-                    return payload[0].payload.name;
-                  }
-                  return label;
-                }}
-              />
-              <Scatter data={chartData} fill={COLORS.primary}>
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+        <div className="space-y-4">
+          {/* Legend explaining the chart */}
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+              <span>Each dot = One grant system</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>↑ Higher = Better approval rate</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>→ Further right = Higher avg funding</span>
+            </div>
+          </div>
+          
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 30, right: 30, left: 20, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  type="number" 
+                  dataKey="x" 
+                  name="Avg Funding per Project"
+                  tickFormatter={(value) => formatCurrency(value)}
+                  fontSize={12}
+                  label={{ value: 'Average Funding per Project ($)', position: 'insideBottom', offset: -5, fontSize: 12 }}
+                />
+                <YAxis 
+                  type="number" 
+                  dataKey="y" 
+                  name="Approval Rate"
+                  domain={[0, 100]}
+                  tickFormatter={(value) => `${value}%`}
+                  fontSize={12}
+                  label={{ value: 'Approval Rate (%)', angle: -90, position: 'insideLeft', fontSize: 12 }}
+                />
+                <Tooltip 
+                  cursor={{ strokeDasharray: '3 3' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload[0]) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border rounded-lg shadow-lg">
+                          <p className="font-medium text-gray-900">{data.name}</p>
+                          <p className="text-sm text-gray-600">
+                            Approval Rate: <span className="font-medium">{data.y.toFixed(1)}%</span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Avg Funding: <span className="font-medium">{formatCurrency(data.x)}</span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Total Funding: <span className="font-medium">{formatCurrency(data.totalFunding)}</span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Applications: <span className="font-medium">{data.applications}</span>
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Scatter 
+                  data={chartData} 
+                  fill={COLORS.primary}
+                  shape={<CustomDot />}
+                />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Systems ranked by efficiency */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Efficiency Rankings</h4>
+            <div className="space-y-1 text-xs">
+              {chartData
+                .sort((a, b) => (b.x * b.y) - (a.x * a.y))
+                .slice(0, 5)
+                .map((system, index) => (
+                  <div key={system.name} className="flex items-center justify-between">
+                    <span className="text-gray-600">
+                      {index + 1}. {system.name}
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(system.x)} @ {system.y.toFixed(1)}%
+                    </span>
+                  </div>
                 ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
