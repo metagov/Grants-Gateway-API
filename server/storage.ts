@@ -64,7 +64,16 @@ export interface IStorage {
 
   // API logging methods (legacy)
   createApiLog(log: Omit<ApiLog, 'id' | 'createdAt'>): Promise<ApiLog>;
-  getApiLogs(userId?: number, limit?: number): Promise<ApiLog[]>;
+  getApiLogs(params?: { userId?: number; limit?: number; startDate?: Date }): Promise<ApiLog[]>;
+
+  // Admin methods for dashboard
+  getAllApiKeys(): Promise<ApiKey[]>;
+  getAllApiUsers(): Promise<ApiUser[]>;
+  getApiLogsByUserId(userId: string, params?: { limit?: number }): Promise<ApiLog[]>;
+  
+  // New request logs methods for modern analytics
+  getAllRequestLogs(params?: { limit?: number; startDate?: Date }): Promise<RequestLog[]>;
+  getRequestLogsByUserId(userId: string, params?: { limit?: number }): Promise<RequestLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -161,15 +170,24 @@ export class DatabaseStorage implements IStorage {
     return newLog;
   }
 
-  async getApiLogs(userId?: number, limit = 100): Promise<ApiLog[]> {
+  async getApiLogs(params: { userId?: number; limit?: number; startDate?: Date } = {}): Promise<ApiLog[]> {
+    const { userId, limit = 100, startDate } = params;
+    
+    let query = db.select().from(apiLogs);
+    
+    const conditions = [];
     if (userId) {
-      return await db.select().from(apiLogs)
-        .where(eq(apiLogs.userId, userId))
-        .orderBy(desc(apiLogs.createdAt))
-        .limit(limit);
+      conditions.push(eq(apiLogs.userId, userId));
+    }
+    if (startDate) {
+      conditions.push(gte(apiLogs.createdAt, startDate));
     }
     
-    return await db.select().from(apiLogs)
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query
       .orderBy(desc(apiLogs.createdAt))
       .limit(limit);
   }
@@ -351,6 +369,58 @@ export class DatabaseStorage implements IStorage {
         eq(rateLimits.userId, userId),
         eq(rateLimits.endpointPattern, endpointPattern)
       ));
+  }
+
+  // Admin methods for dashboard
+  async getAllApiKeys(): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys)
+      .orderBy(desc(apiKeys.createdAt));
+  }
+
+  async getAllApiUsers(): Promise<ApiUser[]> {
+    return await db.select().from(apiUsers)
+      .orderBy(desc(apiUsers.createdAt));
+  }
+
+  async getApiLogsByUserId(userId: string, params: { limit?: number } = {}): Promise<ApiLog[]> {
+    const { limit = 100 } = params;
+    
+    // Check if userId is a number (legacy system) or UUID (new system)
+    const numericUserId = parseInt(userId);
+    if (!isNaN(numericUserId) && numericUserId.toString() === userId) {
+      // Legacy numeric user ID
+      return await db.select().from(apiLogs)
+        .where(eq(apiLogs.userId, numericUserId))
+        .orderBy(desc(apiLogs.createdAt))
+        .limit(limit);
+    }
+    
+    // UUID user ID - no matching logs in legacy apiLogs table
+    return [];
+  }
+  
+  // New request logs methods for modern analytics
+  async getAllRequestLogs(params: { limit?: number; startDate?: Date } = {}): Promise<RequestLog[]> {
+    const { limit = 1000, startDate } = params;
+    
+    let query = db.select().from(requestLogs);
+    
+    if (startDate) {
+      query = query.where(gte(requestLogs.timestamp, startDate));
+    }
+    
+    return await query
+      .orderBy(desc(requestLogs.timestamp))
+      .limit(limit);
+  }
+  
+  async getRequestLogsByUserId(userId: string, params: { limit?: number } = {}): Promise<RequestLog[]> {
+    const { limit = 100 } = params;
+    
+    return await db.select().from(requestLogs)
+      .where(eq(requestLogs.userId, userId))
+      .orderBy(desc(requestLogs.timestamp))
+      .limit(limit);
   }
 }
 
