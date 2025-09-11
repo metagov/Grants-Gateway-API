@@ -8,7 +8,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Shield, Key, Clock, Users } from "lucide-react";
@@ -33,7 +32,7 @@ interface User {
   profileImageUrl?: string;
 }
 
-export default function Registration() {
+export default function GetApiAccess() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -233,7 +232,7 @@ export default function Registration() {
             <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <CardTitle className="text-2xl font-bold">API Access Registration</CardTitle>
+            <CardTitle className="text-2xl font-bold">Get API Access</CardTitle>
             <CardDescription>
               Register for API access to the OpenGrants Gateway. Tell us about your organization and intended use.
             </CardDescription>
