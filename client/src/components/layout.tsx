@@ -42,7 +42,7 @@ export default function Layout({ children }: LayoutProps) {
     refetchOnReconnect: false
   });
 
-  // Only show admin if user has successful access (no 404/403 errors)
+  // Only show admin if user has successful access (no 401/403 errors)
   const isAdmin = !authLoading && !adminLoading && !!adminStats && !adminError;
 
   const sidebarItems = [

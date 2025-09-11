@@ -185,56 +185,54 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   next();
 }
 
-// Admin route guard middleware - returns 404 for BOTH unauthenticated AND non-admin users
-// This completely hides admin functionality from unauthorized users
+// Admin route guard middleware - requires authentication and admin privileges
 export const adminRouteGuard: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
   
   try {
     // Check if user is authenticated via Replit OAuth
     if (!req.isAuthenticated() || !user?.expires_at || !user?.claims) {
-      return res.status(404).json({ 
-        error: "Not found",
-        message: "The requested resource was not found"
+      return res.status(401).json({ 
+        error: "Unauthorized",
+        message: "Authentication required. Please log in with your Google account."
       });
     }
 
     // Check if token is still valid (simplified check)
     const now = Math.floor(Date.now() / 1000);
     if (now > user.expires_at) {
-      return res.status(404).json({ 
-        error: "Not found",
-        message: "The requested resource was not found"
+      return res.status(401).json({ 
+        error: "Unauthorized",
+        message: "Your session has expired. Please log in again."
       });
     }
     
     const userId = user.claims.sub;
     if (!userId) {
-      return res.status(404).json({ 
-        error: "Not found",
-        message: "The requested resource was not found"
+      return res.status(401).json({ 
+        error: "Unauthorized",
+        message: "Invalid user information. Please log in again."
       });
     }
     
     // Import admin service dynamically to avoid circular dependencies
     const { adminService } = await import('../services/admin-service');
     
-    // Check if user is admin - return 404 (not 403) to hide admin functionality
+    // Check if user is admin - return 403 for non-admin users
     const isAdmin = await adminService.isAdmin(userId);
     if (!isAdmin) {
-      return res.status(404).json({ 
-        error: "Not found",
-        message: "The requested resource was not found"
+      return res.status(403).json({ 
+        error: "Access denied",
+        message: "You don't have permission to access this resource"
       });
     }
     
     next();
   } catch (error) {
-    console.error('Admin route guard error:', error);
-    // Return 404 even on errors to avoid revealing admin routes exist
-    res.status(404).json({ 
-      error: "Not found",
-      message: "The requested resource was not found"
+    console.error('Admin route guard error:', error as Error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      message: "An error occurred while processing your request"
     });
   }
 };

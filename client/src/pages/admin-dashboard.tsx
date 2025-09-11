@@ -84,21 +84,41 @@ export default function AdminDashboard() {
     );
   }
 
-  // Show not found if not admin (404 response to hide admin functionality)
-  if (statsError && ((statsError as any)?.status === 404 || (statsError as any)?.status === 403)) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-            <CardTitle>Page Not Found</CardTitle>
-            <CardDescription>
-              The page you're looking for doesn't exist.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
+  // Handle authentication and authorization errors
+  if (statsError) {
+    const errorStatus = (statsError as any)?.status;
+    
+    if (errorStatus === 401) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <Card className="max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+              <CardTitle>Authentication Required</CardTitle>
+              <CardDescription>
+                Please log in with your Google account to access the admin dashboard.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      );
+    }
+    
+    if (errorStatus === 403) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <Card className="max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>
+                You don't have permission to access the admin dashboard.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      );
+    }
   }
 
   const getStatusColor = (status: string) => {
