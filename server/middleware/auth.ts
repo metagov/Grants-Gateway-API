@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { storage } from "../storage";
 import crypto from "crypto";
 
@@ -18,12 +18,13 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export async function authenticateApiKey(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export const authenticateApiKey: RequestHandler = async (req, res, next) => {
+  const aReq = req as AuthenticatedRequest;
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     // Allow anonymous access with lower rate limits
-    req.user = undefined;
+    aReq.user = undefined;
     return next();
   }
 
@@ -56,7 +57,7 @@ export async function authenticateApiKey(req: AuthenticatedRequest, res: Respons
       // Update last used timestamp
       await storage.updateApiKeyLastUsed(newApiKey.id);
 
-      req.user = {
+      aReq.user = {
         id: apiUser.id,
         email: apiUser.email,
         name: apiUser.name,
@@ -77,7 +78,7 @@ export async function authenticateApiKey(req: AuthenticatedRequest, res: Respons
       });
     }
 
-    req.user = {
+    aReq.user = {
       id: legacyUser.id,
       username: legacyUser.username,
       rateLimit: legacyUser.rateLimit || 100
@@ -94,7 +95,8 @@ export async function authenticateApiKey(req: AuthenticatedRequest, res: Respons
 }
 
 // New middleware for OAuth API key authentication with rate limiting
-export async function authenticateNewApiKey(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export const authenticateNewApiKey: RequestHandler = async (req, res, next) => {
+  const aReq = req as AuthenticatedRequest;
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -154,7 +156,7 @@ export async function authenticateNewApiKey(req: AuthenticatedRequest, res: Resp
     await storage.updateApiKeyLastUsed(apiKeyRecord.id);
 
     // Add user info to request
-    req.user = {
+    aReq.user = {
       id: apiUser.id,
       email: apiUser.email,
       name: apiUser.name,
@@ -172,8 +174,9 @@ export async function authenticateNewApiKey(req: AuthenticatedRequest, res: Resp
   }
 }
 
-export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  if (!req.user) {
+export const requireAuth: RequestHandler = (req, res, next) => {
+  const aReq = req as AuthenticatedRequest;
+  if (!aReq.user) {
     return res.status(401).json({
       error: "Authentication required",
       message: "This endpoint requires a valid API key"
