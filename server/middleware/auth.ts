@@ -184,3 +184,50 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   }
   next();
 }
+
+// Comprehensive request logging middleware for all endpoints
+export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
+  const aReq = req as AuthenticatedRequest;
+  const start = Date.now();
+  
+  // Use res.on('finish') event which is more reliable
+  res.on('finish', () => {
+    const responseTime = Date.now() - start;
+    
+    // Log asynchronously without blocking
+    setImmediate(async () => {
+      try {
+        // Extract user info if available
+        let userId: string | null = null;
+        let apiKeyId: string | null = null;
+        
+        if (aReq.user && typeof aReq.user.id === 'string') {
+          userId = aReq.user.id;
+          apiKeyId = (aReq.user as any).apiKeyId || null;
+        }
+        
+        // Always log - comprehensive analytics for all traffic
+        await storage.createRequestLog({
+          apiKeyId,
+          userId,
+          endpoint: req.originalUrl || req.path,
+          method: req.method,
+          ipAddress: req.ip || null,
+          userAgent: req.get('User-Agent') || null,
+          responseStatus: res.statusCode,
+          responseTimeMs: responseTime,
+          rateLimitHit: false
+        });
+      } catch (error) {
+        console.error('Request logging failed:', {
+          error: error.message,
+          endpoint: req.originalUrl || req.path,
+          method: req.method,
+          status: res.statusCode
+        });
+      }
+    });
+  });
+  
+  next();
+};

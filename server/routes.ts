@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middleware/auth";
+import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
@@ -21,6 +21,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : true,
     credentials: true
   }));
+
+  // Apply comprehensive request logging to ALL routes
+  app.use(requestLoggingMiddleware);
 
   // Auth middleware setup
   await setupAuth(app);
@@ -112,7 +115,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes - only accessible to admin users
+  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { adminService } = await import('./services/admin-service');
+      
+      // Check if user is admin
+      const isAdmin = await adminService.isAdmin(userId);
+      if (!isAdmin) {
+        return res.status(403).json({ 
+          error: "Access denied",
+          message: "Admin access required"
+        });
+      }
 
+      const stats = await adminService.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to fetch admin statistics"
+      });
+    }
+  });
+
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { adminService } = await import('./services/admin-service');
+      
+      // Check if user is admin
+      const isAdmin = await adminService.isAdmin(userId);
+      if (!isAdmin) {
+        return res.status(403).json({ 
+          error: "Access denied",
+          message: "Admin access required"
+        });
+      }
+
+      const users = await adminService.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to fetch users"
+      });
+    }
+  });
+
+  app.get('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const { userId } = req.params;
+      const { adminService } = await import('./services/admin-service');
+      
+      // Check if user is admin
+      const isAdmin = await adminService.isAdmin(currentUserId);
+      if (!isAdmin) {
+        return res.status(403).json({ 
+          error: "Access denied",
+          message: "Admin access required"
+        });
+      }
+
+      const userDetail = await adminService.getUserDetail(userId);
+      if (!userDetail) {
+        return res.status(404).json({ 
+          error: "User not found",
+          message: `User with ID ${userId} not found`
+        });
+      }
+
+      res.json(userDetail);
+    } catch (error) {
+      console.error('Error fetching user detail:', error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to fetch user details"
+      });
+    }
+  });
 
   // Apply middleware only to legacy API routes - REQUIRE API tokens
   app.use('/api/v1', authenticateApiKey, requireAuth);
