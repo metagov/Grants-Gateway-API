@@ -16,6 +16,7 @@ import GrantSystems from "@/pages/dashboard/systems";
 import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
 import SearchAndFilter from "@/pages/dashboard/search";
 import DashboardOverviewArchived from "@/pages/dashboard/overview-archived";
+import Registration from "@/pages/registration";
 import NotFound from "@/pages/not-found";
 import MobileToast from "@/components/mobile-toast";
 
@@ -35,6 +36,9 @@ function Router() {
       <Route path="/dashboard/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
       <Route path="/dashboard/search" component={() => <DashboardLayout><SearchAndFilter /></DashboardLayout>} />
       <Route path="/dashboard/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
+      
+      {/* Auth Routes */}
+      <Route path="/register" component={Registration} />
       
       {/* Catch all */}
       <Route component={NotFound} />
