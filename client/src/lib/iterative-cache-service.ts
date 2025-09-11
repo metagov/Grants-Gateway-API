@@ -7,19 +7,21 @@ interface DAOIP5Api {
 // Create a simple DAOIP5 API client
 const createDaoip5Api = (): DAOIP5Api => ({
   async getSystemPools(systemId: string): Promise<string[]> {
-    const response = await fetch(`/api/proxy/daoip5/${systemId}`);
+    const response = await fetch(`/api/public/daoip5/${systemId}/summary`);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return await response.json();
+    const summary = await response.json();
+    return summary.pools || [];
   },
 
   async getPoolData(systemId: string, poolId: string): Promise<any> {
-    const response = await fetch(`/api/proxy/daoip5/${systemId}/${poolId}`);
+    const response = await fetch(`/api/public/daoip5/${systemId}/${poolId}`);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return await response.json();
+    const poolData = await response.json();
+    return poolData.data;
   }
 });
 
