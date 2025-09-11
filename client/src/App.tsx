@@ -29,7 +29,7 @@ function Router() {
       <Route path="/endpoints" component={() => <Layout><EndpointsPage /></Layout>} />
       <Route path="/get-api-access" component={() => <Layout><GetApiAccess /></Layout>} />
       <Route path="/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
-      <Route path="/health" component={HealthPage} />
+      <Route path="/health" component={() => <Layout><HealthPage /></Layout>} />
       
       {/* Dashboard Routes */}
       <Route path="/dashboard" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
