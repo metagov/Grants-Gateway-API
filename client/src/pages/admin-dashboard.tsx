@@ -84,16 +84,16 @@ export default function AdminDashboard() {
     );
   }
 
-  // Show access denied if not admin
-  if (statsError && (statsError as any)?.status === 403) {
+  // Show not found if not admin (404 response to hide admin functionality)
+  if (statsError && ((statsError as any)?.status === 404 || (statsError as any)?.status === 403)) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <Card className="max-w-md mx-auto">
           <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <CardTitle>Access Denied</CardTitle>
+            <AlertCircle className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+            <CardTitle>Page Not Found</CardTitle>
             <CardDescription>
-              You don't have permission to access the admin dashboard.
+              The page you're looking for doesn't exist.
             </CardDescription>
           </CardHeader>
         </Card>

@@ -251,12 +251,12 @@ class AdminService {
     }
   }
 
-  // Check if user is admin (you can modify this logic as needed)
+  // Check if user is admin - RESTRICTED TO OWNER ONLY
   async isAdmin(replitUserId: string): Promise<boolean> {
-    // For now, only the specific user who owns this project can access admin
-    // You can modify this to check against a list of admin user IDs
-    const adminUserIds = ['2104566']; // Add your Replit user ID here
-    return adminUserIds.includes(replitUserId);
+    // Only the project owner can access admin functionality
+    // This is hardcoded for security - admin access is completely private
+    const OWNER_USER_ID = '2104566';
+    return replitUserId === OWNER_USER_ID;
   }
 }
 
