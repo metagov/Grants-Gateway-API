@@ -185,6 +185,60 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   next();
 }
 
+// Admin route guard middleware - returns 404 for BOTH unauthenticated AND non-admin users
+// This completely hides admin functionality from unauthorized users
+export const adminRouteGuard: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+  
+  try {
+    // Check if user is authenticated via Replit OAuth
+    if (!req.isAuthenticated() || !user?.expires_at || !user?.claims) {
+      return res.status(404).json({ 
+        error: "Not found",
+        message: "The requested resource was not found"
+      });
+    }
+
+    // Check if token is still valid (simplified check)
+    const now = Math.floor(Date.now() / 1000);
+    if (now > user.expires_at) {
+      return res.status(404).json({ 
+        error: "Not found",
+        message: "The requested resource was not found"
+      });
+    }
+    
+    const userId = user.claims.sub;
+    if (!userId) {
+      return res.status(404).json({ 
+        error: "Not found",
+        message: "The requested resource was not found"
+      });
+    }
+    
+    // Import admin service dynamically to avoid circular dependencies
+    const { adminService } = await import('../services/admin-service');
+    
+    // Check if user is admin - return 404 (not 403) to hide admin functionality
+    const isAdmin = await adminService.isAdmin(userId);
+    if (!isAdmin) {
+      return res.status(404).json({ 
+        error: "Not found",
+        message: "The requested resource was not found"
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Admin route guard error:', error);
+    // Return 404 even on errors to avoid revealing admin routes exist
+    res.status(404).json({ 
+      error: "Not found",
+      message: "The requested resource was not found"
+    });
+  }
+};
+
 // Comprehensive request logging middleware for all endpoints
 export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
   const aReq = req as AuthenticatedRequest;

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware } from "./middleware/auth";
+import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
@@ -116,20 +116,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - only accessible to admin users
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/stats', adminRouteGuard, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
       const { adminService } = await import('./services/admin-service');
-      
-      // Check if user is admin
-      const isAdmin = await adminService.isAdmin(userId);
-      if (!isAdmin) {
-        return res.status(403).json({ 
-          error: "Access denied",
-          message: "Admin access required"
-        });
-      }
-
       const stats = await adminService.getAdminStats();
       res.json(stats);
     } catch (error) {
@@ -141,20 +130,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users', adminRouteGuard, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
       const { adminService } = await import('./services/admin-service');
-      
-      // Check if user is admin
-      const isAdmin = await adminService.isAdmin(userId);
-      if (!isAdmin) {
-        return res.status(403).json({ 
-          error: "Access denied",
-          message: "Admin access required"
-        });
-      }
-
       const users = await adminService.getAllUsers();
       res.json(users);
     } catch (error) {
@@ -166,20 +144,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users/:userId', adminRouteGuard, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
       const { userId } = req.params;
       const { adminService } = await import('./services/admin-service');
-      
-      // Check if user is admin
-      const isAdmin = await adminService.isAdmin(currentUserId);
-      if (!isAdmin) {
-        return res.status(403).json({ 
-          error: "Access denied",
-          message: "Admin access required"
-        });
-      }
 
       const userDetail = await adminService.getUserDetail(userId);
       if (!userDetail) {

@@ -32,15 +32,18 @@ export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const { user, isLoading: authLoading } = useAuth();
 
-  // Check if user is admin
+  // Check if user is admin - only show admin nav for authorized users
   const { data: adminStats, isLoading: adminLoading, error: adminError } = useQuery({
     queryKey: ['/api/admin/stats'],
     enabled: !authLoading && !!user,
     retry: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    retryOnMount: false,
+    refetchOnReconnect: false
   });
 
-  const isAdmin = !adminLoading && !!adminStats && !adminError;
+  // Only show admin if user has successful access (no 404/403 errors)
+  const isAdmin = !authLoading && !adminLoading && !!adminStats && !adminError;
 
   const sidebarItems = [
     { id: "/", label: "Overview", icon: Building, path: "/" },
