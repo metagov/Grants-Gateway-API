@@ -5,11 +5,13 @@ import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middlew
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
-import { PaginatedResponse } from "../shared/schema";
+import { PaginatedResponse, registrationSchema } from "../shared/schema";
 import cors from "cors";
+import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
@@ -20,11 +22,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     credentials: true
   }));
 
+  // Auth middleware setup
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getOAuthUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // API user registration endpoint
+  app.post('/api/auth/register', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userClaims = req.user.claims;
+
+      // Validate request body
+      const validationResult = registrationSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationResult.error.issues
+        });
+      }
+
+      const { orgName, intentOfUse } = validationResult.data;
+
+      // Check if user already has API access
+      const existingApiUser = await storage.getApiUserByReplitId(userId);
+      if (existingApiUser) {
+        return res.status(409).json({
+          error: "User already registered",
+          message: "You already have API access. Contact support if you need a new API key."
+        });
+      }
+
+      // Create API user
+      const apiUser = await storage.createApiUser({
+        replitUserId: userId,
+        email: userClaims.email || '',
+        name: `${userClaims.first_name || ''} ${userClaims.last_name || ''}`.trim() || 'Unknown',
+        orgName,
+        intentOfUse,
+        status: 'active'
+      });
+
+      // Generate API key
+      const rawApiKey = crypto.randomBytes(32).toString('hex');
+      const keyHash = crypto.createHash('sha256').update(rawApiKey).digest('hex');
+      const keyPreview = rawApiKey.slice(-4);
+
+      // Set expiration to 3 months from now
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 3);
+
+      // Save API key
+      await storage.createApiKey({
+        userId: apiUser.id,
+        keyHash,
+        keyPreview,
+        name: 'Default API Key',
+        expiresAt,
+        status: 'active'
+      });
+
+      res.json({
+        message: "Registration successful",
+        apiKey: rawApiKey,
+        expiresAt: expiresAt.toISOString(),
+        user: {
+          id: apiUser.id,
+          email: apiUser.email,
+          name: apiUser.name,
+          orgName: apiUser.orgName
+        }
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({
+        error: "Registration failed",
+        message: "An error occurred during registration"
+      });
+    }
+  });
 
 
-  // Apply middleware to all API routes
-  app.use('/api', authenticateApiKey as any);
-  app.use('/api', rateLimitMiddleware as any);
+
+  // Apply middleware only to legacy API routes
+  app.use('/api/v1', authenticateApiKey as any);
+  app.use('/api/v1', rateLimitMiddleware as any);
 
   // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
   const adapters: { [key: string]: BaseAdapter } = {
@@ -40,16 +132,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Object.values(adapters);
   }
 
-  // API logging middleware
-  app.use('/api', async (req: AuthenticatedRequest, res, next) => {
+  // API logging middleware - only for legacy routes
+  app.use('/api/v1', async (req: AuthenticatedRequest, res, next) => {
     const start = Date.now();
     
     res.on('finish', async () => {
       const responseTime = Date.now() - start;
       
       try {
+        // Legacy API logging for backward compatibility
+        const userId = typeof req.user?.id === 'number' ? req.user.id : null;
         await storage.createApiLog({
-          userId: req.user?.id || null,
+          userId,
           endpoint: req.path,
           method: req.method,
           statusCode: res.statusCode,
