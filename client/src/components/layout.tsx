@@ -9,7 +9,8 @@ import {
   Moon, 
   Sun,
   Menu,
-  X
+  X,
+  Key
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
     { id: "/", label: "Overview", icon: Building, path: "/" },
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
-
+    { id: "/get-api-access", label: "Get API Access", icon: Key, path: "/get-api-access" },
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
     { id: "/contributors", label: "Contributors", icon: Heart, path: "/contributors" },
   ];
