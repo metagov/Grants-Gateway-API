@@ -66,8 +66,8 @@ class AccurateDataService {
       if (!appsResponse.ok) throw new Error(`Failed to fetch applications for ${system}`);
       const appsData = await appsResponse.json();
 
-      // Transform to standardized format
-      const pools: PoolData[] = (poolsData.grantPools || []).map((pool: any) => ({
+      // Transform to standardized format - API returns data in 'data' field
+      const pools: PoolData[] = (poolsData.data || poolsData.grantPools || []).map((pool: any) => ({
         id: pool.id,
         name: pool.name,
         system,
@@ -78,7 +78,7 @@ class AccurateDataService {
         closeDate: pool.closeDate
       }));
 
-      const applications: ApplicationData[] = (appsData.grantApplications || []).map((app: any) => ({
+      const applications: ApplicationData[] = (appsData.data || appsData.grantApplications || []).map((app: any) => ({
         id: app.id,
         projectName: app.projectName || 'Unknown Project',
         system,
@@ -88,14 +88,22 @@ class AccurateDataService {
         createdAt: app.createdAt || new Date().toISOString()
       }));
 
-      // Update pool application counts
+      // Update pool application counts and funding totals from applications
       const poolAppCounts = new Map<string, number>();
+      const poolFundingTotals = new Map<string, number>();
+      
       applications.forEach(app => {
-        poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
+        if (app.poolId) {
+          poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
+          poolFundingTotals.set(app.poolId, (poolFundingTotals.get(app.poolId) || 0) + app.fundingUSD);
+        }
       });
       
       pools.forEach(pool => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+        // For DAOIP-5, use funding calculated from applications
+        const calculatedFunding = poolFundingTotals.get(pool.id) || 0;
+        pool.totalFunding = pool.totalFunding || calculatedFunding;
       });
 
       // Cache the results
@@ -135,10 +143,10 @@ class AccurateDataService {
         id: pool.id,
         name: pool.name,
         system,
-        totalFunding: this.extractFundingAmount(pool.totalGrantPoolSize),
+        totalFunding: 0, // Will be calculated from applications for DAOIP-5 data
         totalApplications: 0, // Will be calculated from applications
-        mechanism: pool.grantFundingMechanism || 'Unknown',
-        isOpen: pool.isOpen,
+        mechanism: pool.grantFundingMechanism || 'Direct Grant',
+        isOpen: pool.isOpen || false,
         closeDate: pool.closeDate
       }));
 
@@ -154,31 +162,44 @@ class AccurateDataService {
           const appsResponse = await fetch(`https://daoip5.daostar.org/${system}/${appFile}`);
           if (appsResponse.ok) {
             const appsData = await appsResponse.json();
-            const fileApplications = (appsData.applications || []).map((app: any) => ({
-              id: app.id,
-              projectName: app.projectName || 'Unknown Project',
-              system,
-              poolId: app.grantPoolId,
-              status: app.status || 'unknown',
-              fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
-              createdAt: app.createdAt || new Date().toISOString()
-            }));
+            // Handle nested structure where applications are inside grantPools array
+            const grantPools = appsData.grantPools || [];
             
-            applications.push(...fileApplications);
+            for (const pool of grantPools) {
+              const poolApplications = (pool.applications || []).map((app: any) => ({
+                id: app.id,
+                projectName: app.projectName || 'Unknown Project',
+                system,
+                poolId: app.grantPoolId,
+                status: app.status || 'unknown',
+                fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
+                createdAt: app.createdAt || new Date().toISOString()
+              }));
+              
+              applications.push(...poolApplications);
+            }
           }
         } catch (error) {
           console.warn(`Failed to fetch applications from ${appFile}:`, error);
         }
       }
 
-      // Update pool application counts
+      // Update pool application counts and funding totals from applications
       const poolAppCounts = new Map<string, number>();
+      const poolFundingTotals = new Map<string, number>();
+      
       applications.forEach(app => {
-        poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
+        if (app.poolId) {
+          poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
+          poolFundingTotals.set(app.poolId, (poolFundingTotals.get(app.poolId) || 0) + app.fundingUSD);
+        }
       });
       
       pools.forEach(pool => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+        // For DAOIP-5, use funding calculated from applications
+        const calculatedFunding = poolFundingTotals.get(pool.id) || 0;
+        pool.totalFunding = pool.totalFunding || calculatedFunding;
       });
 
       // Cache the results

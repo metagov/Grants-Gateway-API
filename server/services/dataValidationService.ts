@@ -7,8 +7,8 @@ const GrantPoolSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
-  grantFundingMechanism: z.string(),
-  isOpen: z.boolean(),
+  grantFundingMechanism: z.string().optional(), // Made optional for DAOIP-5 compatibility
+  isOpen: z.boolean().optional().default(false), // Made optional with default
   closeDate: z.string().optional(),
   totalGrantPoolSize: z.union([
     z.array(z.object({
@@ -17,16 +17,16 @@ const GrantPoolSchema = z.object({
     })),
     z.string(),
     z.number()
-  ]),
+  ]).optional(), // Made optional for DAOIP-5 compatibility
   applicationsURI: z.string().optional(),
   extensions: z.record(z.any()).optional()
 });
 
 const GrantApplicationSchema = z.object({
   id: z.string().min(1),
-  projectName: z.string().min(1),
-  grantPoolId: z.string().min(1),
-  status: z.string(),
+  projectName: z.string().optional().default('Unknown Project'), // Made optional with default
+  grantPoolId: z.string().optional(), // Made optional for flexibility
+  status: z.string().optional().default('unknown'), // Made optional with default
   fundsApprovedInUSD: z.union([z.string(), z.number()]).optional(),
   createdAt: z.string().optional(),
   extensions: z.record(z.any()).optional()
@@ -115,10 +115,11 @@ class DataValidationService {
         }
       }
 
-      // Validate status values
-      const validStatuses = ['pending', 'approved', 'rejected', 'funded', 'completed', 'cancelled'];
-      if (!validStatuses.includes(validatedApp.status.toLowerCase())) {
-        errors.push(`Invalid status: ${validatedApp.status}`);
+      // Validate status values (be more lenient)
+      const validStatuses = ['pending', 'approved', 'rejected', 'funded', 'completed', 'cancelled', 'awarded', 'unknown'];
+      if (validatedApp.status && !validStatuses.includes(validatedApp.status.toLowerCase())) {
+        // Only warn, don't reject
+        console.warn(`Unknown status: ${validatedApp.status}`);
       }
 
       return {
@@ -149,10 +150,16 @@ class DataValidationService {
       }
     }
 
-    // Validate funding mechanism
-    const validMechanisms = ['Quadratic Funding', 'Direct Grants', 'Donations', 'Retroactive Funding'];
-    if (!validMechanisms.includes(pool.grantFundingMechanism)) {
-      errors.push(`Unknown funding mechanism: ${pool.grantFundingMechanism}`);
+    // Validate funding mechanism only if provided (optional for DAOIP-5)
+    if (pool.grantFundingMechanism) {
+      const validMechanisms = ['Quadratic Funding', 'Direct Grants', 'Donations', 'Retroactive Funding', 'Direct Grant', 'Unknown'];
+      // Be more lenient with funding mechanism validation
+      const mechanism = pool.grantFundingMechanism.toLowerCase();
+      const isValid = validMechanisms.some(m => m.toLowerCase().includes(mechanism) || mechanism.includes(m.toLowerCase()));
+      if (!isValid && mechanism !== 'unknown') {
+        // Only warn, don't reject
+        console.warn(`Unknown funding mechanism: ${pool.grantFundingMechanism}`);
+      }
     }
 
     return { errors };
