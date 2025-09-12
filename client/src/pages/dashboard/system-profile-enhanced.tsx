@@ -211,6 +211,90 @@ function ApplicationStatusChart({ applications }: { applications: any[] }) {
   );
 }
 
+// Applications vs Funding per Round Chart
+function ApplicationsVsFundingChart({ pools, applications }: { 
+  pools: any[]; 
+  applications: any[];
+}) {
+  const chartData = pools.map(pool => {
+    const poolApps = applications.filter(app => app.grantPoolId === pool.id);
+    const totalFunding = poolApps.reduce((sum, app) => 
+      sum + parseFloat(app.fundsApprovedInUSD || '0'), 0
+    );
+    const awardedCount = poolApps.filter(app => 
+      app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
+    ).length;
+    
+    return {
+      name: pool.name || pool.id.split(':').pop(),
+      applications: awardedCount,
+      funding: totalFunding,
+      poolId: pool.id
+    };
+  }).filter(item => item.applications > 0 || item.funding > 0)
+    .sort((a, b) => {
+      // Extract round numbers for sorting (e.g., scf_34 -> 34)
+      const getNumber = (name: string) => {
+        const match = name.match(/\d+/);
+        return match ? parseInt(match[0]) : 0;
+      };
+      return getNumber(b.name) - getNumber(a.name); // Latest first
+    });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
+          Applications Awarded vs Funds Distributed
+        </CardTitle>
+        <CardDescription>
+          Number of awarded applications and total funding per round
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45}
+                textAnchor="end"
+                height={100}
+                fontSize={12}
+              />
+              <YAxis 
+                yAxisId="left"
+                orientation="left"
+                tickFormatter={(value) => value.toString()}
+                fontSize={12}
+                label={{ value: 'Applications', angle: -90, position: 'insideLeft' }}
+              />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                tickFormatter={(value) => formatCurrency(value)}
+                fontSize={12}
+                label={{ value: 'Funding ($)', angle: 90, position: 'insideRight' }}
+              />
+              <Tooltip 
+                formatter={(value: any, name: any) => [
+                  name === 'funding' ? formatCurrency(value) : value,
+                  name === 'funding' ? 'Total Funding' : 'Awarded Applications'
+                ]}
+                labelStyle={{ color: '#374151' }}
+              />
+              <Bar yAxisId="left" dataKey="applications" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="right" dataKey="funding" fill="#800020" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Funding Timeline Chart
 function FundingTimelineChart({ applications }: { applications: any[] }) {
   const timelineData = applications
@@ -356,7 +440,14 @@ function GrantPoolCard({ pool, applications }: {
                   </TableHeader>
                   <TableBody>
                     {poolApplications
-                      .sort((a, b) => parseFloat(b.fundsApprovedInUSD || '0') - parseFloat(a.fundsApprovedInUSD || '0'))
+                      .sort((a, b) => {
+                        // Sort alphabetically by project name
+                        const nameA = (a.projectName || 'Unknown').toLowerCase();
+                        const nameB = (b.projectName || 'Unknown').toLowerCase();
+                        if (nameA < nameB) return -1;
+                        if (nameA > nameB) return 1;
+                        return 0;
+                      })
                       .slice(0, 10)
                       .map((app) => (
                       <TableRow key={app.id} className="hover:bg-gray-50">
@@ -552,10 +643,13 @@ export default function SystemProfileEnhanced() {
 
       {/* Charts Section */}
       {applications.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <FundingDistributionChart pools={pools} applications={applications} />
-          <ApplicationStatusChart applications={applications} />
-        </div>
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <FundingDistributionChart pools={pools} applications={applications} />
+            <ApplicationStatusChart applications={applications} />
+          </div>
+          <ApplicationsVsFundingChart pools={pools} applications={applications} />
+        </>
       )}
 
       {/* Funding Timeline */}
@@ -576,12 +670,12 @@ export default function SystemProfileEnhanced() {
           <div className="space-y-4">
             {pools
               .sort((a, b) => {
-                if (a.closeDate && b.closeDate) {
-                  return new Date(b.closeDate).getTime() - new Date(a.closeDate).getTime();
-                }
-                if (a.closeDate) return -1;
-                if (b.closeDate) return 1;
-                return 0;
+                // Extract round numbers for sorting (e.g., scf_34 -> 34)
+                const getNumber = (id: string) => {
+                  const match = id.match(/\d+/);
+                  return match ? parseInt(match[0]) : 0;
+                };
+                return getNumber(b.id) - getNumber(a.id); // Latest rounds first
               })
               .map((pool) => (
                 <GrantPoolCard 
