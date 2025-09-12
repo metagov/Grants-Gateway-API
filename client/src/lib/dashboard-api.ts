@@ -205,35 +205,131 @@ export const openGrantsApi = {
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
 export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
+  cache: new Map<string, any>(),
 
   async getSystems(): Promise<string[]> {
-    // Use known systems directly to avoid CORS errors
-    console.warn('Using known DAOIP5 systems to avoid CORS errors');
     return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
   },
 
-  async getSystemPools(system: string): Promise<string[]> {
-    // Use sample pool files directly to avoid CORS errors
-    console.warn(`Using sample pools for ${system} to avoid CORS errors`);
-    return ['pool-1.json', 'pool-2.json'];
+  async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
+    const cacheKey = `daoip5-${system}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Step 1: Get list of files in the system directory
+      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${system}`);
+      if (!systemFilesResponse.ok) {
+        throw new Error(`Failed to fetch system files for ${system}`);
+      }
+      const systemFiles = await systemFilesResponse.json();
+
+      // Step 2: Fetch grants_pool.json for pool metadata
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${system}/grants_pool.json`);
+      if (!poolsResponse.ok) {
+        throw new Error(`Failed to fetch grants_pool.json for ${system}`);
+      }
+      const poolsData = await poolsResponse.json();
+
+      const pools = (poolsData.grantPools || []).map((pool: any) => ({
+        id: pool.id,
+        name: pool.name,
+        system,
+        totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
+        totalApplications: 0, // Will be calculated from applications
+        grantFundingMechanism: pool.grantFundingMechanism || 'Unknown',
+        isOpen: pool.isOpen,
+        closeDate: pool.closeDate
+      }));
+
+      const applications: any[] = [];
+
+      // Step 3: Fetch application files (look for *_applications_uri.json files)
+      const applicationFiles = systemFiles.filter((file: string) => 
+        file.includes('applications_uri') && file.endsWith('.json')
+      );
+
+      for (const appFile of applicationFiles) {
+        try {
+          const appsResponse = await fetch(`/api/proxy/daoip5/${system}/${appFile}`);
+          if (appsResponse.ok) {
+            const appsData = await appsResponse.json();
+            const fileApplications = (appsData.applications || []).map((app: any) => ({
+              id: app.id,
+              projectName: app.projectName || 'Unknown Project',
+              system,
+              grantPoolId: app.grantPoolId,
+              status: app.status || 'unknown',
+              fundsApprovedInUSD: app.fundsApprovedInUSD || '0',
+              createdAt: app.createdAt || new Date().toISOString()
+            }));
+            
+            applications.push(...fileApplications);
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch applications from ${appFile}:`, error);
+        }
+      }
+
+      // Update pool application counts
+      const poolAppCounts = new Map<string, number>();
+      applications.forEach(app => {
+        poolAppCounts.set(app.grantPoolId, (poolAppCounts.get(app.grantPoolId) || 0) + 1);
+      });
+      
+      pools.forEach((pool: any) => {
+        pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+      });
+
+      const result = { pools, applications };
+      // Cache the results for 5 minutes
+      this.cache.set(cacheKey, result);
+      setTimeout(() => this.cache.delete(cacheKey), 5 * 60 * 1000);
+
+      return result;
+    } catch (error) {
+      console.error(`Error fetching DAOIP-5 data for ${system}:`, error);
+      // Fallback to empty data instead of throwing
+      return { pools: [], applications: [] };
+    }
   },
 
-  async getPoolData(system: string, filename: string): Promise<any> {
-    // Use sample data directly to avoid CORS errors
-    console.warn(`Using sample data for ${system}/${filename} to avoid CORS errors`);
-    return {
-      type: 'GrantPool',
-      id: filename,
-      name: `${system} Grant Pool`,
-      totalGrantPoolSizeUSD: '1000000',
-      grantFundingMechanism: 'Direct Grant',
-      isOpen: false
-    };
+  extractFundingAmount(totalGrantPoolSize: any): string {
+    if (!totalGrantPoolSize) return '0';
+    if (Array.isArray(totalGrantPoolSize) && totalGrantPoolSize.length > 0) {
+      // Find USD amount or use first available
+      const usdAmount = totalGrantPoolSize.find(item => 
+        item.denomination?.toLowerCase().includes('usd')
+      );
+      return usdAmount?.amount || totalGrantPoolSize[0]?.amount || '0';
+    }
+    return totalGrantPoolSize.toString();
+  },
+
+  async getSystemPools(system: string): Promise<any[]> {
+    try {
+      const { pools } = await this.fetchDaoip5Data(system);
+      return pools;
+    } catch (error) {
+      console.error(`Error fetching pools for ${system}:`, error);
+      return [];
+    }
+  },
+
+  async getSystemApplications(system: string): Promise<any[]> {
+    try {
+      const { applications } = await this.fetchDaoip5Data(system);
+      return applications;
+    } catch (error) {
+      console.error(`Error fetching applications for ${system}:`, error);
+      return [];
+    }
   },
 
   async searchApplications(projectName?: string): Promise<any> {
-    // Use empty results to avoid CORS errors
-    console.warn('Using empty search results to avoid CORS errors');
+    // For now, return empty results as this would require searching across all systems
     return { results: [] };
   }
 };
@@ -305,7 +401,38 @@ export const dashboardApi = {
           }
         }),
         ...daoip5Sources.map(async (source) => {
-          // For DAOIP5 systems, provide realistic fallback data since API access is limited
+          try {
+            // Try to fetch real DAOIP-5 data first
+            const { pools, applications } = await daoip5Api.fetchDaoip5Data(source.id);
+            
+            if (pools.length > 0 || applications.length > 0) {
+              // Calculate real metrics from fetched data
+              const totalFunding = applications.reduce((sum, app) => {
+                return sum + parseFloat(app.fundsApprovedInUSD || '0');
+              }, 0);
+              
+              const approvalRate = applications.length > 0 ? 
+                (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
+
+              return {
+                name: source.name,
+                type: source.type,
+                source: source.source,
+                totalFunding,
+                totalApplications: applications.length,
+                totalPools: pools.length,
+                approvalRate,
+                compatibility: source.standardization.compatibility,
+                fundingMechanisms: source.features.fundingMechanism,
+                description: source.description,
+                addedDate: source.metadata.addedDate
+              };
+            }
+          } catch (error) {
+            console.error(`Error fetching real DAOIP-5 data for ${source.name}:`, error);
+          }
+
+          // Fallback to realistic static data if real data fetching fails
           const fallbackData = {
             'stellar': { totalFunding: 2500000, totalApplications: 150, totalPools: 25, approvalRate: 65 },
             'optimism': { totalFunding: 50000000, totalApplications: 300, totalPools: 6, approvalRate: 45 },
@@ -434,22 +561,16 @@ export const dashboardApi = {
           const poolFiles = await daoip5Api.getSystemPools(systemName);
           const poolDataPromises = poolFiles.map(async (file) => {
             const filename = file.replace('.json', '');
-            return await daoip5Api.getPoolData(systemName, filename);
+            const { pools } = await daoip5Api.fetchDaoip5Data(systemName);
+            return pools.find(pool => pool.id === filename) || null;
           });
           
-          const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
+          const poolData = (await Promise.all(poolDataPromises)).filter((data: any) => data !== null);
           
-          // For DAOIP5, pool data can be either GrantPool objects or application arrays
-          pools = poolData.filter(data => data && data.type === 'GrantPool');
-          applications = poolData.flatMap(data => {
-            if (Array.isArray(data)) {
-              return data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            if (data && data.data && Array.isArray(data.data)) {
-              return data.data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            return [];
-          });
+          // For DAOIP5, use the unified data fetching
+          const { pools: systemPools, applications: systemApplications } = await daoip5Api.fetchDaoip5Data(systemName);
+          pools = systemPools;
+          applications = systemApplications;
         } catch (error) {
           console.error(`Error fetching DAOIP5 data for ${systemName}:`, error);
         }

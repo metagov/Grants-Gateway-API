@@ -58,6 +58,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Directory listing for DAOIP-5 systems
+  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const url = `https://daoip5.daostar.org/${system}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('DAOIP-5 directory proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch directory from DAOIP-5 API' });
+    }
+  });
+
 
 
   // Apply middleware to all API routes
