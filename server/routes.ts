@@ -14,11 +14,49 @@ import cors from "cors";
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
+    origin: process.env.NODE_ENV === 'production'
       ? process.env.FRONTEND_URL || 'https://your-domain.com'
       : true,
     credentials: true
   }));
+
+  // Add API proxy endpoints to avoid CORS issues
+  app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {
+    try {
+      const { endpoint } = req.params;
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const url = `https://grants.daostar.org/api/v1/${endpoint}${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`OpenGrants API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('OpenGrants proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+    }
+  });
+
+  app.get('/api/proxy/daoip5/:system/:file', async (req, res) => {
+    try {
+      const { system, file } = req.params;
+      const url = `https://daoip5.daostar.org/${system}/${file}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('DAOIP-5 proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
+    }
+  });
 
 
 
@@ -354,6 +392,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Accurate Analytics Endpoints
+  app.get('/api/v1/analytics/ecosystem-stats', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+      const stats = await accurateDataService.getEcosystemStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching ecosystem stats:', error);
+      res.status(500).json({
+        error: "Failed to fetch ecosystem statistics",
+        message: "Unable to compute accurate ecosystem metrics"
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/system/:systemName', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemName } = req.params;
+      const { source = 'opengrants' } = req.query;
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      const metrics = await accurateDataService.calculateSystemMetrics(
+        systemName,
+        source as 'opengrants' | 'daoip5'
+      );
+
+      res.json(metrics);
+    } catch (error) {
+      console.error(`Error fetching system metrics for ${req.params.systemName}:`, error);
+      res.status(500).json({
+        error: "Failed to fetch system metrics",
+        message: `Unable to compute metrics for system ${req.params.systemName}`
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/funding-trends', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      // This would need to be implemented to calculate quarterly trends from real data
+      // For now, return a placeholder structure
+      const trends = [
+        { quarter: '2024-Q1', funding: 0, applications: 0 },
+        { quarter: '2024-Q2', funding: 0, applications: 0 },
+        { quarter: '2024-Q3', funding: 0, applications: 0 },
+        { quarter: '2024-Q4', funding: 0, applications: 0 }
+      ];
+
+      res.json(trends);
+    } catch (error) {
+      console.error('Error fetching funding trends:', error);
+      res.status(500).json({
+        error: "Failed to fetch funding trends",
+        message: "Unable to compute funding trend data"
+      });
+    }
+  });
+
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -363,7 +460,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       endpoints: {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
-        applications: "/api/v1/applications"
+        applications: "/api/v1/applications",
+        analytics: {
+          ecosystemStats: "/api/v1/analytics/ecosystem-stats",
+          systemMetrics: "/api/v1/analytics/system/:systemName",
+          fundingTrends: "/api/v1/analytics/funding-trends"
+        }
       },
       supportedSystems: Object.keys(adapters),
       documentation: "https://docs.daostar.org/"

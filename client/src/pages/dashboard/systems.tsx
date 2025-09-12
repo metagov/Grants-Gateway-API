@@ -315,7 +315,7 @@ export default function GrantSystems() {
                 ensuring data quality and integration reliability.
               </p>
               <div className="text-xs text-purple-600 font-medium">
-                Avg: {Math.round((systems?.reduce((sum, s) => sum + (s.compatibility || 0), 0) / (systems?.length || 1)) || 0)}% compatible
+                Avg: {Math.round((systems?.reduce((sum, s) => sum + (s.compatibility || 0), 0) / (systems.length || 1)) || 0)}% compatible
               </div>
             </div>
           </div>

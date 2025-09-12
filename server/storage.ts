@@ -131,13 +131,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getApiLogs(userId?: number, limit = 100): Promise<ApiLog[]> {
-    let query = db.select().from(apiLogs);
-    
     if (userId) {
-      query = query.where(eq(apiLogs.userId, userId));
+      return await db.select().from(apiLogs)
+        .where(eq(apiLogs.userId, userId))
+        .orderBy(desc(apiLogs.createdAt))
+        .limit(limit);
     }
-    
-    return await query.orderBy(desc(apiLogs.createdAt)).limit(limit);
+
+    return await db.select().from(apiLogs)
+      .orderBy(desc(apiLogs.createdAt))
+      .limit(limit);
   }
 }
 

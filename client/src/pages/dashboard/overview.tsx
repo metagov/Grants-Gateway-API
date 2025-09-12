@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/dashboard-api";
-import { useCrossSystemAnalytics, useFundingTrends } from "@/lib/analytics-hooks";
+import { useCrossSystemAnalytics, useFundingTrends, useAccurateEcosystemStats } from "@/lib/analytics-hooks";
 
 // Stats card component
 function StatsCard({ 
@@ -159,38 +159,50 @@ function RecentSystems({ systems }: { systems: any[] }) {
 }
 
 export default function DashboardOverview() {
-  // Use optimized analytics hooks for real data
+  // Use accurate ecosystem stats as primary data source
+  const { stats: accurateStats, isLoading: accurateLoading } = useAccurateEcosystemStats();
+  // Keep analytics as fallback
   const { analytics, derivedData, isLoading: analyticsLoading } = useCrossSystemAnalytics();
   const { trends, isLoading: trendsLoading } = useFundingTrends();
   
-  // Memoize computed values with accurate calculations
+  // Use accurate stats if available, fallback to computed values
   const stats = useMemo(() => {
+    // Prefer accurate stats from the new API
+    if (accurateStats) {
+      console.log('✅ Using accurate ecosystem stats from API');
+      return {
+        totalFunding: accurateStats.totalFunding || 0,
+        totalGrantRounds: accurateStats.totalGrantRounds || 0,
+        totalSystems: accurateStats.totalSystems || 0,
+        totalProjects: accurateStats.totalProjects || 0,
+        totalApplications: accurateStats.totalApplications || 0
+      };
+    }
+
+    // Fallback to computed values from analytics
     if (!analytics) return null;
-    
-    // Calculate actual totals from system data
-    const actualTotalFunding = analytics.systems.reduce((sum, system) => 
+
+    console.log('⚠️ Using fallback computed stats');
+    const actualTotalFunding = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalFunding || 0), 0
     );
-    
-    const actualTotalApplications = analytics.systems.reduce((sum, system) => 
+
+    const actualTotalApplications = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalApplications || 0), 0
     );
-    
-    const actualTotalPools = analytics.systems.reduce((sum, system) => 
+
+    const actualTotalPools = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalPools || 0), 0
     );
-    
-    // Count actual unique projects (using applications as proxy)
-    const actualProjects = actualTotalApplications; // Each application represents a project
-    
+
     return {
       totalFunding: actualTotalFunding,
       totalGrantRounds: actualTotalPools,
       totalSystems: analytics.systems.length,
-      totalProjects: actualProjects,
+      totalProjects: actualTotalApplications, // Each application represents a project
       totalApplications: actualTotalApplications
     };
-  }, [analytics]);
+  }, [accurateStats, analytics]);
   
   const trendsData = useMemo(() => {
     if (!trends?.trends) return [];
@@ -209,8 +221,8 @@ export default function DashboardOverview() {
   }, [analytics]);
   
   // Removed ecosystem health score as requested
-  
-  const statsLoading = analyticsLoading;
+
+  const statsLoading = accurateLoading || analyticsLoading;
   const systemsLoading = analyticsLoading;
 
   return (

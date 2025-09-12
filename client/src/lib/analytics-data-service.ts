@@ -1,7 +1,7 @@
 // Optimized data service for efficient cross-system analytics
 import { queryClient } from './queryClient';
 import { dataSourceRegistry } from './data-source-registry';
-import { openGrantsApi, daoip5Api } from './dashboard-api';
+import { openGrantsApi, daoip5Api, accurateApi } from './dashboard-api';
 import { iterativeDataFetcher } from './iterative-data-fetcher';
 
 // Centralized data structures
@@ -466,7 +466,19 @@ class AnalyticsDataService {
     };
   }
 
-  // Compute cross-system analytics efficiently
+  // Get accurate ecosystem stats using the new API
+  async getAccurateEcosystemStats(): Promise<any> {
+    try {
+      const stats = await accurateApi.getEcosystemStats();
+      console.log('✅ Using accurate ecosystem stats from API');
+      return stats;
+    } catch (error) {
+      console.warn('⚠️ Accurate API failed, falling back to computed stats:', error);
+      return this.getComputedEcosystemStats();
+    }
+  }
+
+  // Compute cross-system analytics efficiently (fallback method)
   async getCrossSystemAnalytics(): Promise<CrossSystemAnalytics> {
     const cache = await this.loadAllSystemData();
     const systems = Array.from(cache.systems.values());
@@ -493,6 +505,19 @@ class AnalyticsDataService {
       mechanisms,
       trends,
       diversity
+    };
+  }
+
+  // Computed ecosystem stats (legacy method)
+  async getComputedEcosystemStats(): Promise<any> {
+    const analytics = await this.getCrossSystemAnalytics();
+    return {
+      totalFunding: analytics.totals.funding,
+      totalGrantRounds: analytics.totals.pools,
+      totalSystems: analytics.totals.systems,
+      totalProjects: analytics.totals.applications, // Each application represents a project
+      totalApplications: analytics.totals.applications,
+      averageApprovalRate: analytics.totals.avgApprovalRate
     };
   }
 

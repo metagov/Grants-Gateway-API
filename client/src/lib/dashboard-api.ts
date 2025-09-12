@@ -54,23 +54,86 @@ export interface EcosystemStats {
   averageApprovalRate: number;
 }
 
-// OpenGrants API (for Octant, Giveth)
+// Accurate API client that uses server proxy to avoid CORS
+export const accurateApi = {
+  baseUrl: '/api/v1',
+
+  async getEcosystemStats(): Promise<EcosystemStats> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/ecosystem-stats`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching accurate ecosystem stats:', error);
+      throw error;
+    }
+  },
+
+  async getSystemMetrics(systemName: string, source: 'opengrants' | 'daoip5' = 'opengrants'): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/system/${systemName}?source=${source}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching metrics for ${systemName}:`, error);
+      throw error;
+    }
+  },
+
+  async getFundingTrends(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/funding-trends`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching funding trends:', error);
+      throw error;
+    }
+  }
+};
+
+// Legacy OpenGrants API (for backward compatibility)
 export const openGrantsApi = {
   baseUrl: 'https://grants.daostar.org/api/v1',
 
   async getSystems(): Promise<any[]> {
-    // Use fallback data directly to avoid CORS errors
-    console.warn('Using known systems directly to avoid CORS errors');
-    return [
-      { name: 'Octant', type: 'DAO', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
-      { name: 'Giveth', type: 'DAO', extensions: { description: 'Donation platform for public goods' }}
-    ];
+    // Use server proxy to avoid CORS errors
+    try {
+      const response = await fetch('/api/proxy/opengrants/grantSystems');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.data || data.systems || [];
+    } catch (error) {
+      console.error('Error fetching systems via proxy:', error);
+      // Fallback to known systems only if proxy fails
+      return [
+        { name: 'Octant', type: 'DAO', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
+        { name: 'Giveth', type: 'DAO', extensions: { description: 'Donation platform for public goods' }}
+      ];
+    }
   },
 
   async getPools(system?: string): Promise<any[]> {
-    // Use sample data directly to avoid CORS errors
-    console.warn('Using sample pools data to avoid CORS errors');
-    return this.getSamplePools(system);
+    try {
+      const url = system ? `/api/proxy/opengrants/grantPools?system=${system}` : '/api/proxy/opengrants/grantPools';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.grantPools || data.data || [];
+    } catch (error) {
+      console.error('Error fetching pools via proxy:', error);
+      return this.getSamplePools(system);
+    }
   },
   
   getSamplePools(system?: string): any[] {
@@ -93,9 +156,23 @@ export const openGrantsApi = {
   },
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
-    // Use sample data directly to avoid CORS errors
-    console.warn(`Using sample applications data for ${system} to avoid CORS errors`);
-    return this.getSampleApplications(system);
+    try {
+      let url = '/api/proxy/opengrants/grantApplications';
+      const params = new URLSearchParams();
+      if (system) params.append('system', system);
+      if (poolId) params.append('poolId', poolId);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.grantApplications || data.data || [];
+    } catch (error) {
+      console.error(`Error fetching applications for ${system} via proxy:`, error);
+      return this.getSampleApplications(system);
+    }
   },
   
   getSampleApplications(system?: string): any[] {
@@ -272,47 +349,57 @@ export const dashboardApi = {
     }
   },
 
-  // Get comprehensive ecosystem-wide statistics
+  // Get comprehensive ecosystem-wide statistics using accurate data
   async getEcosystemStats(): Promise<EcosystemStats> {
-    const cacheKey = 'dashboard-ecosystem-stats';
+    const cacheKey = 'dashboard-ecosystem-stats-accurate';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as EcosystemStats;
 
     try {
-      const systems = await this.getAllSystems();
-      
-      const stats: EcosystemStats = {
-        totalFunding: systems.reduce((sum, system) => sum + (system.totalFunding || 0), 0),
-        totalGrantRounds: systems.reduce((sum, system) => sum + (system.totalPools || 0), 0),
-        totalSystems: systems.length,
-        totalProjects: 0, // Will be calculated from unique project IDs
-        totalApplications: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
-        averageApprovalRate: systems.length > 0 ? 
-          systems.reduce((sum, system) => sum + (system.approvalRate || 0), 0) / systems.length : 0
+      // Use the new accurate API endpoint
+      const stats = await accurateApi.getEcosystemStats();
+
+      // Transform to match expected interface
+      const ecosystemStats: EcosystemStats = {
+        totalFunding: stats.totalFunding,
+        totalGrantRounds: stats.totalGrantRounds || stats.totalPools || 0,
+        totalSystems: stats.totalSystems,
+        totalProjects: stats.totalApplications, // Each application represents a project
+        totalApplications: stats.totalApplications,
+        averageApprovalRate: stats.averageApprovalRate
       };
 
-      // Get unique project count with fallback data
-      try {
-        const openGrantsApps = await openGrantsApi.getApplications();
-        const uniqueProjects = new Set(openGrantsApps.map(app => app.projectId || app.projectName));
-        stats.totalProjects = uniqueProjects.size || 50; // Fallback to estimated count
-      } catch (error) {
-        console.warn('Using estimated project count');
-        stats.totalProjects = 50; // Estimated from sample data
-      }
-
-      queryClient.setQueryData([cacheKey], stats);
-      return stats;
+      queryClient.setQueryData([cacheKey], ecosystemStats);
+      return ecosystemStats;
     } catch (error) {
-      console.error('Error fetching ecosystem stats:', error);
-      return {
-        totalFunding: 0,
-        totalGrantRounds: 0,
-        totalSystems: 0,
-        totalProjects: 0,
-        totalApplications: 0,
-        averageApprovalRate: 0
-      };
+      console.error('Error fetching accurate ecosystem stats:', error);
+
+      // Fallback to legacy method only if accurate API fails
+      try {
+        const systems = await this.getAllSystems();
+
+        const fallbackStats: EcosystemStats = {
+          totalFunding: systems.reduce((sum, system) => sum + (system.totalFunding || 0), 0),
+          totalGrantRounds: systems.reduce((sum, system) => sum + (system.totalPools || 0), 0),
+          totalSystems: systems.length,
+          totalProjects: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
+          totalApplications: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
+          averageApprovalRate: systems.length > 0 ?
+            systems.reduce((sum, system) => sum + (system.approvalRate || 0), 0) / systems.length : 0
+        };
+
+        return fallbackStats;
+      } catch (fallbackError) {
+        console.error('Fallback ecosystem stats also failed:', fallbackError);
+        return {
+          totalFunding: 0,
+          totalGrantRounds: 0,
+          totalSystems: 0,
+          totalProjects: 0,
+          totalApplications: 0,
+          averageApprovalRate: 0
+        };
+      }
     }
   },
 
