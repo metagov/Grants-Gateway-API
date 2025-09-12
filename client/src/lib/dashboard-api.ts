@@ -48,6 +48,7 @@ export interface GrantApplication {
 export interface EcosystemStats {
   totalFunding: number;
   totalGrantRounds: number;
+  totalPools?: number;
   totalSystems: number;
   totalProjects: number;
   totalApplications: number;
