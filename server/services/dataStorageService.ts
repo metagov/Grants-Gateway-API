@@ -143,6 +143,11 @@ class DataStorageService {
 
   // Calculate accurate USD funding for pools
   private async calculatePoolFundingUSD(pool: any): Promise<number> {
+    // Check if pool already has calculated funding (from applications)
+    if (pool.totalFunding !== undefined && pool.totalFunding > 0) {
+      return pool.totalFunding;
+    }
+    
     if (pool.totalGrantPoolSizeUSD) {
       return pool.totalGrantPoolSizeUSD;
     }
@@ -197,14 +202,18 @@ class DataStorageService {
     const pools = await this.getStoredGrantPools(systemId);
     const applications = await this.getStoredGrantApplications(systemId);
 
-    const totalFunding = pools.reduce((sum, pool) => sum + pool.total_funding_usd, 0);
+    // Calculate funding from both pools AND applications (DAOIP-5 data stores funding in applications)
+    const poolFunding = pools.reduce((sum, pool) => sum + pool.total_funding_usd, 0);
+    const applicationFunding = applications.reduce((sum, app) => sum + app.funding_usd, 0);
+    // Use whichever is greater (pools might have total, or apps might have individual funding)
+    const totalFunding = Math.max(poolFunding, applicationFunding);
     const totalApplications = applications.length;
     const totalPools = pools.length;
     
     // Calculate approval rate from actual application statuses
-    const approvedStatuses = ['approved', 'funded', 'completed'];
+    const approvedStatuses = ['approved', 'funded', 'completed', 'awarded'];
     const approvedApplications = applications.filter(app => 
-      approvedStatuses.includes(app.status.toLowerCase())
+      approvedStatuses.includes(app.status.toLowerCase()) || app.funding_usd > 0
     ).length;
     const approvalRate = totalApplications > 0 ? (approvedApplications / totalApplications) * 100 : 0;
 

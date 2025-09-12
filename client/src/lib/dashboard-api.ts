@@ -110,15 +110,15 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.data || data.systems || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field
+      const systems = responseData.data || responseData.grantSystems || responseData.systems || [];
+      console.log(`Fetched ${systems.length} systems from OpenGrants API`);
+      return systems;
     } catch (error) {
       console.error('Error fetching systems via proxy:', error);
-      // Fallback to known systems only if proxy fails
-      return [
-        { name: 'Octant', type: 'DAO', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
-        { name: 'Giveth', type: 'DAO', extensions: { description: 'Donation platform for public goods' }}
-      ];
+      // Never return fallback data - return empty array on error
+      return [];
     }
   },
 
@@ -129,31 +129,21 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.grantPools || data.data || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantPools'
+      const pools = responseData.data || responseData.grantPools || [];
+      console.log(`Fetched ${pools.length} pools for ${system || 'all systems'}`);
+      return pools;
     } catch (error) {
       console.error('Error fetching pools via proxy:', error);
-      return this.getSamplePools(system);
+      // Never return sample data - return empty array on error
+      return [];
     }
   },
   
   getSamplePools(system?: string): any[] {
-    const pools: Record<string, any[]> = {
-      'octant': [
-        { id: 'epoch-3', name: 'Epoch 3', totalGrantPoolSizeUSD: '2000000', isOpen: true, closeDate: '2024-04-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-2', name: 'Epoch 2', totalGrantPoolSizeUSD: '1500000', isOpen: false, closeDate: '2024-01-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-1', name: 'Epoch 1', totalGrantPoolSizeUSD: '1000000', isOpen: false, closeDate: '2023-10-01', grantFundingMechanism: 'Quadratic Funding' },
-      ],
-      'giveth': [
-        { id: 'qf-round-23', name: 'QF Round 23', totalGrantPoolSizeUSD: '500000', isOpen: true, closeDate: '2024-04-15', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-22', name: 'QF Round 22', totalGrantPoolSizeUSD: '400000', isOpen: false, closeDate: '2024-02-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-21', name: 'QF Round 21', totalGrantPoolSizeUSD: '350000', isOpen: false, closeDate: '2023-12-01', grantFundingMechanism: 'Quadratic Funding' },
-      ]
-    };
-    
-    return pools[system || ''] || [
-      { id: 'pool-1', name: 'Grant Pool 1', totalGrantPoolSizeUSD: '100000', isOpen: true, grantFundingMechanism: 'Direct Grant' },
-    ];
+    // No sample data - always return empty if real data fails
+    return [];
   },
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
@@ -168,37 +158,21 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.grantApplications || data.data || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantApplications'
+      const applications = responseData.data || responseData.grantApplications || [];
+      console.log(`Fetched ${applications.length} applications for ${system || 'all systems'}`);
+      return applications;
     } catch (error) {
       console.error(`Error fetching applications for ${system} via proxy:`, error);
-      return this.getSampleApplications(system);
+      // Never return sample data - return empty array on error
+      return [];
     }
   },
   
   getSampleApplications(system?: string): any[] {
-    // Realistic sample data for demo purposes
-    const sampleData: Record<string, any[]> = {
-      'octant': [
-        { id: 'oct-1', projectName: 'Protocol Guild', status: 'funded', fundsApprovedInUSD: '250000', grantPoolId: 'epoch-3', createdAt: '2024-01-15' },
-        { id: 'oct-2', projectName: 'Ethereum Cat Herders', status: 'funded', fundsApprovedInUSD: '180000', grantPoolId: 'epoch-3', createdAt: '2024-01-20' },
-        { id: 'oct-3', projectName: 'Rotki', status: 'funded', fundsApprovedInUSD: '150000', grantPoolId: 'epoch-3', createdAt: '2024-02-01' },
-        { id: 'oct-4', projectName: 'L2BEAT', status: 'funded', fundsApprovedInUSD: '200000', grantPoolId: 'epoch-2', createdAt: '2024-02-15' },
-        { id: 'oct-5', projectName: 'ETH Daily', status: 'approved', fundsApprovedInUSD: '75000', grantPoolId: 'epoch-2', createdAt: '2024-03-01' },
-      ],
-      'giveth': [
-        { id: 'giv-1', projectName: 'Commons Stack', status: 'funded', fundsApprovedInUSD: '120000', grantPoolId: 'qf-round-23', createdAt: '2024-01-10' },
-        { id: 'giv-2', projectName: 'Token Engineering Commons', status: 'funded', fundsApprovedInUSD: '95000', grantPoolId: 'qf-round-23', createdAt: '2024-01-25' },
-        { id: 'giv-3', projectName: 'DAppNode', status: 'funded', fundsApprovedInUSD: '110000', grantPoolId: 'qf-round-22', createdAt: '2024-02-05' },
-        { id: 'giv-4', projectName: 'BrightID', status: 'approved', fundsApprovedInUSD: '65000', grantPoolId: 'qf-round-22', createdAt: '2024-02-20' },
-        { id: 'giv-5', projectName: 'Giveth Matching Pool', status: 'funded', fundsApprovedInUSD: '300000', grantPoolId: 'qf-round-21', createdAt: '2024-03-05' },
-      ]
-    };
-    
-    return sampleData[system || ''] || [
-      { id: 'gen-1', projectName: 'Sample Project 1', status: 'funded', fundsApprovedInUSD: '50000', grantPoolId: 'pool-1', createdAt: '2024-01-01' },
-      { id: 'gen-2', projectName: 'Sample Project 2', status: 'approved', fundsApprovedInUSD: '30000', grantPoolId: 'pool-1', createdAt: '2024-01-15' },
-    ];
+    // No sample data - always return empty if real data fails
+    return [];
   }
 };
 
@@ -235,13 +209,14 @@ export const daoip5Api = {
 
       const pools = (poolsData.grantPools || []).map((pool: any) => ({
         id: pool.id,
-        name: pool.name,
+        name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
         system,
         totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
         totalApplications: 0, // Will be calculated from applications
-        grantFundingMechanism: pool.grantFundingMechanism || 'Unknown',
-        isOpen: pool.isOpen,
-        closeDate: pool.closeDate
+        grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
+        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+        closeDate: pool.closeDate,
+        description: pool.description
       }));
 
       const applications: any[] = [];
@@ -256,17 +231,51 @@ export const daoip5Api = {
           const appsResponse = await fetch(`/api/proxy/daoip5/${system}/${appFile}`);
           if (appsResponse.ok) {
             const appsData = await appsResponse.json();
-            const fileApplications = (appsData.applications || []).map((app: any) => ({
-              id: app.id,
-              projectName: app.projectName || 'Unknown Project',
-              system,
-              grantPoolId: app.grantPoolId,
-              status: app.status || 'unknown',
-              fundsApprovedInUSD: app.fundsApprovedInUSD || '0',
-              createdAt: app.createdAt || new Date().toISOString()
-            }));
+            // Handle nested structure where applications are inside grantPools array
+            const grantPools = appsData.grantPools || [];
             
-            applications.push(...fileApplications);
+            for (const pool of grantPools) {
+              const poolApplications = (pool.applications || []).map((app: any) => {
+                // Calculate USD value from fundsApproved field
+                let fundsInUSD = 0;
+                
+                // First check if fundsApprovedInUSD is directly provided
+                if (app.fundsApprovedInUSD) {
+                  fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+                }
+                // Otherwise calculate from fundsApproved array
+                else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                  for (const fund of app.fundsApproved) {
+                    if (fund.amount) {
+                      if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                        const xlmToUsd = 0.13;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                      } else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+                        const ethToUsd = 2500;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+                      } else {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      }
+                    }
+                  }
+                }
+                
+                return {
+                  id: app.id,
+                  projectName: app.projectName || 'Unknown Project',
+                  projectDescription: app.description,
+                  system,
+                  grantPoolId: app.grantPoolId,
+                  status: app.status || 'unknown',
+                  fundsApprovedInUSD: fundsInUSD,
+                  createdAt: app.createdAt || new Date().toISOString()
+                };
+              });
+              
+              applications.push(...poolApplications);
+            }
           }
         } catch (error) {
           console.warn(`Failed to fetch applications from ${appFile}:`, error);
@@ -290,7 +299,11 @@ export const daoip5Api = {
 
       return result;
     } catch (error) {
-      console.error(`Error fetching DAOIP-5 data for ${system}:`, error);
+      console.error(`Error fetching DAOIP-5 data for ${system}:`, error instanceof Error ? error.message : String(error));
+      // Log full error for debugging
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
       // Fallback to empty data instead of throwing
       return { pools: [], applications: [] };
     }
@@ -298,14 +311,52 @@ export const daoip5Api = {
 
   extractFundingAmount(totalGrantPoolSize: any): string {
     if (!totalGrantPoolSize) return '0';
+    
+    // Handle array of funding objects (DAOIP-5 format)
     if (Array.isArray(totalGrantPoolSize) && totalGrantPoolSize.length > 0) {
-      // Find USD amount or use first available
-      const usdAmount = totalGrantPoolSize.find(item => 
-        item.denomination?.toLowerCase().includes('usd')
-      );
-      return usdAmount?.amount || totalGrantPoolSize[0]?.amount || '0';
+      let totalUSD = 0;
+      for (const fund of totalGrantPoolSize) {
+        if (fund.amount) {
+          // For USD, use directly
+          if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+          // For XLM (Stellar), use conversion rate
+          else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+            const xlmToUsd = 0.13; // Approximate XLM to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+          }
+          // For ETH, use conversion rate
+          else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+            const ethToUsd = 2500; // Approximate ETH to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+          }
+          // For other denominations, try to use amount as-is
+          else {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+        }
+      }
+      return String(totalUSD);
     }
-    return totalGrantPoolSize.toString();
+    
+    // Handle single funding object
+    if (typeof totalGrantPoolSize === 'object' && totalGrantPoolSize.amount) {
+      if (totalGrantPoolSize.denomination === 'USD' || totalGrantPoolSize.denomination?.toLowerCase() === 'usd') {
+        return String(totalGrantPoolSize.amount || 0);
+      }
+      if (totalGrantPoolSize.denomination === 'XLM' || totalGrantPoolSize.denomination?.toLowerCase() === 'xlm') {
+        const xlmToUsd = 0.13;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * xlmToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'ETH' || totalGrantPoolSize.denomination?.toLowerCase() === 'eth') {
+        const ethToUsd = 2500;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * ethToUsd);
+      }
+      return String(totalGrantPoolSize.amount || 0);
+    }
+    
+    return String(totalGrantPoolSize || 0);
   },
 
   async getSystemPools(system: string): Promise<any[]> {
@@ -432,31 +483,15 @@ export const dashboardApi = {
             console.error(`Error fetching real DAOIP-5 data for ${source.name}:`, error);
           }
 
-          // Fallback to realistic static data if real data fetching fails
-          const fallbackData = {
-            'stellar': { totalFunding: 2500000, totalApplications: 150, totalPools: 25, approvalRate: 65 },
-            'optimism': { totalFunding: 50000000, totalApplications: 300, totalPools: 6, approvalRate: 45 },
-            'arbitrumfoundation': { totalFunding: 15000000, totalApplications: 200, totalPools: 10, approvalRate: 55 },
-            'celo-org': { totalFunding: 8000000, totalApplications: 120, totalPools: 8, approvalRate: 70 },
-            'clrfund': { totalFunding: 1200000, totalApplications: 80, totalPools: 12, approvalRate: 60 },
-            'dao-drops-dorgtech': { totalFunding: 500000, totalApplications: 40, totalPools: 5, approvalRate: 75 }
-          };
-
-          const systemData = fallbackData[source.id as keyof typeof fallbackData] || {
-            totalFunding: Math.floor(Math.random() * 5000000) + 500000,
-            totalApplications: Math.floor(Math.random() * 100) + 20,
-            totalPools: Math.floor(Math.random() * 10) + 2,
-            approvalRate: Math.floor(Math.random() * 40) + 40
-          };
-
+          // Return zero data if real fetching fails - no fallback data
           return {
             name: source.name,
             type: source.type,
             source: source.source,
-            totalFunding: systemData.totalFunding,
-            totalApplications: systemData.totalApplications,
-            totalPools: systemData.totalPools,
-            approvalRate: systemData.approvalRate,
+            totalFunding: 0,
+            totalApplications: 0,
+            totalPools: 0,
+            approvalRate: 0,
             compatibility: source.standardization.compatibility,
             fundingMechanisms: source.features.fundingMechanism,
             description: source.description,
