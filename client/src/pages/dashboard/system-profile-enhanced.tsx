@@ -536,7 +536,7 @@ export default function SystemProfileEnhanced() {
         />
         <StatsCard
           title="Approval Rate"
-          value={`${stats.approvalRate.toFixed(1)}%`}
+          value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
           description="Applications approved/funded"
           icon={TrendingUp}
         />

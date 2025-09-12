@@ -627,7 +627,7 @@ export const dashboardApi = {
     applications: GrantApplication[];
     stats: {
       totalApplications: number;
-      approvalRate: number;
+      approvalRate?: number;
       totalFunding: number;
     };
   }> {
@@ -636,52 +636,18 @@ export const dashboardApi = {
     if (cached) return cached as any;
 
     try {
-      let pools: GrantPool[] = [];
-      let applications: GrantApplication[] = [];
-
-      // Check if it's an OpenGrants system (octant, giveth)
-      if (['octant', 'giveth'].includes(systemName.toLowerCase())) {
-        [pools, applications] = await Promise.all([
-          openGrantsApi.getPools(systemName),
-          openGrantsApi.getApplications(systemName)
-        ]);
-      } else {
-        // Handle DAOIP5 systems (stellar, optimism, arbitrum, etc.)
-        try {
-          const poolFiles = await daoip5Api.getSystemPools(systemName);
-          const poolDataPromises = poolFiles.map(async (file) => {
-            const filename = file.replace('.json', '');
-            const { pools } = await daoip5Api.fetchDaoip5Data(systemName);
-            return pools.find(pool => pool.id === filename) || null;
-          });
-          
-          const poolData = (await Promise.all(poolDataPromises)).filter((data: any) => data !== null);
-          
-          // For DAOIP5, use the unified data fetching
-          const { pools: systemPools, applications: systemApplications } = await daoip5Api.fetchDaoip5Data(systemName);
-          pools = systemPools;
-          applications = systemApplications;
-        } catch (error) {
-          console.error(`Error fetching DAOIP5 data for ${systemName}:`, error);
-        }
-      }
-
-      // Calculate stats
-      const approvedApps = applications.filter(app => 
-        app.status === 'funded' || app.status === 'approved'
-      ).length;
-
-      const totalFunding = applications.reduce((sum, app) => {
-        const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
-        return sum + fundingUSD;
-      }, 0);
+      // Use the systematic fetching approach for all systems
+      const systemSource = ['octant', 'giveth'].includes(systemName.toLowerCase()) ? 'opengrants' : 'daoip5';
+      const { pools, applications, totalFunding } = await fetchSystemDataSystematically(systemName, systemSource);
+      
+      console.log(`System details for ${systemName}: ${pools.length} pools, ${applications.length} applications, $${totalFunding} funding`);
 
       const result = {
         pools,
         applications,
         stats: {
           totalApplications: applications.length,
-          approvalRate: applications.length > 0 ? (approvedApps / applications.length) * 100 : 0,
+          approvalRate: undefined, // Coming soon - don't calculate
           totalFunding
         }
       };
@@ -696,7 +662,7 @@ export const dashboardApi = {
         applications: [],
         stats: {
           totalApplications: 0,
-          approvalRate: 0,
+          approvalRate: undefined, // Coming soon
           totalFunding: 0
         }
       };
