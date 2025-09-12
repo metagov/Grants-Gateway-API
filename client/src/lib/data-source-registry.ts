@@ -5,7 +5,7 @@ export interface DataSourceConfig {
   id: string;
   name: string;
   description: string;
-  type: "api" | "static" | "graphql" | "foundation";
+  type: "api" | "static" | "graphql";
   source: "opengrants" | "daoip5" | "custom";
   endpoints?: {
     systems?: string;
@@ -23,8 +23,6 @@ export interface DataSourceConfig {
     dataRefreshRate?: string;
     historicalData?: boolean;
     realTimeUpdates?: boolean;
-    currencies?: string[];
-    networks?: string[];
   };
   metadata: {
     addedDate: string;
@@ -32,8 +30,6 @@ export interface DataSourceConfig {
     status: "active" | "pending" | "inactive";
     network?: string[];
     currency?: string[];
-    website?: string;
-    documentation?: string;
   };
 }
 
@@ -130,42 +126,38 @@ class DataSourceRegistry {
     this.register({
       id: "stellar",
       name: "Stellar Community Fund",
-      description: "Supporting projects that advance the Stellar ecosystem through direct grants and funding rounds",
-      type: "foundation",
+      description: "Community-driven funding for Stellar ecosystem development",
+      type: "static",
       source: "daoip5",
       endpoints: {
-        pools: 'https://daoip5.daostar.org/stellar',
-        applications: 'https://daoip5.daostar.org/stellar/search',
-        systems: 'https://daoip5.daostar.org/stellar/system.json'
+        systems: "https://daoip5.daostar.org",
+        pools: "https://daoip5.daostar.org/stellar",
+        applications: "https://daoip5.daostar.org/stellar/{pool}.json",
       },
       standardization: {
         version: "DAOIP-5 v1.0",
         mappings: {
-          systemId: 'id',
-          systemName: 'name',
-          poolId: 'id',
-          poolName: 'name',
-          applicationId: 'id',
-          projectName: 'projectName',
-          fundingAmount: 'fundsApprovedInUSD',
-          applicationStatus: 'status'
+          id: "id",
+          projectName: "projectName",
+          status: "status",
+          fundsApprovedInUSD: "fundsApprovedInUSD",
+          grantPoolId: "grantPoolId",
         },
-        compatibility: 95
+        compatibility: 95,
       },
       features: {
-        fundingMechanism: ['Direct Grant', 'Community Pool', 'Ecosystem Fund'],
-        dataRefreshRate: 'weekly',
+        fundingMechanism: ["Direct Grants"],
+        dataRefreshRate: "quarterly",
         historicalData: true,
-        currencies: ['XLM', 'USD'],
-        networks: ['Stellar']
+        realTimeUpdates: false,
       },
       metadata: {
-        addedDate: '2024-01-01T00:00:00Z',
+        addedDate: "2024-02-01",
         lastUpdated: new Date().toISOString(),
-        status: 'active',
-        website: 'https://www.stellar.org/foundation/grants',
-        documentation: 'https://www.stellar.org/foundation'
-      }
+        status: "active",
+        network: ["stellar"],
+        currency: ["XLM", "USD"],
+      },
     });
 
     this.register({
@@ -209,6 +201,9 @@ class DataSourceRegistry {
   register(config: DataSourceConfig): void {
     this.sources.set(config.id, config);
     this.notifyListeners();
+    console.log(
+      `📊 Registered new data source: ${config.name} with DAOIP-5 compatibility: ${config.standardization.compatibility}%`,
+    );
   }
 
   // Auto-discover and register new sources from APIs
@@ -222,7 +217,7 @@ class DataSourceRegistry {
         { name: 'Octant', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
         { name: 'Giveth', extensions: { description: 'Donation platform for public goods' }}
       ];
-
+      
       const systems = knownOpenGrantsSystems;
 
         systems.forEach((system: any) => {
@@ -270,6 +265,7 @@ class DataSourceRegistry {
       'arbitrumfoundation',
       'clrfund', 
       'dao-drops-dorgtech',
+      'octant-golemfoundation',
       'optimism',
       'stellar',
       'celo-org'
@@ -329,10 +325,10 @@ class DataSourceRegistry {
     const allSources = this.getAllSources().filter(
       (source) => source.metadata.status === "active",
     );
-
+    
     // Group sources by system name (case-insensitive)
     const sourceGroups = new Map<string, DataSourceConfig[]>();
-
+    
     allSources.forEach(source => {
       const systemKey = source.name.toLowerCase().replace(/[\s-_]/g, '');
       if (!sourceGroups.has(systemKey)) {
@@ -340,10 +336,10 @@ class DataSourceRegistry {
       }
       sourceGroups.get(systemKey)!.push(source);
     });
-
+    
     // For each group, prefer grants.daostar.org (Type 1/opengrants) sources
     const preferredSources: DataSourceConfig[] = [];
-
+    
     sourceGroups.forEach(sources => {
       if (sources.length === 1) {
         preferredSources.push(sources[0]);
@@ -358,7 +354,7 @@ class DataSourceRegistry {
           !s.endpoints?.systems?.includes('grants.daostar.org')
         );
         const type2Sources = sources.filter(s => s.source === 'daoip5');
-
+        
         if (grantsDAOStarSources.length > 0) {
           // First preference: grants.daostar.org sources
           preferredSources.push(grantsDAOStarSources[0]);
@@ -373,7 +369,7 @@ class DataSourceRegistry {
         }
       }
     });
-
+    
     return preferredSources;
   }
 
@@ -549,8 +545,8 @@ class DataSourceRegistry {
         addedDate: '2024-02-01'
       },
       'celo-org': {
-        name: 'Celo Foundation',
-        description: 'Celo Foundation grants for financial inclusion',
+        name: 'CeloPG',
+        description: 'CeloPG grants for financial inclusion',
         compatibility: 85,
         mechanisms: ['Direct Grants'],
         addedDate: '2024-03-15'
@@ -573,6 +569,8 @@ export const dataSourceRegistry = new DataSourceRegistry();
 // Auto-discover sources on initialization
 if (typeof window !== "undefined") {
   dataSourceRegistry.autoDiscover().then((discovered) => {
-    // Auto-discovery completed silently
+    if (discovered.length > 0) {
+      console.log(`🔍 Auto-discovered ${discovered.length} new data sources`);
+    }
   });
 }

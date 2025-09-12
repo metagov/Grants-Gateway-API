@@ -27,6 +27,20 @@ export function useCrossSystemAnalytics() {
     refetchOnMount: false
   });
 
+  // Hook for accurate ecosystem stats (new)
+  const {
+    data: accurateStats,
+    isLoading: accurateLoading,
+    error: accurateError
+  } = useQuery({
+    queryKey: ['accurate-ecosystem-stats'],
+    queryFn: () => analyticsDataService.getAccurateEcosystemStats(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
+  });
+
   // Memoized derived data to prevent unnecessary recalculations
   const derivedData = useMemo(() => {
     if (!analytics) return null;
@@ -58,14 +72,39 @@ export function useCrossSystemAnalytics() {
   return {
     analytics,
     derivedData,
-    isLoading,
-    error,
+    accurateStats,
+    isLoading: isLoading || accurateLoading,
+    error: error || accurateError,
     refetch,
     // Helper functions
     getSystemByName: (name: string) => analytics?.systems.find(s => s.name === name),
-    getSystemRank: (systemName: string, metric: keyof SystemComparison['rank']) => 
+    getSystemRank: (systemName: string, metric: keyof SystemComparison['rank']) =>
       analytics?.comparisons.find(c => c.systemName === systemName)?.rank[metric],
     isStale: analyticsDataService.needsRefresh()
+  };
+}
+
+// Hook specifically for accurate ecosystem stats
+export function useAccurateEcosystemStats() {
+  const {
+    data: stats,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['accurate-ecosystem-stats'],
+    queryFn: () => analyticsDataService.getAccurateEcosystemStats(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
+  });
+
+  return {
+    stats,
+    isLoading,
+    error,
+    refetch
   };
 }
 

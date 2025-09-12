@@ -392,7 +392,7 @@ export default function HealthPage() {
                         </li>
                         <li className="flex items-center">
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                          Celo Public Goods
+                          CeloPG
                         </li>
                       </ul>
                     </div>

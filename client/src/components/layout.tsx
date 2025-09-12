@@ -9,9 +9,7 @@ import {
   Moon, 
   Sun,
   Menu,
-  X,
-  Key,
-  Shield
+  X
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,8 +17,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useThemeContext } from "@/components/ui/theme-provider";
 import { Link, useLocation } from "wouter";
 import IntegrationsSidebar from "@/components/integrations-sidebar";
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,29 +26,14 @@ export default function Layout({ children }: LayoutProps) {
   const { theme, toggleTheme } = useThemeContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [location] = useLocation();
-  const { user, isLoading: authLoading } = useAuth();
-
-  // Check if user is admin - only show admin nav for authorized users
-  const { data: adminStats, isLoading: adminLoading, error: adminError } = useQuery({
-    queryKey: ['/api/admin/stats'],
-    enabled: !authLoading && !!user,
-    retry: false,
-    refetchOnWindowFocus: false,
-    retryOnMount: false,
-    refetchOnReconnect: false
-  });
-
-  // Only show admin if user has successful access (no 401/403 errors)
-  const isAdmin = !authLoading && !adminLoading && !!adminStats && !adminError;
 
   const sidebarItems = [
     { id: "/", label: "Overview", icon: Building, path: "/" },
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
-    { id: "/get-api-access", label: "Get API Access", icon: Key, path: "/get-api-access" },
+
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
     { id: "/contributors", label: "Contributors", icon: Heart, path: "/contributors" },
-    ...(isAdmin ? [{ id: "/admin", label: "Admin Dashboard", icon: Shield, path: "/admin" }] : []),
   ];
 
   return (

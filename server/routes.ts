@@ -1,175 +1,68 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
+import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
-import { PaginatedResponse, registrationSchema } from "../shared/schema";
+import { PaginatedResponse } from "../shared/schema";
 import cors from "cors";
-import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
+    origin: process.env.NODE_ENV === 'production'
       ? process.env.FRONTEND_URL || 'https://your-domain.com'
       : true,
     credentials: true
   }));
 
-  // Apply comprehensive request logging to ALL routes
-  app.use(requestLoggingMiddleware);
-
-  // Auth middleware setup
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Add API proxy endpoints to avoid CORS issues
+  app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getOAuthUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+      const { endpoint } = req.params;
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const url = `https://grants.daostar.org/api/v1/${endpoint}${queryString ? `?${queryString}` : ''}`;
 
-  // API user registration endpoint
-  app.post('/api/auth/register', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const userClaims = req.user.claims;
-
-      // Validate request body
-      const validationResult = registrationSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationResult.error.issues
-        });
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`OpenGrants API returned ${response.status}`);
       }
 
-      const { orgName, intentOfUse } = validationResult.data;
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('OpenGrants proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+    }
+  });
 
-      // Check if user already has API access
-      const existingApiUser = await storage.getApiUserByReplitId(userId);
-      if (existingApiUser) {
-        return res.status(409).json({
-          error: "User already registered",
-          message: "You already have API access. Contact support if you need a new API key."
-        });
+  app.get('/api/proxy/daoip5/:system/:file', async (req, res) => {
+    try {
+      const { system, file } = req.params;
+      const url = `https://daoip5.daostar.org/${system}/${file}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
       }
 
-      // Create API user
-      const apiUser = await storage.createApiUser({
-        replitUserId: userId,
-        email: userClaims.email || '',
-        name: `${userClaims.first_name || ''} ${userClaims.last_name || ''}`.trim() || 'Unknown',
-        orgName,
-        intentOfUse,
-        status: 'active'
-      });
-
-      // Generate API key
-      const rawApiKey = crypto.randomBytes(32).toString('hex');
-      const keyHash = crypto.createHash('sha256').update(rawApiKey).digest('hex');
-      const keyPreview = rawApiKey.slice(-4);
-
-      // Set expiration to 3 months from now
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
-
-      // Save API key
-      await storage.createApiKey({
-        userId: apiUser.id,
-        keyHash,
-        keyPreview,
-        name: 'Default API Key',
-        expiresAt,
-        status: 'active'
-      });
-
-      res.json({
-        message: "Registration successful",
-        apiKey: rawApiKey,
-        expiresAt: expiresAt.toISOString(),
-        user: {
-          id: apiUser.id,
-          email: apiUser.email,
-          name: apiUser.name,
-          orgName: apiUser.orgName
-        }
-      });
+      const data = await response.json();
+      res.json(data);
     } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({
-        error: "Registration failed",
-        message: "An error occurred during registration"
-      });
+      console.error('DAOIP-5 proxy error:', error);
+      res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
     }
   });
 
-  // Admin routes - only accessible to admin users
-  app.get('/api/admin/stats', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { adminService } = await import('./services/admin-service');
-      const stats = await adminService.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch admin statistics"
-      });
-    }
-  });
 
-  app.get('/api/admin/users', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { adminService } = await import('./services/admin-service');
-      const users = await adminService.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch users"
-      });
-    }
-  });
 
-  app.get('/api/admin/users/:userId', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { userId } = req.params;
-      const { adminService } = await import('./services/admin-service');
-
-      const userDetail = await adminService.getUserDetail(userId);
-      if (!userDetail) {
-        return res.status(404).json({ 
-          error: "User not found",
-          message: `User with ID ${userId} not found`
-        });
-      }
-
-      res.json(userDetail);
-    } catch (error) {
-      console.error('Error fetching user detail:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch user details"
-      });
-    }
-  });
-
-  // Apply middleware only to legacy API routes - REQUIRE API tokens
-  app.use('/api/v1', authenticateApiKey, requireAuth);
-  app.use('/api/v1', rateLimitMiddleware);
+  // Apply middleware to all API routes
+  app.use('/api', authenticateApiKey as any);
+  app.use('/api', rateLimitMiddleware as any);
 
   // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
   const adapters: { [key: string]: BaseAdapter } = {
@@ -185,19 +78,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Object.values(adapters);
   }
 
-  // API logging middleware - only for legacy routes
-  app.use('/api/v1', async (req, res, next) => {
-    const aReq = req as AuthenticatedRequest;
+  // API logging middleware
+  app.use('/api', async (req: AuthenticatedRequest, res, next) => {
     const start = Date.now();
     
     res.on('finish', async () => {
       const responseTime = Date.now() - start;
       
       try {
-        // Legacy API logging for backward compatibility
-        const userId = typeof aReq.user?.id === 'number' ? aReq.user.id : null;
         await storage.createApiLog({
-          userId,
+          userId: req.user?.id || null,
           endpoint: req.path,
           method: req.method,
           statusCode: res.statusCode,
@@ -214,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Grant Systems endpoints
-  app.get('/api/v1/grantSystems', async (req, res) => {
+  app.get('/api/v1/grantSystems', async (req: AuthenticatedRequest, res) => {
     try {
       const { system } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -247,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantSystems/:id', async (req, res) => {
+  app.get('/api/v1/grantSystems/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -274,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Grant Pools endpoints
-  app.get('/api/v1/grantPools', async (req, res) => {
+  app.get('/api/v1/grantPools', async (req: AuthenticatedRequest, res) => {
     try {
       const { system, isOpen, mechanism } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -314,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantPools/:id', async (req, res) => {
+  app.get('/api/v1/grantPools/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -343,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Health endpoints
-  app.get('/api/v1/health', async (req, res) => {
+  app.get('/api/v1/health', async (req: AuthenticatedRequest, res) => {
     try {
       const { healthService } = await import('./services/health');
       const forceRefresh = req.query.refresh === 'true';
@@ -364,98 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoints for frontend (cached data, no auth required)
-  app.get('/api/public/daoip5/systems', async (req, res) => {
-    try {
-      const { daoip5Service } = await import('./services/daoip5-service');
-      const summaries = await daoip5Service.getAllSystemSummaries();
-      res.json(summaries);
-    } catch (error) {
-      console.error('Failed to fetch DAOIP5 systems:', error);
-      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
-    }
-  });
-
-  app.get('/api/public/daoip5/:system/summary', async (req, res) => {
-    try {
-      const { system } = req.params;
-      const { daoip5Service } = await import('./services/daoip5-service');
-      const summary = await daoip5Service.getSystemSummary(system);
-      res.json(summary);
-    } catch (error) {
-      console.error(`Failed to fetch DAOIP5 summary for ${req.params.system}:`, error);
-      res.status(500).json({ error: `Failed to fetch summary for ${req.params.system}` });
-    }
-  });
-
-  app.get('/api/public/daoip5/:system/:pool', async (req, res) => {
-    try {
-      const { system, pool } = req.params;
-      const { daoip5Service } = await import('./services/daoip5-service');
-      const poolData = await daoip5Service.getPoolData(system, pool);
-      res.json(poolData);
-    } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.pool}:`, error);
-      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
-    }
-  });
-
-  // Apply authentication middleware to all proxy endpoints - REQUIRE API tokens
-  app.use('/api/proxy', authenticateApiKey, requireAuth);
-  app.use('/api/proxy', rateLimitMiddleware);
-
-  // DAOIP5 API Proxy endpoints to handle CORS
-  app.get('/api/proxy/daoip5', async (req, res) => {
-    try {
-      const response = await fetch('https://daoip5.daostar.org/', {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Failed to fetch DAOIP5 systems:', error);
-      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
-    }
-  });
-
-  app.get('/api/proxy/daoip5/:system', async (req, res) => {
-    try {
-      const { system } = req.params;
-      const response = await fetch(`https://daoip5.daostar.org/${system}`, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pools for ${req.params.system}:`, error);
-      res.status(500).json({ error: `Failed to fetch pools for ${req.params.system}` });
-    }
-  });
-
-  app.get('/api/proxy/daoip5/:system/:filename', async (req, res) => {
-    try {
-      const { system, filename } = req.params;
-      const response = await fetch(`https://daoip5.daostar.org/${system}/${filename}.json`, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.filename}:`, error);
-      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
-    }
-  });
-
-  app.get('/api/v1/health/:adapter', async (req, res) => {
+  app.get('/api/v1/health/:adapter', async (req: AuthenticatedRequest, res) => {
     try {
       const { healthService } = await import('./services/health');
       const { adapter } = req.params;
@@ -483,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Quick health check endpoint (no detailed checks, uses cache)
-  app.get('/api/v1/health-quick', async (req, res) => {
+  app.get('/api/v1/health-quick', async (req: AuthenticatedRequest, res) => {
     try {
       const { healthService } = await import('./services/health');
       const quickHealth = healthService.getQuickHealth();
@@ -494,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Applications endpoints
-  app.get('/api/v1/grantApplications', async (req, res) => {
+  app.get('/api/v1/grantApplications', async (req: AuthenticatedRequest, res) => {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -553,7 +352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantApplications/:id', async (req, res) => {
+  app.get('/api/v1/grantApplications/:id', async (req: AuthenticatedRequest, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -593,6 +392,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Accurate Analytics Endpoints
+  app.get('/api/v1/analytics/ecosystem-stats', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+      const stats = await accurateDataService.getEcosystemStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching ecosystem stats:', error);
+      res.status(500).json({
+        error: "Failed to fetch ecosystem statistics",
+        message: "Unable to compute accurate ecosystem metrics"
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/system/:systemName', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemName } = req.params;
+      const { source = 'opengrants' } = req.query;
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      const metrics = await accurateDataService.calculateSystemMetrics(
+        systemName,
+        source as 'opengrants' | 'daoip5'
+      );
+
+      res.json(metrics);
+    } catch (error) {
+      console.error(`Error fetching system metrics for ${req.params.systemName}:`, error);
+      res.status(500).json({
+        error: "Failed to fetch system metrics",
+        message: `Unable to compute metrics for system ${req.params.systemName}`
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/funding-trends', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      // This would need to be implemented to calculate quarterly trends from real data
+      // For now, return a placeholder structure
+      const trends = [
+        { quarter: '2024-Q1', funding: 0, applications: 0 },
+        { quarter: '2024-Q2', funding: 0, applications: 0 },
+        { quarter: '2024-Q3', funding: 0, applications: 0 },
+        { quarter: '2024-Q4', funding: 0, applications: 0 }
+      ];
+
+      res.json(trends);
+    } catch (error) {
+      console.error('Error fetching funding trends:', error);
+      res.status(500).json({
+        error: "Failed to fetch funding trends",
+        message: "Unable to compute funding trend data"
+      });
+    }
+  });
+
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -602,7 +460,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       endpoints: {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
-        applications: "/api/v1/applications"
+        applications: "/api/v1/applications",
+        analytics: {
+          ecosystemStats: "/api/v1/analytics/ecosystem-stats",
+          systemMetrics: "/api/v1/analytics/system/:systemName",
+          fundingTrends: "/api/v1/analytics/funding-trends"
+        }
       },
       supportedSystems: Object.keys(adapters),
       documentation: "https://docs.daostar.org/"

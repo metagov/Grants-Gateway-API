@@ -16,8 +16,6 @@ import GrantSystems from "@/pages/dashboard/systems";
 import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
 import SearchAndFilter from "@/pages/dashboard/search";
 import DashboardOverviewArchived from "@/pages/dashboard/overview-archived";
-import GetApiAccess from "@/pages/get-api-access";
-import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import MobileToast from "@/components/mobile-toast";
 
@@ -28,10 +26,8 @@ function Router() {
       <Route path="/" component={() => <Layout><OverviewPage /></Layout>} />
       <Route path="/query-builder" component={() => <Layout><QueryBuilderPage /></Layout>} />
       <Route path="/endpoints" component={() => <Layout><EndpointsPage /></Layout>} />
-      <Route path="/get-api-access" component={() => <Layout><GetApiAccess /></Layout>} />
-      <Route path="/admin" component={() => <Layout><AdminDashboard /></Layout>} />
       <Route path="/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
-      <Route path="/health" component={() => <Layout><HealthPage /></Layout>} />
+      <Route path="/health" component={HealthPage} />
       
       {/* Dashboard Routes */}
       <Route path="/dashboard" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />

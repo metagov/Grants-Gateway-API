@@ -8,7 +8,7 @@ interface CacheEntry<T> {
   refreshing?: boolean;
 }
 
-class SmartCache<T> {
+export class SmartCache<T> {
   private cache = new Map<string, CacheEntry<T>>();
   private refreshTasks = new Map<string, Promise<void>>();
 

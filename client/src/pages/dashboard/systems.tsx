@@ -7,9 +7,7 @@ import {
   Users, 
   DollarSign,
   Calendar,
-  ArrowRight,
-  AlertTriangle,
-  RefreshCw
+  ArrowRight
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +18,7 @@ import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-ap
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
-
+  
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
       {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
@@ -83,7 +81,7 @@ function SystemCard({ system }: { system: any }) {
               <span className="ml-1 font-medium">{system.totalPools || 0}</span>
             </div>
           </div>
-
+          
           {system.fundingMechanisms && system.fundingMechanisms.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-1">
@@ -95,7 +93,7 @@ function SystemCard({ system }: { system: any }) {
               </div>
             </div>
           )}
-
+          
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
@@ -177,7 +175,7 @@ export default function GrantSystems() {
             <p className="text-xs text-gray-600 mt-1">Integrated platforms</p>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Live Integrations</CardTitle>
@@ -189,7 +187,7 @@ export default function GrantSystems() {
             <p className="text-xs text-gray-600 mt-1">Real-time API access</p>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Data Integrations</CardTitle>
@@ -203,11 +201,32 @@ export default function GrantSystems() {
         </Card>
       </div>
 
-      {/* All Systems */}
-      {systems && systems.length > 0 && (
+      {/* API Integrated Systems */}
+      {apiSystems.length > 0 && (
         <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-3 bg-green-500 rounded-full"></div>
+            <h2 className="text-xl font-semibold text-gray-900">Type 1: Live API Integrations</h2>
+            <Badge variant="secondary" className="text-xs">Real-time data</Badge>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {systems.map((system) => (
+            {apiSystems.map((system) => (
+              <SystemCard key={system.name} system={system} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Static Data Systems */}
+      {staticSystems.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
+            <h2 className="text-xl font-semibold text-gray-900">Type 2: Data Integrations</h2>
+            <Badge variant="secondary" className="text-xs">Static data files</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {staticSystems.map((system) => (
               <SystemCard key={system.name} system={system} />
             ))}
           </div>
@@ -231,21 +250,94 @@ export default function GrantSystems() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Error</h3>
+              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load systems</h3>
               <p className="text-gray-600 mb-4">
-                Unable to connect to the grant systems API. The OpenGrants API server may be unavailable.
+                There was an error fetching the grant systems data.
               </p>
-              <Button onClick={() => window.location.reload()} variant="outline">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+              >
+                Try Again
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      
+      {/* DAOIP-5 Value Proposition */}
+      <Card className="bg-gradient-to-r from-[#800020]/5 to-green-500/5 border-[#800020]/20">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Building2 className="h-5 w-5 text-[#800020] mr-2" />
+            DAOIP-5 Standardization Impact
+          </CardTitle>
+          <CardDescription>
+            How standardization enables automatic integration and comparison
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                Auto-Discovery
+              </h4>
+              <p className="text-sm text-gray-600">
+                New grant systems are automatically detected and added to the dashboard 
+                without manual configuration, thanks to DAOIP-5 compliance.
+              </p>
+              <div className="text-xs text-green-600 font-medium">
+                {systems?.filter(s => s.addedDate && new Date(s.addedDate).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000).length || 0} new systems this month
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-blue-500 rounded-full mr-2"></div>
+                Unified Analysis
+              </h4>
+              <p className="text-sm text-gray-600">
+                DAOIP-5 standardization enables meaningful comparison across diverse 
+                ecosystems with different funding mechanisms.
+              </p>
+              <div className="text-xs text-blue-600 font-medium">
+                {systems?.length || 0} systems comparable
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-purple-500 rounded-full mr-2"></div>
+                Compatibility Scoring
+              </h4>
+              <p className="text-sm text-gray-600">
+                Each system's DAOIP-5 compatibility is automatically assessed, 
+                ensuring data quality and integration reliability.
+              </p>
+              <div className="text-xs text-purple-600 font-medium">
+                Avg: {Math.round((systems?.reduce((sum, s) => sum + (s.compatibility || 0), 0) / (systems.length || 1)) || 0)}% compatible
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-start space-x-3">
+              <div className="h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                ✓
+              </div>
+              <div>
+                <h5 className="font-medium text-gray-900">Proven Value</h5>
+                <p className="text-sm text-gray-600 mt-1">
+                  By standardizing grant data with DAOIP-5, we can automatically integrate 
+                  new ecosystems and enable cross-system analysis that was previously impossible. 
+                  This dashboard proves that diverse grant ecosystems become comparable and 
+                  analyzable when following a common standard.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

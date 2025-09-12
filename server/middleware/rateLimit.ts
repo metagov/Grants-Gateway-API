@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { Request, Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "./auth";
 
 interface RateLimitStore {
@@ -11,18 +11,17 @@ interface RateLimitStore {
 // In-memory rate limit store (in production, use Redis)
 const rateLimitStore: RateLimitStore = {};
 
-export const rateLimitMiddleware: RequestHandler = (req, res, next) => {
-  const aReq = req as AuthenticatedRequest;
+export function rateLimitMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const now = Date.now();
   const windowMs = 60 * 1000; // 1 minute window
   
   // Determine rate limit based on authentication
   let limit = 20; // Default anonymous limit
-  let identifier = aReq.ip || 'anonymous';
+  let identifier = req.ip || 'anonymous';
   
-  if (aReq.user) {
-    limit = aReq.user.rateLimit || 100; // Default rate limit if undefined
-    identifier = `user_${aReq.user.id}`;
+  if (req.user) {
+    limit = req.user.rateLimit;
+    identifier = `user_${req.user.id}`;
   }
 
   // Clean up expired entries

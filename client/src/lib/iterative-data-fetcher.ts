@@ -23,11 +23,7 @@ const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 export class IterativeDataFetcher {
   private async fetchWithFallback(url: string): Promise<any> {
     try {
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
+      const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
@@ -59,11 +55,49 @@ export class IterativeDataFetcher {
     };
 
     try {
-      // For now, use fallback data to avoid CORS issues with external APIs
-      console.warn('Using sample applications data for octant to avoid CORS errors');
-      return this.getOctantFallbackData();
+      // Fetch all epochs from Octant API
+      const epochsData = await this.fetchWithFallback('/api/grant-systems/octant/pools');
+      
+      if (epochsData?.grantPools) {
+        result.pools = epochsData.grantPools;
+        result.systemMetrics.totalPools = result.pools.length;
+
+        // Fetch applications for each epoch iteratively
+        for (const pool of result.pools) {
+          const epochNum = pool.name?.match(/Epoch (\d+)/)?.[1] || pool.id;
+          console.log(`📊 Fetching Octant Epoch ${epochNum} data...`);
+          
+          const appsData = await this.fetchWithFallback(`/api/grant-systems/octant/pools/${pool.id}/applications`);
+          
+          if (appsData?.grantApplications) {
+            const epochApps = appsData.grantApplications;
+            result.applications.push(...epochApps);
+            
+            // Calculate metrics for this round
+            const roundFunding = epochApps.reduce((sum: number, app: any) => 
+              sum + parseFloat(app.fundsApprovedInUSD || '0'), 0
+            );
+            const approvedApps = epochApps.filter((app: any) => 
+              ['funded', 'approved'].includes(app.status?.toLowerCase())
+            );
+            
+            result.systemMetrics.fundingByRound.set(pool.name, roundFunding);
+            result.systemMetrics.applicationsByRound.set(pool.name, epochApps.length);
+            result.totalFunding += roundFunding;
+            
+            // Update pool with calculated data
+            pool.totalApplications = epochApps.length;
+            pool.totalFunding = roundFunding;
+            pool.approvalRate = epochApps.length > 0 ? (approvedApps.length / epochApps.length) * 100 : 0;
+          }
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
     } catch (error) {
       console.error('Error fetching Octant data:', error);
+      // Use fallback data
       return this.getOctantFallbackData();
     }
 
@@ -105,11 +139,46 @@ export class IterativeDataFetcher {
     };
 
     try {
-      // For now, use fallback data to avoid CORS issues with external APIs
-      console.warn('Using sample applications data for giveth to avoid CORS errors');
-      return this.getGivethFallbackData();
+      // Fetch all QF rounds from Giveth
+      const roundsData = await this.fetchWithFallback('/api/grant-systems/giveth/pools');
+      
+      if (roundsData?.grantPools) {
+        result.pools = roundsData.grantPools;
+        result.systemMetrics.totalPools = result.pools.length;
+
+        // Fetch projects for each round iteratively
+        for (const pool of result.pools) {
+          const roundName = pool.name || `Round ${pool.id}`;
+          console.log(`📊 Fetching Giveth ${roundName} data...`);
+          
+          const projectsData = await this.fetchWithFallback(`/api/grant-systems/giveth/pools/${pool.id}/applications`);
+          
+          if (projectsData?.grantApplications) {
+            const roundProjects = projectsData.grantApplications;
+            result.applications.push(...roundProjects);
+            
+            // Calculate metrics for this round
+            const roundFunding = roundProjects.reduce((sum: number, proj: any) => 
+              sum + parseFloat(proj.fundsApprovedInUSD || '0'), 0
+            );
+            
+            result.systemMetrics.fundingByRound.set(roundName, roundFunding);
+            result.systemMetrics.applicationsByRound.set(roundName, roundProjects.length);
+            result.totalFunding += roundFunding;
+            
+            // Update pool with calculated data
+            pool.totalApplications = roundProjects.length;
+            pool.totalFunding = roundFunding;
+            pool.approvalRate = 100; // Giveth is donation-based, all projects can receive funds
+          }
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
     } catch (error) {
       console.error('Error fetching Giveth data:', error);
+      // Use fallback data
       return this.getGivethFallbackData();
     }
 
