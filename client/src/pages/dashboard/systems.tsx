@@ -15,6 +15,24 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
 
+// Helper function to get system ID from display name
+const getSystemId = (systemName: string): string => {
+  const nameToIdMap: Record<string, string> = {
+    'octant': 'octant',
+    'giveth': 'giveth',
+    'stellar community fund': 'stellar',
+    'optimism retropgf': 'optimism',
+    'arbitrum foundation': 'arbitrumfoundation',
+    'celopg': 'celo-org', // Updated name
+    'clr fund': 'clrfund',
+    'dao drops': 'dao-drops-dorgtech',
+    'octant (golem)': 'octant-golemfoundation'
+  };
+  
+  const normalizedName = systemName.toLowerCase();
+  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, '-');
+};
+
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
@@ -24,7 +42,7 @@ function SystemCard({ system }: { system: any }) {
       {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
         <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">NEW</Badge>
       )}
-      <Link href={`/dashboard/systems/${system.name.toLowerCase()}`}>
+      <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
