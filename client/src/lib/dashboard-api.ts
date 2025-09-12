@@ -262,15 +262,33 @@ export const daoip5Api = {
                   }
                 }
                 
+                // For Stellar, all applications are "Awarded" since we only get awarded ones
+                const status = system === 'stellar' ? 'awarded' : (app.status || 'unknown');
+                
+                // Extract additional metadata from extensions
+                const extensions = app.extensions || {};
+                const category = extensions['org.stellar.communityfund.category'] || '';
+                const awardType = extensions['org.stellar.communityfund.awardType'] || '';
+                const teamMembers = extensions['stellar.teamMembers'] || '';
+                const website = extensions['stellar.urls']?.website || '';
+                const successCriteria = extensions['stellar.successCriteria'] || '';
+                
                 return {
                   id: app.id,
                   projectName: app.projectName || 'Unknown Project',
                   projectDescription: app.description,
                   system,
                   grantPoolId: app.grantPoolId,
-                  status: app.status || 'unknown',
+                  status,
                   fundsApprovedInUSD: fundsInUSD,
-                  createdAt: app.createdAt || new Date().toISOString()
+                  createdAt: app.createdAt || new Date().toISOString(),
+                  // Additional metadata from extensions
+                  category,
+                  awardType,
+                  teamMembers,
+                  website,
+                  successCriteria,
+                  extensions // Keep all extensions for detailed view
                 };
               });
               
