@@ -299,9 +299,6 @@ function GrantPoolCard({ pool, applications }: {
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const poolApplications = applications.filter(app => app.grantPoolId === pool.id);
-  const approvedApps = poolApplications.filter(app => 
-    app.status === 'funded' || app.status === 'approved'
-  );
   
   const totalFunding = poolApplications.reduce((sum, app) => {
     return sum + parseFloat(app.fundsApprovedInUSD || '0');
@@ -334,9 +331,6 @@ function GrantPoolCard({ pool, applications }: {
                 <div className="text-right">
                   <div className="text-sm font-medium text-gray-900">
                     {formatCurrency(totalFunding)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {approvedApps.length}/{poolApplications.length} approved
                   </div>
                 </div>
                 {isOpen ? (
@@ -371,15 +365,23 @@ function GrantPoolCard({ pool, applications }: {
                             <div className="font-medium text-gray-900">
                               {app.projectName || 'Unknown Project'}
                             </div>
-                            <div className="text-xs text-gray-500 truncate max-w-xs">
-                              {app.id}
-                            </div>
+                            {app.category && (
+                              <div className="text-xs text-gray-500">
+                                {app.category} {app.awardType && `• ${app.awardType}`}
+                              </div>
+                            )}
+                            {app.website && (
+                              <a href={app.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                View Website →
+                              </a>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge 
                             variant={
                               app.status === 'funded' ? 'default' :
+                              app.status === 'awarded' ? 'default' :
                               app.status === 'approved' ? 'secondary' :
                               app.status === 'rejected' ? 'destructive' :
                               'outline'
