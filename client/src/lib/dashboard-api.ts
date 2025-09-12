@@ -400,9 +400,14 @@ async function fetchSystemDataSystematically(systemId: string, source: string): 
   try {
     // Step 1: Fetch all pools first
     if (source === 'opengrants') {
-      const pools = await openGrantsApi.getPools(systemId);
-      console.log(`Fetched ${pools.length} pools for ${systemId}`);
+      const [pools, applications] = await Promise.all([
+        openGrantsApi.getPools(systemId),
+        openGrantsApi.getApplications(systemId)
+      ]);
       
+      console.log(`Fetched ${pools.length} pools and ${applications.length} applications for ${systemId}`);
+      
+      // Build pool map
       pools.forEach(pool => {
         poolsById.set(pool.id, {
           ...pool,
@@ -411,47 +416,31 @@ async function fetchSystemDataSystematically(systemId: string, source: string): 
         });
       });
       
-      // Step 2: Fetch applications for each pool (with concurrency limit)
-      const poolIds = Array.from(poolsById.keys());
-      const concurrencyLimit = 5;
-      
-      for (let i = 0; i < poolIds.length; i += concurrencyLimit) {
-        const batch = poolIds.slice(i, i + concurrencyLimit);
-        const batchResults = await Promise.allSettled(
-          batch.map(async poolId => {
-            try {
-              // Fetch applications for this specific pool
-              const response = await fetch(`/api/proxy/opengrants/grantApplications?system=${systemId}&poolId=${poolId}`);
-              if (response.ok) {
-                const data = await response.json();
-                const applications = data.grantApplications || [];
-                console.log(`Fetched ${applications.length} applications for pool ${poolId}`);
-                
-                const poolApps = applications.map((app: any) => ({
-                  ...app,
-                  grantPoolId: poolId,
-                  fundsApprovedInUSD: parseFloat(app.fundsApprovedInUSD || '0')
-                }));
-                
-                appsByPoolId.set(poolId, poolApps);
-                
-                // Update pool stats
-                const pool = poolsById.get(poolId);
-                if (pool) {
-                  pool.totalApplications = poolApps.length;
-                  pool.totalFunding = poolApps.reduce((sum: number, app: any) => 
-                    sum + (app.fundsApprovedInUSD || 0), 0);
-                }
-                
-                return poolApps;
-              }
-            } catch (error) {
-              console.error(`Error fetching applications for pool ${poolId}:`, error);
-            }
-            return [];
-          })
-        );
-      }
+      // Group applications by pool
+      applications.forEach((app: any) => {
+        const poolId = app.grantPoolId || app.poolId || 'unknown';
+        
+        if (!appsByPoolId.has(poolId)) {
+          appsByPoolId.set(poolId, []);
+        }
+        
+        const normalizedApp = {
+          ...app,
+          grantPoolId: poolId,
+          fundsApprovedInUSD: typeof app.fundsApprovedInUSD === 'number' 
+            ? app.fundsApprovedInUSD 
+            : parseFloat(app.fundsApprovedInUSD || '0')
+        };
+        
+        appsByPoolId.get(poolId)!.push(normalizedApp);
+        
+        // Update pool stats
+        const pool = poolsById.get(poolId);
+        if (pool) {
+          pool.totalApplications = (pool.totalApplications || 0) + 1;
+          pool.totalFunding = (pool.totalFunding || 0) + normalizedApp.fundsApprovedInUSD;
+        }
+      });
     } else if (source === 'daoip5') {
       // For DAOIP-5: fetch pools and applications together
       const { pools, applications } = await daoip5Api.fetchDaoip5Data(systemId);
