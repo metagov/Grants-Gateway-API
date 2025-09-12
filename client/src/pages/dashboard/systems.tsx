@@ -92,7 +92,7 @@ function SystemCard({ system }: { system: any }) {
             </div>
             <div>
               <span className="text-gray-500">Approval:</span>
-              <span className="ml-1 font-medium">{(system.approvalRate || 0).toFixed(1)}%</span>
+              <span className="ml-1 font-medium text-gray-400 italic">Coming soon</span>
             </div>
             <div>
               <span className="text-gray-500">Rounds:</span>

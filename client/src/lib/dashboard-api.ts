@@ -427,8 +427,8 @@ export const dashboardApi = {
               return sum + funding;
             }, 0);
             
-            const approvalRate = applications.length > 0 ? 
-              (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
+            // Approval rate calculation disabled - coming soon
+            const approvalRate = undefined;
 
             return {
               name: source.name,
@@ -452,7 +452,7 @@ export const dashboardApi = {
               totalFunding: 0,
               totalApplications: 0,
               totalPools: 0,
-              approvalRate: 0,
+              approvalRate: undefined, // Coming soon
               compatibility: source.standardization.compatibility,
               fundingMechanisms: source.features.fundingMechanism,
               description: source.description,
@@ -475,8 +475,8 @@ export const dashboardApi = {
                 return sum + funding;
               }, 0);
               
-              const approvalRate = applications.length > 0 ? 
-                (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
+              // Approval rate calculation disabled - coming soon
+              const approvalRate = undefined;
 
               return {
                 name: source.name,
