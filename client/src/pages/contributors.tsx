@@ -146,9 +146,9 @@ export default function ContributorsPage() {
           {/* Celo */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
-              <img src={celoLogo} alt="Celo" className="w-12 h-12" />
+              <img src={celoLogo} alt="CeloPG" className="w-12 h-12" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Celo</h3>
+            <h3 className="text-lg font-semibold mb-2">CeloPG</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
               Mobile-first blockchain platform focused on financial inclusion
             </p>

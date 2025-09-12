@@ -545,8 +545,8 @@ class DataSourceRegistry {
         addedDate: '2024-02-01'
       },
       'celo-org': {
-        name: 'Celo Foundation',
-        description: 'Celo Foundation grants for financial inclusion',
+        name: 'CeloPG',
+        description: 'CeloPG grants for financial inclusion',
         compatibility: 85,
         mechanisms: ['Direct Grants'],
         addedDate: '2024-03-15'

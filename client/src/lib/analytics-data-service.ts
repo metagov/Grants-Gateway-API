@@ -437,7 +437,7 @@ class AnalyticsDataService {
       },
       'celo-org': {
         pools: [
-          { id: 'cgp-100', name: 'Celo Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
+          { id: 'cgp-100', name: 'CeloPG Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
         ],
         applications: [
           { id: 'celo-1', projectName: 'Mobile Wallet', poolId: 'cgp-100', status: 'funded', fundingUSD: 50000, createdAt: '2024-01-12' },

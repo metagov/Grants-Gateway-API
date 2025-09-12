@@ -193,7 +193,7 @@ export default function OverviewPage() {
                   <TooltipTrigger asChild>
                     <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
                       <img src={celoLogo} alt="Celo" className="w-6 h-6 mr-2" />
-                      <span className="text-sm font-medium">Celo</span>
+                      <span className="text-sm font-medium">CeloPG</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
