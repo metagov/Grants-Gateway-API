@@ -400,10 +400,15 @@ export const dashboardApi = {
       // Get all registered data sources from the registry
       const allSources = dataSourceRegistry.getActiveSources();
       
+      // Focus on only the 3 requested systems: Giveth, Octant, and Stellar
+      const requestedSources = allSources.filter(s => 
+        s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
+      );
+      
       // Separate by source type for appropriate API handling
-      const openGrantsSources = allSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = allSources.filter(s => s.source === 'daoip5');
-      const customSources = allSources.filter(s => s.source === 'custom');
+      const openGrantsSources = requestedSources.filter(s => s.source === 'opengrants');
+      const daoip5Sources = requestedSources.filter(s => s.source === 'daoip5');
+      const customSources = requestedSources.filter(s => s.source === 'custom');
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
@@ -415,7 +420,11 @@ export const dashboardApi = {
             ]);
             
             const totalFunding = applications.reduce((sum, app) => {
-              return sum + parseFloat(app.fundsApprovedInUSD || '0');
+              // Handle both string and number values
+              const funding = typeof app.fundsApprovedInUSD === 'number' 
+                ? app.fundsApprovedInUSD 
+                : parseFloat(app.fundsApprovedInUSD || '0');
+              return sum + funding;
             }, 0);
             
             const approvalRate = applications.length > 0 ? 
@@ -459,7 +468,11 @@ export const dashboardApi = {
             if (pools.length > 0 || applications.length > 0) {
               // Calculate real metrics from fetched data
               const totalFunding = applications.reduce((sum, app) => {
-                return sum + parseFloat(app.fundsApprovedInUSD || '0');
+                // Handle both string and number values from DAOIP-5 data
+                const funding = typeof app.fundsApprovedInUSD === 'number' 
+                  ? app.fundsApprovedInUSD 
+                  : parseFloat(app.fundsApprovedInUSD || '0');
+                return sum + funding;
               }, 0);
               
               const approvalRate = applications.length > 0 ? 
