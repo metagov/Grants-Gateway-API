@@ -13,7 +13,13 @@
     "db:migrate": "drizzle-kit migrate",
     "install:clean": "rm -rf node_modules pnpm-lock.yaml && pnpm install",
     "test:api": "curl http://localhost:5000/api/health",
-    "test:accurate": "curl http://localhost:5000/api/v1/analytics/ecosystem-stats"
+    "test:accurate": "curl http://localhost:5000/api/v1/analytics/ecosystem-stats",
+    "render-build": "pnpm install --frozen-lockfile && pnpm run validate:env && pnpm run db:push && pnpm run build",
+    "render-start": "pnpm run validate:env && NODE_ENV=production node dist/index.js",
+    "docker:build": "docker build -t grants-gateway-api .",
+    "docker:run": "docker run -p 10000:10000 --env-file .env grants-gateway-api",
+    "validate:env": "node scripts/validate-env.js",
+    "deploy:render": "./deploy-to-render.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -112,5 +118,9 @@
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }

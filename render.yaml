@@ -1,0 +1,98 @@
+# Render deployment configuration for OpenGrants Gateway API
+# This file enables Infrastructure as Code deployment on Render
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: grants-gateway-db
+    env: postgresql
+    plan: free  # Change to 'starter' for production
+    databaseName: grants_gateway
+    user: grants_user
+    region: oregon  # Change to your preferred region
+
+  # Web Service
+  - type: web
+    name: grants-gateway-api
+    env: node
+    plan: free  # Change to 'starter' for production
+    region: oregon  # Should match database region
+    buildCommand: |
+      # Install pnpm if not available
+      npm install -g pnpm
+      # Install dependencies
+      pnpm install --frozen-lockfile
+      # Push database schema (only if DATABASE_URL is available)
+      if [ ! -z "$DATABASE_URL" ]; then
+        pnpm run db:push
+      fi
+      # Build the application
+      pnpm run build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    
+    # Environment Variables
+    envVars:
+      # Node Configuration
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      
+      # Database Connection (automatically set by Render)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: grants-gateway-db
+          property: connectionString
+      
+      # Session Secret (generate a secure random string)
+      - key: SESSION_SECRET
+        generateValue: true
+      
+      # API Configuration
+      - key: DEFAULT_RATE_LIMIT
+        value: 1000
+      - key: CACHE_TTL_MINUTES
+        value: 15
+      - key: BACKGROUND_REFRESH_INTERVAL_HOURS
+        value: 6
+      
+      # Feature Flags
+      - key: ENABLE_HISTORICAL_PRICES
+        value: true
+      - key: ENABLE_DATA_VALIDATION
+        value: true
+      - key: ENABLE_CORS_PROXY
+        value: true
+      
+      # External API URLs (defaults)
+      - key: OPENGRANTS_API_URL
+        value: https://grants.daostar.org/api/v1
+      - key: DAOIP5_API_URL
+        value: https://daoip5.daostar.org
+      
+      # Performance Settings
+      - key: ECOSYSTEM_STATS_REFRESH_MINUTES
+        value: 5
+      - key: SYSTEM_DATA_REFRESH_MINUTES
+        value: 15
+      - key: PRICE_DATA_REFRESH_MINUTES
+        value: 60
+      
+      # Logging
+      - key: LOG_LEVEL
+        value: info
+      - key: DEBUG_API_CALLS
+        value: false
+
+# Optional: Static Site for documentation
+  - type: static
+    name: grants-gateway-docs
+    buildCommand: |
+      # Build documentation site (if you have one)
+      echo "Documentation site placeholder"
+    publishPath: docs
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

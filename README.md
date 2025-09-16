@@ -266,6 +266,45 @@ External APIs → Server Proxy → Data Validation → Analytics Engine → Dash
 - [Field Mappings](./docs/field-mappings.md)
 - [Systematic Data Fetching Plan](./docs/systematic-data-fetching-plan.md)
 
+## 🌐 Deployment
+
+### Deploy to Render (Recommended)
+
+**Quick Deploy**:
+```bash
+# Run the deployment helper script
+./deploy-to-render.sh
+```
+
+**Manual Steps**:
+1. Push your code to GitHub
+2. Create PostgreSQL database on Render
+3. Create web service connected to your GitHub repo
+4. Configure environment variables
+5. Deploy!
+
+**Detailed Instructions**: [Render Deployment Guide](./docs/render-deployment.md)
+
+### Deploy with Docker
+
+```bash
+# Build Docker image
+pnpm run docker:build
+
+# Run locally with Docker
+pnpm run docker:run
+
+# Deploy to any Docker-compatible platform
+```
+
+### Other Platforms
+
+The app can be deployed to any Node.js hosting platform:
+- **Vercel**: Use `vercel` CLI
+- **Railway**: Connect GitHub repository
+- **Heroku**: Use `git push heroku main`
+- **DigitalOcean App Platform**: Connect GitHub repository
+
 ## 🤝 Contributing
 
 1. Fork the repository
