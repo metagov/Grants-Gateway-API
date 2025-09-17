@@ -125,6 +125,14 @@ class IterativeCacheService {
             if (Array.isArray(data)) {
               // Array of applications
               applications.push(...data.filter(item => item.type === 'GrantApplication' || !item.type));
+            } else if (data.grantPools && Array.isArray(data.grantPools)) {
+              // DAOIP5 structure with grantPools array
+              data.grantPools.forEach((pool: any) => {
+                poolData.push(pool);
+                if (pool.applications && Array.isArray(pool.applications)) {
+                  applications.push(...pool.applications);
+                }
+              });
             } else if (data.type === 'GrantPool') {
               // Pool object
               poolData.push(data);
