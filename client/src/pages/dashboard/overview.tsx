@@ -172,9 +172,9 @@ export default function DashboardOverview() {
       console.log('✅ Using accurate ecosystem stats from API');
       return {
         totalFunding: accurateStats.totalFunding || 0,
-        totalGrantRounds: accurateStats.totalGrantRounds || 0,
+        totalGrantRounds: accurateStats.totalPools || 0, // Backend provides totalPools
         totalSystems: accurateStats.totalSystems || 0,
-        totalProjects: accurateStats.totalProjects || 0,
+        totalProjects: accurateStats.totalApplications || 0, // Projects are applications
         totalApplications: accurateStats.totalApplications || 0
       };
     }
