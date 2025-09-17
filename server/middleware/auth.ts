@@ -186,42 +186,52 @@ export const requireAuth: RequestHandler = (req, res, next) => {
 }
 
 // Secure authentication middleware for Gateway API
-// Allows ONLY exact same-origin internal requests, requires bearer tokens for all external access
+// Allows ONLY legitimate same-origin AJAX requests, requires bearer tokens for all other access
 export const requireAuthForExternalAccess: RequestHandler = (req, res, next) => {
   const aReq = req as AuthenticatedRequest;
-  const origin = req.get('Origin') || req.get('Referer');
+  const origin = req.get('Origin');  // SECURITY FIX: Only use Origin header, not Referer
   const host = req.get('Host');
+  const requestedWith = req.get('X-Requested-With');
   
   // Default to external (secure by default)
   let isInternalRequest = false;
   
   try {
+    // SECURITY FIX: Require proper Origin header AND AJAX-style request
+    // This prevents direct browser navigation from being treated as internal
     if (origin && host) {
       // Parse origins safely
       const originUrl = new URL(origin);
       const hostParts = host.split(':')[0]; // Remove port for comparison
       
-      // SECURITY: Only allow exact same-origin requests as internal
-      // This prevents subdomain takeover attacks and ensures tight security
-      isInternalRequest = (
+      // Check if this is a same-origin request
+      const isSameOrigin = (
         originUrl.hostname === hostParts ||                    // Exact hostname match
         (originUrl.hostname === 'localhost' && host.includes('localhost')) ||  // Local development
         (originUrl.hostname === '127.0.0.1' && host.includes('127.0.0.1'))    // Local IP
       );
       
-      // Additional check: must use same protocol (http/https)
+      // Additional protocol security check
       const isSecureOrigin = originUrl.protocol === 'https:';
       const isSecureHost = req.secure || req.get('X-Forwarded-Proto') === 'https';
       
       // In production, enforce HTTPS matching
-      if (process.env.NODE_ENV === 'production' && isSecureOrigin !== isSecureHost) {
-        isInternalRequest = false;
-      }
+      const protocolMatches = process.env.NODE_ENV !== 'production' || (isSecureOrigin === isSecureHost);
+      
+      // SECURITY: Require BOTH same-origin AND proper AJAX request characteristics
+      // This prevents direct browser navigation from bypassing authentication
+      const isAjaxRequest = (
+        requestedWith === 'XMLHttpRequest' ||  // Standard AJAX header
+        (req.get('Content-Type')?.includes('application/json') || false) ||  // JSON content type
+        (req.get('Accept')?.includes('application/json') || false)  // Accepts JSON response
+      );
+      
+      // Only allow as internal if ALL conditions are met
+      isInternalRequest = isSameOrigin && protocolMatches && isAjaxRequest;
     }
     
-    // SECURITY FIX: No more dangerous User-Agent heuristics
-    // Missing Origin header is always treated as external for security
-    // This prevents auth bypass attacks
+    // SECURITY: Missing Origin header is ALWAYS external (no Referer fallback)
+    // Direct browser navigation typically lacks proper Origin header for API requests
     
   } catch (error) {
     // If URL parsing fails, treat as external (secure by default)
