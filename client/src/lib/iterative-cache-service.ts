@@ -96,8 +96,18 @@ class IterativeCacheService {
       const daoip5Api = createDaoip5Api();
       
       try {
-        poolFiles = await daoip5Api.getSystemPools(systemId);
-        console.log(`Found ${poolFiles.length} pools for ${systemId}`);
+        const allPoolFiles = await daoip5Api.getSystemPools(systemId);
+        
+        // Filter out SCF 36 for Stellar due to incomplete data
+        poolFiles = allPoolFiles.filter(file => {
+          if (systemId === 'stellar' && file.includes('scf_36')) {
+            console.log(`⚠️ Excluding ${file} from ${systemId} due to incomplete data`);
+            return false;
+          }
+          return true;
+        });
+        
+        console.log(`Found ${poolFiles.length} pools for ${systemId} (filtered ${allPoolFiles.length - poolFiles.length} incomplete pools)`);
       } catch (error) {
         console.error(`Failed to get pool list for ${systemId}:`, error);
         this.setFetchError(systemId, 'Failed to get pool list');
