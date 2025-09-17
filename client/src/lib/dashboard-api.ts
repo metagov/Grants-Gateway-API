@@ -199,39 +199,18 @@ export const dashboardApi = {
       // Get all registered data sources from the registry
       const allSources = dataSourceRegistry.getActiveSources();
       
+      // Filter out Octant and Giveth for dashboard-only display (keep them in Gateway API)
+      const filteredSources = allSources.filter(s => s.id !== 'octant' && s.id !== 'giveth');
+      
       // Separate by source type for appropriate API handling
-      const openGrantsSources = allSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = allSources.filter(s => s.source === 'daoip5');
-      const customSources = allSources.filter(s => s.source === 'custom');
+      const openGrantsSources = filteredSources.filter(s => s.source === 'opengrants');
+      const daoip5Sources = filteredSources.filter(s => s.source === 'daoip5');
+      const customSources = filteredSources.filter(s => s.source === 'custom');
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
         ...openGrantsSources.map(async (source) => {
-          // For now, return system info with fallback data to avoid API failures
-          // TODO: Re-enable API calls once CORS is resolved
-          const hasRealData = source.id === 'octant' || source.id === 'giveth';
-          
-          if (hasRealData) {
-            // Use fallback data for main systems to ensure dashboard works
-            const fallbackData = source.id === 'octant' 
-              ? { totalFunding: 887437, totalApplications: 81, totalPools: 3 }
-              : { totalFunding: 1650000, totalApplications: 317, totalPools: 3 };
-              
-            return {
-              name: source.name,
-              type: source.type,
-              source: source.source,
-              totalFunding: fallbackData.totalFunding,
-              totalApplications: fallbackData.totalApplications,
-              totalPools: fallbackData.totalPools,
-              approvalRate: 100, // Both systems have high approval rates
-              compatibility: source.standardization.compatibility,
-              fundingMechanisms: source.features.fundingMechanism,
-              description: source.description,
-              addedDate: source.metadata.addedDate
-            };
-          }
-
+          // OpenGrants sources (excluding octant/giveth which are now filtered out)
           return {
             name: source.name,
             type: source.type,
