@@ -40,7 +40,7 @@ export default function OverviewPage() {
       <div className="bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-2xl p-6 md:p-8">
         <div className="max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">OpenGrants Gateway API</h1>
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-lg md:text-xl text-gray-600 mb-6">
             A unified interface for accessing grant data across Ethereum Ecosystem using the DAOIP-5 metadata standard.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -135,7 +135,7 @@ export default function OverviewPage() {
           <div className="space-y-8">
             {/* Type 1: API Integration */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-green-600 dark:text-green-400 flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-green-600 flex items-center">
                 <Circle className="h-4 w-4 inline mr-2 fill-green-500" />
                 Type 1: API Integration
                 <Tooltip>
@@ -148,11 +148,11 @@ export default function OverviewPage() {
                 </Tooltip>
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                <div className="flex items-center p-3 bg-green-50 bg-green-900/20 rounded-lg hover:bg-green-100 hover:bg-green-900/30 transition-colors">
                   <img src={octantLogo} alt="Octant" className="w-8 h-8 mr-3" />
                   <span className="font-medium">Octant</span>
                 </div>
-                <div className="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+                <div className="flex items-center p-3 bg-green-50 bg-green-900/20 rounded-lg hover:bg-green-100 hover:bg-green-900/30 transition-colors">
                   <img src={givethLogo} alt="Giveth" className="w-8 h-8 mr-3" />
                   <span className="font-medium">Giveth</span>
                 </div>
@@ -161,7 +161,7 @@ export default function OverviewPage() {
 
             {/* Type 2: Data Integration */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-blue-600 dark:text-blue-400 flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-blue-600 text-blue-400 flex items-center">
                 <Circle className="h-4 w-4 inline mr-2 fill-blue-500" />
                 Type 2: Data Integration
                 <Tooltip>
@@ -173,13 +173,13 @@ export default function OverviewPage() {
                   </TooltipContent>
                 </Tooltip>
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className="text-sm text-gray-600 text-gray-400 mb-3">
                 Static data files available at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-blue-50 bg-blue-900/20 rounded-lg hover:bg-blue-100 hover:bg-blue-900/30 transition-colors cursor-help">
                       <img src={stellarLogo} alt="Stellar" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">Stellar</span>
                     </div>
@@ -191,7 +191,7 @@ export default function OverviewPage() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-blue-50 bg-blue-900/20 rounded-lg hover:bg-blue-100 hover:bg-blue-900/30 transition-colors cursor-help">
                       <img src={celoLogo} alt="Celo" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">CeloPG</span>
                     </div>
@@ -203,7 +203,7 @@ export default function OverviewPage() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-blue-50 bg-blue-900/20 rounded-lg hover:bg-blue-100 hover:bg-blue-900/30 transition-colors cursor-help">
                       <img src={optimismLogo} alt="Optimism" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">Optimism</span>
                     </div>
@@ -215,7 +215,7 @@ export default function OverviewPage() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-blue-50 bg-blue-900/20 rounded-lg hover:bg-blue-100 hover:bg-blue-900/30 transition-colors cursor-help">
                       <img src={arbitrumLogo} alt="Arbitrum" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">Arbitrum</span>
                     </div>
@@ -229,7 +229,7 @@ export default function OverviewPage() {
 
             {/* Type 3: Endpoint Integration */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-purple-600 dark:text-purple-400 flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-purple-600 text-purple-400 flex items-center">
                 <Circle className="h-4 w-4 inline mr-2 fill-purple-500" />
                 Type 3: Endpoint Integration
                 <Tooltip>
@@ -237,14 +237,14 @@ export default function OverviewPage() {
                     <HelpCircle className="h-4 w-4 ml-2 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Grant systems that provide their own DAOIP-5 compliant API endpoint. Questbook offers direct access at <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">https://api.questbook.app/daoip-5</code></p>
+                    <p>Grant systems that provide their own DAOIP-5 compliant API endpoint. Questbook offers direct access at <code className="text-xs bg-gray-100 bg-gray-800 px-1 rounded">https://api.questbook.app/daoip-5</code></p>
                   </TooltipContent>
                 </Tooltip>
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <p className="text-sm text-gray-600 text-gray-400 mb-3">
                 Questbook Data available at <a href="https://api.questbook.app/daoip-5" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">api.questbook.app/daoip-5</a>
               </p>
-              <div className="flex items-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+              <div className="flex items-center p-3 bg-purple-50 bg-purple-900/20 rounded-lg hover:bg-purple-100 hover:bg-purple-900/30 transition-colors">
                 <img src={questbookLogo} alt="Questbook" className="w-8 h-8 mr-3" />
                 <span className="font-medium">Questbook</span>
               </div>
@@ -252,7 +252,7 @@ export default function OverviewPage() {
 
             {/* Infrastructure Providers */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-amber-600 dark:text-amber-400 flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-amber-600 text-amber-400 flex items-center">
                 <Circle className="h-4 w-4 inline mr-2 fill-amber-500" />
                 Infrastructure Providers
                 <Tooltip>
@@ -267,7 +267,7 @@ export default function OverviewPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-amber-50 bg-amber-900/20 rounded-lg hover:bg-amber-100 hover:bg-amber-900/30 transition-colors cursor-help">
                       <img src={karmaGapLogo} alt="KARMA GAP" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">Karma GAP</span>
                     </div>
@@ -278,7 +278,7 @@ export default function OverviewPage() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-help">
+                    <div className="flex items-center p-3 bg-amber-50 bg-amber-900/20 rounded-lg hover:bg-amber-100 hover:bg-amber-900/30 transition-colors cursor-help">
                       <img src={osoLogo} alt="OSO" className="w-6 h-6 mr-2" />
                       <span className="text-sm font-medium">OSO</span>
                     </div>
@@ -303,14 +303,14 @@ export default function OverviewPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4">DAOIP-5 Entity Types</h3>
               <div className="space-y-3">
-                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
                   <Building className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Systems</div>
                     <div className="text-sm text-gray-500">Organizations managing grants</div>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
                   <Layers className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Pools</div>
@@ -318,7 +318,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-100 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
                   <FileText className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Applications</div>
@@ -327,7 +327,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 bg-gray-900 rounded-lg">
                   <Target className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Projects</div>
@@ -365,7 +365,7 @@ export default function OverviewPage() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold mb-3">Integration Guide</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+              <p className="text-gray-600 text-gray-300 text-sm mb-4">
                 Step-by-step guide to integrate new grant systems into the API gateway.
               </p>
               <div className="space-y-3">
@@ -399,7 +399,7 @@ export default function OverviewPage() {
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center p-3 bg-gray-50 bg-slate-900 rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
                 >
                   <ExternalLink className="h-5 w-5 text-primary mr-3" />
                   <div>
@@ -411,7 +411,7 @@ export default function OverviewPage() {
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/x-daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-gray-50 dark:bg-slate-900 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center p-3 bg-gray-50 bg-slate-900 rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
                 >
                   <GitBranch className="h-5 w-5 text-primary mr-3" />
                   <div>

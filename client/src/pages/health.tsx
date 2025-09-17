@@ -80,9 +80,9 @@ export default function HealthPage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      healthy: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      degraded: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      down: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      healthy: "bg-green-100 text-green-800",
+      degraded: "bg-yellow-100 text-yellow-800",
+      down: "bg-red-100 text-red-800"
     };
     
     return (
@@ -114,7 +114,7 @@ export default function HealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
+              <p className="text-gray-600 mb-4">
                 Unable to fetch system health status. The monitoring system may be down.
               </p>
               <Button onClick={() => refetch()} className="mr-2">
@@ -129,10 +129,10 @@ export default function HealthPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 shadow-lg border-r border-gray-200 dark:border-slate-700 transform transition-transform duration-200 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-slate-700">
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200 transform transition-transform duration-200 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Layers className="h-5 w-5 text-white" />
@@ -185,7 +185,7 @@ export default function HealthPage() {
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
         {/* Top Bar */}
-        <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700">
+        <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             <div className="flex items-center">
               <Button
@@ -207,7 +207,7 @@ export default function HealthPage() {
             {/* Controls */}
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
+                <p className="text-sm md:text-base text-gray-600">
                   Real-time status of grant system integrations and API components
                 </p>
               </div>
@@ -250,19 +250,19 @@ export default function HealthPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 md:p-4 bg-gray-50 bg-slate-900 rounded-lg">
                     <div className="text-xl md:text-2xl font-bold text-green-600">{healthData.summary.healthyAdapters}</div>
                     <div className="text-xs md:text-sm text-gray-500">Healthy</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 md:p-4 bg-gray-50 bg-slate-900 rounded-lg">
                     <div className="text-xl md:text-2xl font-bold text-yellow-600">{healthData.summary.degradedAdapters}</div>
                     <div className="text-xs md:text-sm text-gray-500">Degraded</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 md:p-4 bg-gray-50 bg-slate-900 rounded-lg">
                     <div className="text-xl md:text-2xl font-bold text-red-600">{healthData.summary.downAdapters}</div>
                     <div className="text-xs md:text-sm text-gray-500">Down</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 bg-gray-50 dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 md:p-4 bg-gray-50 bg-slate-900 rounded-lg">
                     <div className="text-xl md:text-2xl font-bold text-blue-600">{healthData.summary.totalAdapters}</div>
                     <div className="text-xs md:text-sm text-gray-500">Total</div>
                   </div>
@@ -322,9 +322,9 @@ export default function HealthPage() {
                     </div>
 
                     {adapter.error && (
-                      <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <div className="text-xs md:text-sm text-red-600 dark:text-red-400 font-medium">Error:</div>
-                        <div className="text-xs md:text-sm text-red-500 dark:text-red-300 break-words">{adapter.error}</div>
+                      <div className="p-3 bg-red-50 bg-red-900/20 rounded-lg">
+                        <div className="text-xs md:text-sm text-red-600 text-red-400 font-medium">Error:</div>
+                        <div className="text-xs md:text-sm text-red-500 text-red-300 break-words">{adapter.error}</div>
                       </div>
                     )}
 
@@ -365,7 +365,7 @@ export default function HealthPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
                     <h3 className="text-sm md:text-base font-semibold">Type 1: API Integrations</h3>
-                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-xs md:text-sm text-gray-600 text-gray-300">
                       These adapters fetch data from custom APIs and transform it to DAOIP-5 format, providing unified access through our API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
@@ -382,7 +382,7 @@ export default function HealthPage() {
 
                   <div className="space-y-3">
                       <h3 className="text-sm md:text-base font-semibold">Type 2: Data Integration</h3>
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-xs md:text-sm text-gray-600 text-gray-300">
                         Grants Systems who provide grant data files in CSV/JSON which are then translated to DAOIP-5, this data can be accesed via daoip5.daostar.org endpoint:
                       </p>
                       <ul className="text-xs md:text-sm space-y-1">
@@ -398,7 +398,7 @@ export default function HealthPage() {
                     </div>
                   <div className="space-y-3">
                     <h3 className="text-sm md:text-base font-semibold">Type 3: Endpoint Integrations</h3>
-                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-xs md:text-sm text-gray-600 text-gray-300">
                       These systems provide DAOIP-5 compliant endpoints. We monitor their connectivity but don't integrate them into our unified API:
                     </p>
                     <ul className="text-xs md:text-sm space-y-1">
@@ -419,7 +419,7 @@ export default function HealthPage() {
             <CardContent className="py-12">
               <div className="text-center">
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                <p className="text-gray-600 dark:text-gray-300">Loading health status...</p>
+                <p className="text-gray-600 text-gray-300">Loading health status...</p>
               </div>
             </CardContent>
           </Card>

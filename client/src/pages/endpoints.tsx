@@ -30,12 +30,12 @@ export default function EndpointsPage() {
     const isCopied = copiedStates[id];
     
     return (
-      <div className="relative bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
+      <div className="relative bg-gray-50 rounded-lg p-4">
         <Button
           variant="ghost"
           size="sm"
           className={`absolute top-2 right-2 h-8 w-8 p-0 transition-colors ${
-            isCopied ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
+            isCopied ? 'text-green-600' : 'text-gray-600'
           }`}
           onClick={() => copyToClipboard(text, id)}
         >
@@ -49,44 +49,44 @@ export default function EndpointsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-4">API Endpoints</h1>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-gray-600">
           Complete reference for all available API endpoints with DAOIP-5 compliant responses.
         </p>
       </div>
 
       {/* Pagination Documentation */}
-      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+      <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
-          <CardTitle className="text-blue-900 dark:text-blue-100">Pagination</CardTitle>
+          <CardTitle className="text-blue-900">Pagination</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
+          <p className="text-sm text-blue-800">
             All collection endpoints support pagination. Use these parameters to control response size and navigate through results.
           </p>
           
           <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h5 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Query Parameters</h5>
+              <h5 className="font-medium mb-3 text-blue-900">Query Parameters</h5>
               <div className="space-y-2 text-sm">
                 <div className="flex">
-                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">limit</code>
-                  <span className="text-blue-700 dark:text-blue-300">Number of items per page (default: 10, max: 100)</span>
+                  <code className="bg-blue-100 text-blue-800 px-2 py-1 rounded mr-3 min-w-[60px]">limit</code>
+                  <span className="text-blue-700">Number of items per page (default: 10, max: 100)</span>
                 </div>
                 <div className="flex">
-                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">offset</code>
-                  <span className="text-blue-700 dark:text-blue-300">Number of items to skip (default: 0)</span>
+                  <code className="bg-blue-100 text-blue-800 px-2 py-1 rounded mr-3 min-w-[60px]">offset</code>
+                  <span className="text-blue-700">Number of items to skip (default: 0)</span>
                 </div>
                 <div className="flex">
-                  <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mr-3 min-w-[60px]">page</code>
-                  <span className="text-blue-700 dark:text-blue-300">Page number (alternative to offset, starts at 1)</span>
+                  <code className="bg-blue-100 text-blue-800 px-2 py-1 rounded mr-3 min-w-[60px]">page</code>
+                  <span className="text-blue-700">Page number (alternative to offset, starts at 1)</span>
                 </div>
               </div>
             </div>
             
             <div>
-              <h5 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Response Format</h5>
-              <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
-                <pre className="text-xs text-blue-800 dark:text-blue-200 overflow-x-auto">
+              <h5 className="font-medium mb-3 text-blue-900 ">Response Format</h5>
+              <div className="bg-blue-100  rounded-lg p-3">
+                <pre className="text-xs text-blue-800  overflow-x-auto">
 {`{
   "@context": "http://www.daostar.org/schemas",
   "data": [...],
@@ -106,9 +106,9 @@ export default function EndpointsPage() {
           </div>
           
           <div className="mt-4">
-            <h5 className="font-medium mb-2 text-blue-900 dark:text-blue-100">Example Usage</h5>
-            <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
-              <code className="text-xs text-blue-800 dark:text-blue-200">
+            <h5 className="font-medium mb-2 text-blue-900 ">Example Usage</h5>
+            <div className="bg-blue-100  rounded-lg p-3">
+              <code className="text-xs text-blue-800 ">
                 GET /api/v1/grantSystems?limit=5&offset=10<br/>
                 GET /api/v1/pools?limit=20&page=2<br/>
                 GET /api/v1/grantApplications?system=octant&limit=50
@@ -129,16 +129,16 @@ export default function EndpointsPage() {
         <CardContent className="space-y-6">
           <div>
             <h4 className="font-semibold mb-2">GET /api/v1/grantSystems</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-600  mb-4">
               Retrieve all available grant systems following DAOIP-5 specification.
             </p>
             
             <div className="mb-4">
               <h5 className="font-medium mb-2">Query Parameters</h5>
               <div className="text-sm space-y-1">
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
               </div>
             </div>
             
@@ -313,18 +313,18 @@ print(systems)`}</code>
         <CardContent className="space-y-6">
           <div>
             <h4 className="font-semibold mb-2">GET /api/v1/grantPools</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-600  mb-4">
               Retrieve grant pools with optional filtering by system.
             </p>
             
             <div className="mb-4">
               <h5 className="font-medium mb-2">Query Parameters</h5>
               <div className="text-sm space-y-1">
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">isOpen</code> - Filter by pool status (true for open pools)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">isOpen</code> - Filter by pool status (true for open pools)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
               </div>
             </div>
 
@@ -517,19 +517,19 @@ print(pools)`}</code>
         <CardContent className="space-y-6">
           <div>
             <h4 className="font-semibold mb-2">GET /api/v1/grantApplications</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-gray-600  mb-4">
               Retrieve grant applications with filtering by pool and system.
             </p>
             
             <div className="mb-4">
               <h5 className="font-medium mb-2">Query Parameters</h5>
               <div className="text-sm space-y-1">
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">poolId</code> - Specific grant pool ID (defaults to latest)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">search</code> - Search applications by project name</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
-                <div><code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">poolId</code> - Specific grant pool ID (defaults to latest)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">system</code> - Filter by grant system (octant, giveth)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">search</code> - Search applications by project name</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">limit</code> - Items per page (default: 10, max: 100)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">offset</code> - Items to skip (default: 0)</div>
+                <div><code className="bg-gray-100  px-2 py-1 rounded">page</code> - Page number (alternative to offset)</div>
               </div>
             </div>
 
