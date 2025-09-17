@@ -167,9 +167,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply middleware only to legacy API routes - REQUIRE API tokens
-  app.use('/api/v1', authenticateApiKey, requireAuth);
+  // Apply authentication middleware (allows anonymous with rate limits)
+  app.use('/api/v1', authenticateApiKey);
   app.use('/api/v1', rateLimitMiddleware);
+  
+  // Only specific endpoints require auth (users can test grantApplications anonymously)
+  app.use('/api/v1/users', requireAuth);
+  app.use('/api/v1/admin', requireAuth);
 
   // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
   const adapters: { [key: string]: BaseAdapter } = {
