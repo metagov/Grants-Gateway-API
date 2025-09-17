@@ -334,13 +334,12 @@ export class GivethAdapter extends BaseAdapter {
         const isRoundOpen = selectedPool?.closeDate ? new Date(selectedPool.closeDate) > new Date() : selectedPool?.isOpen;
         
         if (isRoundOpen) {
-          console.log(`ℹ️ QF Round ${targetQfRoundId} is still open, keeping it as selected round even with 0 applications`);
-          // Don't fallback for open rounds - they might get applications later
-          return [];
+          console.log(`ℹ️ QF Round ${targetQfRoundId} is open but has 0 applications, trying fallback to rounds with data...`);
+          // Even for open rounds, if there are 0 applications, try fallback to show some data in query builder
         }
         
-        // Fallback: Only try other rounds if the current one is closed
-        console.log(`🔄 Round is closed, running fallback to find a round with applications...`);
+        // Fallback: Try other rounds regardless of open/closed status if no applications found
+        console.log(`🔄 No applications in current round, running fallback to find a round with applications...`);
         
         const activePools = allPools.filter(pool => pool.isOpen).sort((a, b) => {
           const dateA = a.closeDate ? new Date(a.closeDate) : new Date(0);
