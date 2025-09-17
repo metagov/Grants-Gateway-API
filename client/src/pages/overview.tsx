@@ -303,14 +303,14 @@ export default function OverviewPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4">DAOIP-5 Entity Types</h3>
               <div className="space-y-3">
-                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100 rounded-lg">
                   <Building className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Systems</div>
                     <div className="text-sm text-gray-500">Organizations managing grants</div>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100  rounded-lg">
                   <Layers className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Grant Pools</div>
@@ -318,7 +318,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-100 bg-slate-800 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100  rounded-lg">
                   <FileText className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Applications</div>
@@ -327,7 +327,7 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-100 bg-gray-900 rounded-lg">
+                <div className="flex items-center p-3 bg-gray-100  rounded-lg">
                   <Target className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <div className="font-medium">Projects</div>
@@ -399,7 +399,7 @@ export default function OverviewPage() {
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-gray-50 bg-slate-900 rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
+                  className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
                 >
                   <ExternalLink className="h-5 w-5 text-primary mr-3" />
                   <div>
@@ -411,7 +411,7 @@ export default function OverviewPage() {
                   href="https://github.com/metagov/daostar/blob/main/DAOIPs/x-daoip-5.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-gray-50 bg-slate-900 rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
+                  className="flex items-center p-3 bg-gray-50  rounded-lg hover:bg-gray-100 hover:bg-slate-800 transition-colors"
                 >
                   <GitBranch className="h-5 w-5 text-primary mr-3" />
                   <div>

@@ -163,7 +163,10 @@ export default function GrantSystems() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const apiSystems = systems?.filter(s => s.source === 'opengrants') || [];
+  const apiSystems = systems?.filter(s => 
+    s.source === 'opengrants' && 
+    !['giveth', 'octant'].includes(s.name.toLowerCase())
+  ) || [];
   const staticSystems = systems?.filter(s => s.source === 'daoip5') || [];
 
   return (
@@ -174,10 +177,6 @@ export default function GrantSystems() {
         <p className="text-gray-600">
           Automatically discovered and integrated grant systems with DAOIP-5 standardization
         </p>
-        <div className="flex items-center space-x-2 text-sm text-green-600">
-          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>Auto-discovery active - new systems are added automatically</span>
-        </div>
       </div>
 
       {/* Summary Stats */}
