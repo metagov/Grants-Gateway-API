@@ -226,9 +226,10 @@ class DataSourceRegistry {
       console.warn("Could not fetch from OpenGrants API, using existing sources");
     }
 
-    // Focus on only the 3 requested systems
+    // DAOIP-5 static data systems 
     const knownDaoip5Systems = [
-      'stellar'  // Only Stellar from DAOIP5, Octant and Giveth use OpenGrants API
+      'stellar',  // Stellar Community Fund
+      'celo-org'  // Celo Public Goods
     ];
 
     // Register known DAOIP5 systems without external fetch
@@ -463,11 +464,18 @@ class DataSourceRegistry {
   private getDaoip5SystemInfo(systemName: string): any {
     const systemInfoMap: Record<string, any> = {
       'stellar': {
-        name: 'Stellar',
+        name: 'Stellar Community Fund',
         description: 'Stellar Development Foundation community fund rounds',
         compatibility: 95,
         mechanisms: ['Direct Grants', 'Community Voting'],
         addedDate: '2024-02-01'
+      },
+      'celo-org': {
+        name: 'Celo Public Goods',
+        description: 'Celo Foundation public goods funding program',
+        compatibility: 90,
+        mechanisms: ['Direct Grants', 'Public Goods Funding'],
+        addedDate: '2024-12-01'
       }
     };
 

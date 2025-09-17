@@ -135,9 +135,8 @@ function ApplicationsVsFundingChart({ pools, applications }: {
 }) {
   const chartData = pools.map(pool => {
     const poolApps = applications.filter(app => app.grantPoolId === pool.id);
-    const totalFunding = poolApps.reduce((sum, app) => 
-      sum + parseFloat(app.fundsApprovedInUSD || '0'), 0
-    );
+    // Use pool's actual total funding to prevent overlapping/double-counting
+    const totalFunding = parseFloat(pool.totalGrantPoolSizeUSD || '0');
     const awardedCount = poolApps.filter(app => 
       app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
     ).length;
