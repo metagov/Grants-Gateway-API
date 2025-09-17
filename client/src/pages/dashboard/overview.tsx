@@ -236,7 +236,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatsCard
           title="Total Funding"
           value={stats ? formatCurrency(stats.totalFunding) : "Loading..."}
@@ -264,6 +264,13 @@ export default function DashboardOverview() {
           description="Total grant applications"
           icon={Users}
           loading={statsLoading}
+        />
+        <StatsCard
+          title="Average Approval Rate"
+          value="Coming soon"
+          description="Cross-system approval metrics"
+          icon={Target}
+          loading={false}
         />
       </div>
 
