@@ -8,8 +8,6 @@ import {
   Users, 
   TrendingUp,
   Calendar,
-  Award,
-  ExternalLink,
   ChevronDown,
   ChevronRight,
   BarChart3,
