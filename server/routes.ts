@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
-import { rateLimitMiddleware } from "./middleware/rateLimit";
+import { authenticateApiKey, requireAuth, requireAuthForExternalAccess, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
+import { rateLimitMiddleware, authEndpointRateLimit } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
 import { setupAuth, isAuthenticated } from "./replitAuth";
@@ -27,6 +27,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth middleware setup
   await setupAuth(app);
+
+  // Apply strict rate limiting to all auth endpoints to prevent abuse
+  app.use('/api/auth', authEndpointRateLimit);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -115,6 +118,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API key generation endpoint for external developers (simplified, no OAuth required)
+  // SECURITY: Protected by strict auth rate limiting middleware applied above
+  app.post('/api/auth/generate-key', async (req, res) => {
+    try {
+      const { email, name, orgName, intentOfUse } = req.body;
+      
+      // Enhanced validation for security
+      if (!email || !name || !orgName) {
+        return res.status(400).json({
+          error: "Missing required fields", 
+          message: "Email, name, and organization name are required"
+        });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          error: "Invalid email format",
+          message: "Please provide a valid email address"
+        });
+      }
+
+      // Check for existing user with same email to prevent duplicates
+      try {
+        const existingUsers = await storage.getAllApiUsers();
+        const existingUser = existingUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
+        if (existingUser) {
+          return res.status(409).json({
+            error: "Email already registered",
+            message: "An API key has already been generated for this email address"
+          });
+        }
+      } catch (error) {
+        console.warn('Could not check for existing users:', error);
+        // Continue with key generation if check fails
+      }
+
+      // Create API user (simplified for external developers)
+      const apiUser = await storage.createApiUser({
+        replitUserId: `external_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email,
+        name,
+        orgName,
+        intentOfUse: intentOfUse || 'External API access',
+        status: 'active'
+      });
+
+      // Generate API key
+      const rawApiKey = crypto.randomBytes(32).toString('hex');
+      const keyHash = crypto.createHash('sha256').update(rawApiKey).digest('hex');
+      const keyPreview = rawApiKey.slice(-4);
+
+      // Set expiration to 1 year from now for external users
+      const expiresAt = new Date();
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+      // Save API key
+      await storage.createApiKey({
+        userId: apiUser.id,
+        keyHash,
+        keyPreview,
+        name: `${orgName} API Key`,
+        expiresAt,
+        status: 'active'
+      });
+
+      // Log key generation for security audit
+      console.log(`[SECURITY AUDIT] New API key generated for ${email} from IP ${req.ip}`);
+
+      res.json({
+        message: "API key generated successfully",
+        apiKey: rawApiKey,
+        expiresAt: expiresAt.toISOString(),
+        usage: "Include this key in the Authorization header as: Bearer " + rawApiKey,
+        security: "This key provides access to external API endpoints. Keep it secure and do not share it.",
+        user: {
+          id: apiUser.id,
+          email: apiUser.email,
+          name: apiUser.name,
+          orgName: apiUser.orgName
+        }
+      });
+    } catch (error) {
+      console.error("API key generation error:", error);
+      res.status(500).json({
+        error: "Key generation failed",
+        message: "An error occurred generating your API key"
+      });
+    }
+  });
+
   // Admin routes - only accessible to admin users
   app.get('/api/admin/stats', adminRouteGuard, async (req: any, res) => {
     try {
@@ -171,7 +266,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/v1', authenticateApiKey);
   app.use('/api/v1', rateLimitMiddleware);
   
-  // Only specific endpoints require auth (users can test grantApplications anonymously)
+  // Smart authentication for Gateway API - allows internal query builder, requires bearer tokens for external access
+  app.use('/api/v1/grantSystems', requireAuthForExternalAccess);
+  app.use('/api/v1/grantPools', requireAuthForExternalAccess);
+  app.use('/api/v1/grantApplications', requireAuthForExternalAccess);
+  
+  // Always require auth for sensitive endpoints
   app.use('/api/v1/users', requireAuth);
   app.use('/api/v1/admin', requireAuth);
 

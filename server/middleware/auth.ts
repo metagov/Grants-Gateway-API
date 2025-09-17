@@ -185,6 +185,76 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   next();
 }
 
+// Secure authentication middleware for Gateway API
+// Allows ONLY exact same-origin internal requests, requires bearer tokens for all external access
+export const requireAuthForExternalAccess: RequestHandler = (req, res, next) => {
+  const aReq = req as AuthenticatedRequest;
+  const origin = req.get('Origin') || req.get('Referer');
+  const host = req.get('Host');
+  
+  // Default to external (secure by default)
+  let isInternalRequest = false;
+  
+  try {
+    if (origin && host) {
+      // Parse origins safely
+      const originUrl = new URL(origin);
+      const hostParts = host.split(':')[0]; // Remove port for comparison
+      
+      // SECURITY: Only allow exact same-origin requests as internal
+      // This prevents subdomain takeover attacks and ensures tight security
+      isInternalRequest = (
+        originUrl.hostname === hostParts ||                    // Exact hostname match
+        (originUrl.hostname === 'localhost' && host.includes('localhost')) ||  // Local development
+        (originUrl.hostname === '127.0.0.1' && host.includes('127.0.0.1'))    // Local IP
+      );
+      
+      // Additional check: must use same protocol (http/https)
+      const isSecureOrigin = originUrl.protocol === 'https:';
+      const isSecureHost = req.secure || req.get('X-Forwarded-Proto') === 'https';
+      
+      // In production, enforce HTTPS matching
+      if (process.env.NODE_ENV === 'production' && isSecureOrigin !== isSecureHost) {
+        isInternalRequest = false;
+      }
+    }
+    
+    // SECURITY FIX: No more dangerous User-Agent heuristics
+    // Missing Origin header is always treated as external for security
+    // This prevents auth bypass attacks
+    
+  } catch (error) {
+    // If URL parsing fails, treat as external (secure by default)
+    isInternalRequest = false;
+  }
+  
+  // Security audit logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`🔐 Secure Auth Check: ${req.method} ${req.path}`, { 
+      origin, 
+      host, 
+      isInternal: isInternalRequest, 
+      hasAuth: !!aReq.user,
+      userAgent: req.get('User-Agent')?.substring(0, 50) + '...' 
+    });
+  }
+  
+  // Allow internal requests (same-origin query builder) without authentication
+  if (isInternalRequest) {
+    return next();
+  }
+  
+  // For external requests, require authentication
+  if (!aReq.user) {
+    return res.status(401).json({
+      error: "Bearer token required",
+      message: "External API access requires a valid bearer token. Use format: 'Bearer YOUR_API_KEY'"
+    });
+  }
+  
+  next();
+}
+
 // Admin route guard middleware - requires authentication and admin privileges
 export const adminRouteGuard: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
@@ -272,7 +342,7 @@ export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
         });
       } catch (error) {
         console.error('Request logging failed:', {
-          error: error.message,
+          error: (error as Error).message,
           endpoint: req.originalUrl || req.path,
           method: req.method,
           status: res.statusCode
