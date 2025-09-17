@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
-  PieChart
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from "react";
 
 function StatsCard({ 
@@ -84,7 +83,7 @@ function FundingDistributionChart({ pools, applications }: {
       applications: poolApps.length,
       approved: poolApps.filter(app => app.status === 'funded' || app.status === 'approved').length
     };
-  }).filter(item => item.funding > 0).sort((a, b) => b.funding - a.funding);
+  }).filter(item => item.funding > 0);
 
   return (
     <Card>
@@ -130,86 +129,6 @@ function FundingDistributionChart({ pools, applications }: {
   );
 }
 
-// Application Status Chart
-function ApplicationStatusChart({ applications }: { applications: any[] }) {
-  const statusCounts = applications.reduce((acc, app) => {
-    const status = app.status || 'unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const chartData = Object.entries(statusCounts).map(([status, count]) => ({
-    name: status.charAt(0).toUpperCase() + status.slice(1),
-    value: count as number,
-    percentage: (((count as number) / applications.length) * 100).toFixed(1)
-  }));
-
-  const COLORS = {
-    'Funded': '#10B981',
-    'Approved': '#3B82F6', 
-    'Pending': '#F59E0B',
-    'Rejected': '#EF4444',
-    'Unknown': '#6B7280'
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <PieChart className="h-5 w-5 text-[#800020] mr-2" />
-          Application Status Distribution
-        </CardTitle>
-        <CardDescription>
-          Breakdown of application statuses across all rounds
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-8">
-          <div className="h-64 w-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.Unknown} 
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any, name: any, props: any) => [
-                    `${value} (${props.payload.percentage}%)`,
-                    'Applications'
-                  ]}
-                />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-2">
-            {chartData.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="flex items-center space-x-3">
-                <div 
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] || COLORS.Unknown }}
-                />
-                <span className="text-sm text-gray-600">{item.name}</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {String(item.value)} ({String(item.percentage)}%)
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 // Applications vs Funding per Round Chart
 function ApplicationsVsFundingChart({ pools, applications }: { 
@@ -644,9 +563,8 @@ export default function SystemProfileEnhanced() {
       {/* Charts Section */}
       {applications.length > 0 && (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             <FundingDistributionChart pools={pools} applications={applications} />
-            <ApplicationStatusChart applications={applications} />
           </div>
           <ApplicationsVsFundingChart pools={pools} applications={applications} />
         </>
