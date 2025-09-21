@@ -147,18 +147,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allSystems.push(...adapterSystems);
       }
 
-      // Apply pagination to systems
-      const totalCount = allSystems.length;
-      const paginatedSystems = allSystems.slice(offset, offset + limit);
-      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+      // Handle single system vs collection responses
+      if (system && typeof system === 'string' && allSystems.length === 1) {
+        // Single system query - return flattened object
+        const systemData = allSystems[0];
+        res.json(systemData);
+      } else {
+        // Collection query - return paginated data array
+        const totalCount = allSystems.length;
+        const paginatedSystems = allSystems.slice(offset, offset + limit);
+        const paginationMeta = createPaginationMeta(totalCount, limit, offset);
 
-      const response: PaginatedResponse<any> = {
-        "@context": "http://www.daostar.org/schemas",
-        data: paginatedSystems,
-        pagination: paginationMeta
-      };
+        const response: PaginatedResponse<any> = {
+          "@context": "http://www.daostar.org/schemas",
+          data: paginatedSystems,
+          pagination: paginationMeta
+        };
 
-      res.json(response);
+        res.json(response);
+      }
     } catch (error) {
       console.error('Error fetching systems:', error);
       res.status(500).json({
