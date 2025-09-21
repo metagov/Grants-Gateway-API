@@ -581,7 +581,7 @@ export default function SystemProfileEnhanced() {
           title="Total Paid"
           value={(() => {
             // Check if we have any payout data in applications
-            const totalPaid = applications.reduce((sum, app) => {
+            const totalPaid = applications.reduce((sum, app: any) => {
               if (app.payouts && app.payouts.length > 0) {
                 // Sum up payouts if available
                 return sum + app.payouts.reduce((payoutSum: number, payout: any) => {
