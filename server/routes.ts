@@ -630,6 +630,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Systems configuration endpoints - READ ONLY
+  app.get('/api/v1/systems/config', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const config = await systemsConfigService.loadConfiguration();
+      
+      // Return the full configuration with only enabled systems
+      const enabledSystems = config.activeSystems.filter(system => system.enabled);
+      
+      res.json({
+        activeSystems: enabledSystems.map(system => ({
+          id: system.id,
+          name: system.name,
+          displayName: system.displayName,
+          source: system.source,
+          type: system.type,
+          priority: system.priority,
+          enabled: system.enabled,
+          metadata: {
+            description: system.metadata.description,
+            website: system.metadata.website,
+            supportedNetworks: system.metadata.supportedNetworks,
+            fundingMechanisms: system.metadata.fundingMechanisms,
+            established: system.metadata.established,
+            compatibility: system.metadata.compatibility
+          }
+        }))
+      });
+    } catch (error) {
+      console.error('Error fetching systems config:', error);
+      res.status(500).json({
+        error: "Failed to load systems configuration",
+        message: "Unable to retrieve systems configuration"
+      });
+    }
+  });
+
   app.get('/api/v1/systems/config/active', async (req: AuthenticatedRequest, res) => {
     try {
       const { systemsConfigService } = await import('./services/systemsConfigService');

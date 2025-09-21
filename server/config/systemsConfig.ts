@@ -27,7 +27,7 @@ export default {
       "displayName": "Giveth",
       "source": "opengrants", 
       "type": "DAO",
-      "enabled": true,
+      "enabled": false,
       "priority": 3,
       "metadata": {
         "description": "Donation platform for public goods and social impact projects",
