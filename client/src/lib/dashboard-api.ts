@@ -525,7 +525,7 @@ export const dashboardApi = {
       }
       
       const systemsConfig = await configResponse.json();
-      const activeSystems = systemsConfig.activeSystems || [];
+      const activeSystems = (systemsConfig.activeSystems || []).filter((system: any) => system.enabled);
 
       console.log(`📊 Loading ${activeSystems.length} configured active systems`);
 

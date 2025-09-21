@@ -4,6 +4,7 @@ import { SmartCache } from './cache.js';
 import { dataValidationService } from './dataValidationService.js';
 import { dataStorageService } from './dataStorageService.js';
 import { historicalPriceService } from './historicalPriceService.js';
+import { systemsConfigService } from './systemsConfigService.js'; // Assuming this service exists
 
 // Add fetch polyfill for Node.js if needed
 if (typeof fetch === 'undefined') {
@@ -91,14 +92,14 @@ class AccurateDataService {
       // Update pool application counts and funding totals from applications
       const poolAppCounts = new Map<string, number>();
       const poolFundingTotals = new Map<string, number>();
-      
+
       applications.forEach(app => {
         if (app.poolId) {
           poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
           poolFundingTotals.set(app.poolId, (poolFundingTotals.get(app.poolId) || 0) + app.fundingUSD);
         }
       });
-      
+
       pools.forEach(pool => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
         // For DAOIP-5, use funding calculated from applications
@@ -153,7 +154,7 @@ class AccurateDataService {
       const applications: ApplicationData[] = [];
 
       // Step 3: Fetch application files (look for *_applications_uri.json files)
-      const applicationFiles = systemFiles.filter((file: string) => 
+      const applicationFiles = systemFiles.filter((file: string) =>
         file.includes('applications_uri') && file.endsWith('.json')
       );
 
@@ -164,7 +165,7 @@ class AccurateDataService {
             const appsData = await appsResponse.json();
             // Handle nested structure where applications are inside grantPools array
             const grantPools = appsData.grantPools || [];
-            
+
             for (const pool of grantPools) {
               const poolApplications = (pool.applications || []).map((app: any) => ({
                 id: app.id,
@@ -175,7 +176,7 @@ class AccurateDataService {
                 fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
                 createdAt: app.createdAt || new Date().toISOString()
               }));
-              
+
               applications.push(...poolApplications);
             }
           }
@@ -187,14 +188,14 @@ class AccurateDataService {
       // Update pool application counts and funding totals from applications
       const poolAppCounts = new Map<string, number>();
       const poolFundingTotals = new Map<string, number>();
-      
+
       applications.forEach(app => {
         if (app.poolId) {
           poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
           poolFundingTotals.set(app.poolId, (poolFundingTotals.get(app.poolId) || 0) + app.fundingUSD);
         }
       });
-      
+
       pools.forEach(pool => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
         // For DAOIP-5, use funding calculated from applications
@@ -268,12 +269,12 @@ class AccurateDataService {
   // Extract funding amount from various formats
   private extractFundingAmount(totalGrantPoolSize: any): number {
     if (!totalGrantPoolSize) return 0;
-    
+
     if (Array.isArray(totalGrantPoolSize)) {
       // Handle array format: [{ amount: "123", denomination: "ETH" }]
       const ethEntry = totalGrantPoolSize.find(entry => entry.denomination === 'ETH');
       const usdEntry = totalGrantPoolSize.find(entry => entry.denomination === 'USD');
-      
+
       if (usdEntry) {
         return parseFloat(usdEntry.amount) || 0;
       } else if (ethEntry) {
@@ -285,7 +286,7 @@ class AccurateDataService {
     } else if (typeof totalGrantPoolSize === 'string') {
       return parseFloat(totalGrantPoolSize) || 0;
     }
-    
+
     return 0;
   }
 
@@ -301,24 +302,45 @@ class AccurateDataService {
   }> {
     console.log('🌍 Computing accurate ecosystem statistics...');
 
-    const systems = [
-      { name: 'octant', source: 'opengrants' as const },
-      { name: 'giveth', source: 'opengrants' as const },
-      { name: 'stellar', source: 'daoip5' as const },
-      { name: 'optimism', source: 'daoip5' as const },
-      { name: 'arbitrumfoundation', source: 'daoip5' as const },
-      { name: 'celo-org', source: 'daoip5' as const }
-    ];
+    // Get the list of active systems from the configuration service
+    const activeSystems = await systemsConfigService.getActiveSystems();
+    console.log(`🔍 Found ${activeSystems.length} active systems for ecosystem stats`);
 
-    // Process systems in parallel for efficiency
-    const systemMetrics = await Promise.allSettled(
-      systems.map(({ name, source }) => this.calculateSystemMetrics(name, source))
+    // Map active systems to the expected format for calculateSystemMetrics
+    const systemsToProcess = activeSystems.map(system => {
+      let source: 'opengrants' | 'daoip5';
+      // Determine the data source based on system name or configuration
+      // This is a placeholder logic, you might need a more robust way to determine the source
+      if (system.name === 'stellar' || system.name === 'optimism' || system.name === 'arbitrumfoundation' || system.name === 'celo-org') {
+        source = 'daoip5';
+      } else if (system.name === 'octant' || system.name === 'giveth') {
+        source = 'opengrants';
+      } else {
+        // Default or throw an error if the system source is unknown
+        console.warn(`Unknown system source for ${system.name}, defaulting to opengrants.`);
+        source = 'opengrants';
+      }
+      return { name: system.name, source };
+    });
+
+    // Process active systems in parallel for efficiency
+    const systemMetricsPromises = systemsToProcess.map(({ name, source }) =>
+      this.calculateSystemMetrics(name, source)
     );
 
-    const failedSystems = systemMetrics
+    const systemMetricsResults = await Promise.allSettled(systemMetricsPromises);
+
+    const successfulMetrics = systemMetricsResults
+      .filter(result => result.status === 'fulfilled')
+      .map((result, index) => ({
+        system: systemsToProcess[index].name,
+        metrics: (result as PromiseFulfilledResult<SystemMetrics>).value
+      }));
+
+    const failedSystems = systemMetricsResults
       .filter(result => result.status === 'rejected')
       .map((result, index) => ({
-        system: systems[index].name,
+        system: systemsToProcess[index].name,
         error: (result as PromiseRejectedResult).reason
       }));
 
@@ -326,8 +348,8 @@ class AccurateDataService {
       console.warn('⚠️ Some systems failed to process:', failedSystems);
     }
 
-    // Get accurate ecosystem stats from storage service
-    const ecosystemStats = await dataStorageService.getEcosystemStats();
+    // Get accurate ecosystem stats from storage service, now considering only processed systems
+    const ecosystemStats = await dataStorageService.getEcosystemStats(successfulMetrics.map(m => m.system));
 
     console.log(`✅ Ecosystem stats computed: ${ecosystemStats.totalSystems} systems, $${ecosystemStats.totalFunding.toLocaleString()} total funding`);
 
