@@ -391,11 +391,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCount += result.totalCount;
       }
 
+      // Group applications by grant pools to match DAOIP-5 schema
+      const poolsMap = new Map<string, {
+        id: string;
+        name: string;
+        applications: any[];
+      }>();
+
+      // Group applications by their grant pool
+      allApplications.forEach(app => {
+        const poolKey = app.grantPoolId || 'unknown';
+        if (!poolsMap.has(poolKey)) {
+          poolsMap.set(poolKey, {
+            id: poolKey,
+            name: app.grantPoolName || 'Unknown Pool',
+            applications: []
+          });
+        }
+        poolsMap.get(poolKey)!.applications.push(app);
+      });
+
+      // Convert to DAOIP-5 compliant structure
+      const grantPools = Array.from(poolsMap.values()).map(pool => ({
+        type: "GrantPool",
+        id: pool.id,
+        name: pool.name,
+        applications: pool.applications
+      }));
+
+      // Determine system name based on selected adapters
+      const systemStr = typeof system === 'string' ? system : '';
+      const systemName = systemStr ? `${systemStr.charAt(0).toUpperCase()}${systemStr.slice(1)} Grant System` : "Multi-System Grant Data";
+      const systemType = selectedAdapters.length === 1 ? "GrantSystem" : "GrantDataAggregator";
+
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
       
-      const response: PaginatedResponse<any> = {
+      const response = {
         "@context": "http://www.daostar.org/schemas",
-        data: allApplications,
+        name: systemName,
+        type: systemType,
+        grantPools: grantPools,
         pagination: paginationMeta
       };
 
