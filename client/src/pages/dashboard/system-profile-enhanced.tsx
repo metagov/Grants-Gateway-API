@@ -326,6 +326,9 @@ function GrantPoolCard({ pool, applications }: {
   const totalFunding = poolApplications.reduce((sum, app) => {
     return sum + parseFloat(app.fundsApprovedInUSD || '0');
   }, 0);
+  
+  // Format pool name to be human-friendly
+  const displayName = formatPoolName(pool);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -334,7 +337,7 @@ function GrantPoolCard({ pool, applications }: {
           <CardHeader className="hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="text-left">
-                <CardTitle className="text-lg">{pool.name}</CardTitle>
+                <CardTitle className="text-lg">{displayName}</CardTitle>
                 <CardDescription className="flex items-center space-x-4 mt-2">
                   <Badge variant="outline" className="text-xs">
                     {pool.grantFundingMechanism}
@@ -576,7 +579,20 @@ export default function SystemProfileEnhanced() {
         />
         <StatsCard
           title="Total Paid"
-          value="Coming soon"
+          value={(() => {
+            // Check if we have any payout data in applications
+            const totalPaid = applications.reduce((sum, app) => {
+              if (app.payouts && app.payouts.length > 0) {
+                // Sum up payouts if available
+                return sum + app.payouts.reduce((payoutSum: number, payout: any) => {
+                  const amount = parseFloat(payout.value?.amount || '0');
+                  return payoutSum + amount;
+                }, 0);
+              }
+              return sum;
+            }, 0);
+            return totalPaid > 0 ? formatCurrency(totalPaid) : "Coming soon";
+          })()}
           description="Funds disbursed to projects"
           icon={CreditCard}
         />
