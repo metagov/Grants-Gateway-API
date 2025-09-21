@@ -171,9 +171,12 @@ function ApplicationsVsFundingChart({ pools, applications }: {
     ).length;
     
     const formattedName = formatPoolName(pool);
+    // Create short name for chart labels (SCF #38 -> 38)
+    const shortName = formattedName.replace(/^SCF #/, '');
     
     return {
       name: formattedName,
+      shortName: shortName, // For chart display
       applications: awardedCount,
       funding: totalFunding,
       poolId: pool.id,
@@ -201,16 +204,16 @@ function ApplicationsVsFundingChart({ pools, applications }: {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 80 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
-                dataKey="name" 
-                angle={-45}
-                textAnchor="end"
-                height={120}
-                fontSize={10}
-                interval={0}
-                tick={{ fontSize: 10 }}
+                dataKey="shortName" 
+                angle={0}
+                textAnchor="middle"
+                height={60}
+                fontSize={11}
+                interval={chartData.length > 20 ? 2 : 0} // Show every 3rd label if too many
+                tick={{ fontSize: 11 }}
               />
               <YAxis 
                 yAxisId="left"
