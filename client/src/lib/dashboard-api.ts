@@ -511,12 +511,85 @@ async function fetchSystemDataSystematically(systemId: string, source: string): 
 
 // Combined data fetching with caching
 export const dashboardApi = {
-  // Get all grant systems from both APIs with comprehensive data
+  // Get all grant systems using centralized configuration
   async getAllSystems(): Promise<GrantSystem[]> {
     const cacheKey = 'dashboard-all-systems';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as GrantSystem[];
 
+    try {
+      // Fetch systems configuration from server
+      const configResponse = await fetch('/api/v1/systems/config');
+      if (!configResponse.ok) {
+        throw new Error('Failed to fetch systems configuration');
+      }
+      
+      const systemsConfig = await configResponse.json();
+      const activeSystems = systemsConfig.activeSystems || [];
+
+      console.log(`📊 Loading ${activeSystems.length} configured active systems`);
+
+      // Get comprehensive stats for each configured system
+      const systemsWithStats = await Promise.allSettled(
+        activeSystems.map(async (systemConfig: any) => {
+          try {
+            // Use the systematic fetching approach with config data
+            const { pools, applications, totalFunding } = await fetchSystemDataSystematically(
+              systemConfig.id, 
+              systemConfig.source
+            );
+            
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate: undefined, // Coming soon
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          } catch (error) {
+            console.error(`Error fetching data for ${systemConfig.name}:`, error);
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: undefined,
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          }
+        })
+      );
+
+      const validSystems = systemsWithStats
+        .filter(result => result.status === 'fulfilled')
+        .map(result => (result as PromiseFulfilledResult<any>).value);
+
+      console.log(`✅ Successfully loaded ${validSystems.length} systems from configuration`);
+
+      queryClient.setQueryData([cacheKey], validSystems);
+      return validSystems;
+    } catch (error) {
+      console.error('Error fetching configured systems:', error);
+      
+      // Fallback to existing logic if configuration service fails
+      console.warn('⚠️ Falling back to legacy system discovery');
+      return this.getAllSystemsLegacy();
+    }
+  },
+
+  // Legacy method as fallback
+  async getAllSystemsLegacy(): Promise<GrantSystem[]> {
     // Auto-discover new sources dynamically
     await dataSourceRegistry.autoDiscover();
 
@@ -528,11 +601,6 @@ export const dashboardApi = {
       const requestedSources = allSources.filter(s => 
         s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
       );
-      
-      // Separate by source type for appropriate API handling
-      const openGrantsSources = requestedSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = requestedSources.filter(s => s.source === 'daoip5');
-      const customSources = requestedSources.filter(s => s.source === 'custom');
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
@@ -577,7 +645,6 @@ export const dashboardApi = {
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<any>).value);
 
-      queryClient.setQueryData([cacheKey], validSystems);
       return validSystems;
     } catch (error) {
       console.error('Error fetching systems:', error);

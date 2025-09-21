@@ -95,11 +95,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', authenticateApiKey as any);
   app.use('/api', rateLimitMiddleware as any);
 
-  // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
-  const adapters: { [key: string]: BaseAdapter } = {
-    octant: new OctantAdapter(),
-    giveth: new GivethAdapter(),
+  // Initialize adapters dynamically based on configuration
+  let adapters: { [key: string]: BaseAdapter } = {};
+
+  // Load adapters based on systems configuration
+  const initializeAdapters = async () => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const activeSystems = await systemsConfigService.getActiveSystems();
+      
+      console.log(`🔧 Initializing adapters for ${activeSystems.length} active systems`);
+      
+      for (const systemConfig of activeSystems) {
+        if (systemConfig.source === 'opengrants') {
+          // Initialize OpenGrants-based adapters
+          if (systemConfig.id === 'octant') {
+            adapters[systemConfig.id] = new OctantAdapter();
+          } else if (systemConfig.id === 'giveth') {
+            adapters[systemConfig.id] = new GivethAdapter();
+          }
+          console.log(`✅ Initialized ${systemConfig.id} adapter (${systemConfig.source})`);
+        }
+        // DAOIP-5 systems don't need adapters as they use static data fetching
+      }
+
+      console.log(`🎯 Active adapters: ${Object.keys(adapters).join(', ')}`);
+    } catch (error) {
+      console.error('❌ Error initializing adapters:', error);
+      // Fallback to default adapters
+      adapters = {
+        octant: new OctantAdapter(),
+        giveth: new GivethAdapter(),
+      };
+    }
   };
+
+  // Initialize adapters on startup
+  await initializeAdapters();
 
   // Helper function to get adapter
   function getAdapter(system?: string): BaseAdapter[] {
@@ -597,6 +629,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Systems configuration endpoints
+  app.get('/api/v1/systems/config', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const config = await systemsConfigService.loadConfiguration();
+      
+      res.json(config);
+    } catch (error) {
+      console.error('Error fetching systems configuration:', error);
+      res.status(500).json({
+        error: "Failed to load systems configuration",
+        message: "Unable to retrieve active systems configuration"
+      });
+    }
+  });
+
+  app.get('/api/v1/systems/config/active', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const activeSystems = await systemsConfigService.getActiveSystems();
+      
+      res.json({ activeSystems });
+    } catch (error) {
+      console.error('Error fetching active systems:', error);
+      res.status(500).json({
+        error: "Failed to load active systems",
+        message: "Unable to retrieve active systems configuration"
+      });
+    }
+  });
+
+  app.put('/api/v1/systems/config/:systemId/status', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemId } = req.params;
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({
+          error: "Invalid request",
+          message: "Enabled status must be a boolean value"
+        });
+      }
+
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const success = await systemsConfigService.updateSystemStatus(systemId, enabled);
+      
+      if (success) {
+        res.json({ success: true, message: `System ${systemId} ${enabled ? 'enabled' : 'disabled'}` });
+      } else {
+        res.status(404).json({
+          error: "System not found",
+          message: `System with ID ${systemId} not found`
+        });
+      }
+    } catch (error) {
+      console.error('Error updating system status:', error);
+      res.status(500).json({
+        error: "Failed to update system status",
+        message: "Unable to update system configuration"
+      });
+    }
+  });
+
+  app.post('/api/v1/systems/config/reload', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      await systemsConfigService.reloadConfiguration();
+      
+      res.json({ success: true, message: "Configuration reloaded successfully" });
+    } catch (error) {
+      console.error('Error reloading configuration:', error);
+      res.status(500).json({
+        error: "Failed to reload configuration",
+        message: "Unable to reload systems configuration"
+      });
+    }
+  });
+
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -607,6 +717,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
         applications: "/api/v1/applications",
+        config: {
+          systemsConfig: "/api/v1/systems/config",
+          activeSystems: "/api/v1/systems/config/active",
+          updateSystemStatus: "/api/v1/systems/config/:systemId/status",
+          reloadConfig: "/api/v1/systems/config/reload"
+        },
         analytics: {
           ecosystemStats: "/api/v1/analytics/ecosystem-stats",
           systemMetrics: "/api/v1/analytics/system/:systemName",
