@@ -217,26 +217,11 @@ class SystemsConfigService {
     return errors;
   }
 
-  // Hot reload configuration
+  // Manual configuration reload (for development only)
   async reloadConfiguration(): Promise<void> {
     this.config = null;
     await this.loadConfiguration();
     console.log('🔄 Systems configuration reloaded');
-  }
-
-  // Update system enabled status
-  async updateSystemStatus(systemId: string, enabled: boolean): Promise<boolean> {
-    const config = await this.loadConfiguration();
-    const system = config.activeSystems.find(s => s.id === systemId);
-    
-    if (system) {
-      system.enabled = enabled;
-      // In a production system, this would persist the changes
-      console.log(`✅ Updated system ${systemId} enabled status to ${enabled}`);
-      return true;
-    }
-    
-    return false;
   }
 }
 

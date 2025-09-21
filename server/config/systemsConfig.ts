@@ -1,5 +1,6 @@
 
 {
+  "__comment": "⚠️  SECURITY NOTICE: System enable/disable can only be done by manually editing this file. No API endpoints modify this configuration.",
   "activeSystems": [
     {
       "id": "octant",
