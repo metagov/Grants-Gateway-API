@@ -534,12 +534,6 @@ export default function SystemProfileEnhanced() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCard
-          title="Total Funding"
-          value={formatCurrency(stats.totalFunding)}
-          description="Distributed to projects"
-          icon={DollarSign}
-        />
-        <StatsCard
           title="Total Applications"
           value={stats.totalApplications}
           description="Applications processed"
