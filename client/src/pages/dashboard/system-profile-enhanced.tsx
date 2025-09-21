@@ -633,7 +633,9 @@ export default function SystemProfileEnhanced() {
   } = useQuery({
     queryKey: ["dashboard-system-details", systemName],
     queryFn: () => dashboardApi.getSystemDetails(systemName),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // 15 minutes - cached stats
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
     enabled: !!systemName,
   });
 
