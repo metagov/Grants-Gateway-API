@@ -1,5 +1,5 @@
 
-{
+export default {
   "__comment": "⚠️  SECURITY NOTICE: System enable/disable can only be done by manually editing this file. No API endpoints modify this configuration.",
   "activeSystems": [
     {
@@ -8,8 +8,8 @@
       "displayName": "Octant (Golem)",
       "source": "opengrants",
       "type": "DAO",
-      "enabled": true,
-      "priority": 1,
+      "enabled": false,
+      "priority": 2,
       "metadata": {
         "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
         "website": "https://octant.app",
@@ -27,8 +27,8 @@
       "displayName": "Giveth",
       "source": "opengrants", 
       "type": "DAO",
-      "enabled": true,
-      "priority": 2,
+      "enabled": false,
+      "priority": 3,
       "metadata": {
         "description": "Donation platform for public goods and social impact projects",
         "website": "https://giveth.io",
@@ -47,7 +47,7 @@
       "source": "daoip5",
       "type": "Foundation",
       "enabled": true,
-      "priority": 3,
+      "priority": 1,
       "metadata": {
         "description": "Community-driven funding for projects building on Stellar",
         "website": "https://communityfund.stellar.org",
@@ -65,7 +65,7 @@
       "displayName": "Celo Public Goods",
       "source": "daoip5",
       "type": "Foundation",
-      "enabled": true,
+      "enabled": false,
       "priority": 4,
       "metadata": {
         "description": "Funding public goods in the Celo ecosystem",
@@ -139,4 +139,4 @@
     "dataValidation": true,
     "caching": true
   }
-}
+};
