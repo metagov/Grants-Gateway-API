@@ -180,6 +180,12 @@ export const openGrantsApi = {
 export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
   cache: new Map<string, any>(),
+  
+  // Clear all cached data
+  clearCache() {
+    console.log('🗑️ Clearing DAOIP-5 cache');
+    this.cache.clear();
+  },
 
   async getSystems(): Promise<string[]> {
     return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
@@ -297,6 +303,11 @@ export const daoip5Api = {
           }
         } catch (error) {
           console.warn(`Failed to fetch applications from ${appFile}:`, error);
+          // For 500 errors, try to keep last good data for this round
+          if (error instanceof Error && error.message.includes('500')) {
+            console.log(`🔄 Attempting retry for ${appFile} due to 500 error`);
+            // TODO: Add retry logic here
+          }
         }
       }
 
@@ -508,6 +519,23 @@ async function fetchSystemDataSystematically(systemId: string, source: string): 
     return { pools: [], applications: [], totalFunding: 0 };
   }
 }
+
+// Global cache invalidation function
+export const invalidateAllCaches = async () => {
+  console.log('🔄 Invalidating all caches and forcing data refresh');
+  
+  // Clear DAOIP-5 cache
+  daoip5Api.clearCache();
+  
+  // Clear analytics data service cache
+  const { analyticsDataService } = await import('./analytics-data-service');
+  analyticsDataService.clearCache();
+  
+  // Clear React Query cache
+  queryClient.clear();
+  
+  console.log('✅ All caches cleared successfully');
+};
 
 // Combined data fetching with caching
 export const dashboardApi = {

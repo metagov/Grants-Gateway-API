@@ -13,6 +13,7 @@ import {
   BarChart3,
   Award,
   CreditCard,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
+import { dashboardApi, formatCurrency, getSystemColor, invalidateAllCaches } from "@/lib/dashboard-api";
+import { queryClient } from "@/lib/queryClient";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from "react";
 

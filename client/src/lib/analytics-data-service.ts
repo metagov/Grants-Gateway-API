@@ -119,9 +119,26 @@ class AnalyticsDataService {
   private isLoading = false;
   private loadingPromise: Promise<void> | null = null;
 
+  // Clear all cached data
+  clearCache(): void {
+    console.log('🗑️ Clearing analytics cache');
+    this.cache = {
+      systems: new Map(),
+      lastUpdated: 0,
+      isStale: true
+    };
+    this.isLoading = false;
+    this.loadingPromise = null;
+  }
+
   // Batch load all system data efficiently
   async loadAllSystemData(forceRefresh = false): Promise<SystemDataCache> {
     const now = Date.now();
+    
+    // If forceRefresh is true, clear cache first
+    if (forceRefresh) {
+      this.clearCache();
+    }
     
     // Return cached data if still fresh and not forcing refresh
     if (!forceRefresh && !this.cache.isStale && (now - this.cache.lastUpdated) < this.CACHE_DURATION) {
