@@ -322,7 +322,7 @@ function ApplicationsVsFundingChart({
                 yAxisId="right"
                 dataKey="funding"
                 fill="#800020"
-                radius={[6, 4, 0, 0]}
+                radius={[4, 4, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

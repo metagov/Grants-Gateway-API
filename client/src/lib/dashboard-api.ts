@@ -965,6 +965,7 @@ export const getSystemColor = (systemName: string): string => {
     arbitrum: '#06B6D4', // cyan
     celo: '#F59E0B', // amber
     'celo-org': '#F59E0B', // amber (mapped to celo-org system ID)
+    'celopg': '#F59E0B', // amber (mapped to celopg system ID)
     default: '#800020' // maroon
   };
   

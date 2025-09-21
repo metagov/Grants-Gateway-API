@@ -60,22 +60,22 @@ export default {
       }
     },
     {
-      "id": "celo-org",
+      "id": "celopg",
       "name": "Celo Public Goods",
-      "displayName": "Celo Public Goods",
+      "displayName": "Celo Public Goods", 
       "source": "daoip5",
       "type": "Foundation",
       "enabled": true,
       "priority": 4,
       "metadata": {
-        "description": "Funding public goods in the Celo ecosystem",
+        "description": "Funding public goods in the Celo ecosystem through quadratic funding",
         "website": "https://celo.org",
-        "apiEndpoint": "https://daoip5.daostar.org/celo-org",
+        "apiEndpoint": "https://daoip5.daostar.org/celopg",
         "supportedNetworks": ["celo"],
-        "fundingMechanisms": ["direct_grants"],
+        "fundingMechanisms": ["quadratic_funding", "direct_grants"],
         "established": "2020",
         "compatibility": 90,
-        "staticDataPath": "/celo-org"
+        "staticDataPath": "/celopg"
       }
     },
     {
