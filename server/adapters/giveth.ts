@@ -210,17 +210,31 @@ export class GivethAdapter extends BaseAdapter {
       let targetQfRoundId: number | null = null;
 
       if (!filters?.poolId) {
-        // Find the latest pool by close date
-        const latestPool = allPools.reduce((latest, pool) => {
-          if (!latest) return pool;
-          const latestDate = latest.closeDate
-            ? new Date(latest.closeDate)
-            : new Date(0);
-          const poolDate = pool.closeDate
-            ? new Date(pool.closeDate)
-            : new Date(0);
-          return poolDate > latestDate ? pool : latest;
-        }, allPools[0]);
+        // Find the latest closed pool specifically (where isOpen is false)
+        const closedPools = allPools.filter(pool => !pool.isOpen);
+        
+        const latestPool = closedPools.length > 0 
+          ? closedPools.reduce((latest, pool) => {
+              if (!latest) return pool;
+              const latestDate = latest.closeDate
+                ? new Date(latest.closeDate)
+                : new Date(0);
+              const poolDate = pool.closeDate
+                ? new Date(pool.closeDate)
+                : new Date(0);
+              return poolDate > latestDate ? pool : latest;
+            })
+          : allPools.reduce((latest, pool) => {
+              // Fallback to any pool if no closed pools found
+              if (!latest) return pool;
+              const latestDate = latest.closeDate
+                ? new Date(latest.closeDate)
+                : new Date(0);
+              const poolDate = pool.closeDate
+                ? new Date(pool.closeDate)
+                : new Date(0);
+              return poolDate > latestDate ? pool : latest;
+            }, allPools[0]);
 
         targetPools = latestPool ? [latestPool] : [];
         const rawQfRoundId =
@@ -401,16 +415,30 @@ export class GivethAdapter extends BaseAdapter {
     let targetPools: DAOIP5GrantPool[] = [];
 
     if (!filters?.poolId) {
-      // Find the latest pool by close date when no poolId is provided
-      const latestPool = allPools.reduce((latest, pool) => {
-        const poolDate = pool.closeDate
-          ? new Date(pool.closeDate)
-          : new Date(0);
-        const latestDate = latest.closeDate
-          ? new Date(latest.closeDate)
-          : new Date(0);
-        return poolDate > latestDate ? pool : latest;
-      }, allPools[0]);
+      // Find the latest closed pool specifically (where isOpen is false)
+      const closedPools = allPools.filter(pool => !pool.isOpen);
+      
+      const latestPool = closedPools.length > 0 
+        ? closedPools.reduce((latest, pool) => {
+            if (!latest) return pool;
+            const latestDate = latest.closeDate
+              ? new Date(latest.closeDate)
+              : new Date(0);
+            const poolDate = pool.closeDate
+              ? new Date(pool.closeDate)
+              : new Date(0);
+            return poolDate > latestDate ? pool : latest;
+          })
+        : allPools.reduce((latest, pool) => {
+            // Fallback to any pool if no closed pools found
+            const poolDate = pool.closeDate
+              ? new Date(pool.closeDate)
+              : new Date(0);
+            const latestDate = latest.closeDate
+              ? new Date(latest.closeDate)
+              : new Date(0);
+            return poolDate > latestDate ? pool : latest;
+          }, allPools[0]);
 
       targetPools = latestPool ? [latestPool] : [];
       const rawQfRoundId =
