@@ -213,66 +213,6 @@ export default function GrantSystems() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Grant Systems</h1>
-        <p className="text-gray-600">
-          Automatically discovered and integrated grant systems with DAOIP-5
-          standardization
-        </p>
-      </div>
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Systems
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? (
-                <Skeleton className="h-8 w-12" />
-              ) : (
-                systems?.length || 0
-              )}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Integrated platforms</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Live Integrations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? (
-                <Skeleton className="h-8 w-12" />
-              ) : (
-                apiSystems.length
-              )}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Real-time API access</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Data Integrations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? (
-                <Skeleton className="h-8 w-12" />
-              ) : (
-                staticSystems.length
-              )}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Static data sources</p>
-          </CardContent>
-        </Card>
       </div>
       {/* API Integrated Systems */}
       {apiSystems.length > 0 && (
@@ -296,15 +236,6 @@ export default function GrantSystems() {
       {/* Static Data Systems */}
       {staticSystems.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Type 2: Data Integrations
-            </h2>
-            <Badge variant="secondary" className="text-xs">
-              Static data files
-            </Badge>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {staticSystems.map((system) => (
               <SystemCard key={system.name} system={system} />
