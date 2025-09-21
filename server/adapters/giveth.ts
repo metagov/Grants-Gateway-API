@@ -347,7 +347,9 @@ export class GivethAdapter extends BaseAdapter {
       // Collect all project names for batch Karma search
       const projects = data.allProjects?.projects || [];
       const projectNames = projects.map((project: any) => project.title || "");
+      console.log(`[KARMA DEBUG] Searching for ${projectNames.length} projects:`, projectNames.slice(0, 3));
       const karmaResults = await searchKarmaProjectsBatch(projectNames);
+      console.log(`[KARMA DEBUG] Karma results found:`, Array.from(karmaResults.entries()).slice(0, 3));
 
       for (const project of projects) {
         // Get primary recipient address
@@ -370,6 +372,7 @@ export class GivethAdapter extends BaseAdapter {
 
         // Get Karma UID from batch results
         const karmaUID = karmaResults.get(projectName);
+        console.log(`[KARMA DEBUG] Project "${projectName}" -> Karma UID: ${karmaUID || 'NOT_FOUND'}`);
 
         const application: DAOIP5Application = {
           type: "GrantApplication",
