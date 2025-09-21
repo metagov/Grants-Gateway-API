@@ -63,6 +63,11 @@ function SystemCard({ system }: { system: any }) {
             NEW
           </Badge>
         )}
+      {system.status === "work_in_progress" && (
+        <Badge className="absolute -top-2 -left-2 bg-yellow-500 text-white text-xs">
+          WORK IN PROGRESS
+        </Badge>
+      )}
       <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">

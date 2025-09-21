@@ -715,9 +715,16 @@ export default function SystemProfileEnhanced() {
               <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 capitalize">
-                {systemName}
-              </h1>
+              <div className="flex items-center space-x-3">
+                <h1 className="text-3xl font-bold text-gray-900 capitalize">
+                  {systemName}
+                </h1>
+                {systemName === "celopg" && (
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                    Work in Progress
+                  </Badge>
+                )}
+              </div>
               <p className="text-gray-600">
                 Grant system profile and funding analytics
               </p>
