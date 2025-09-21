@@ -348,8 +348,8 @@ class AccurateDataService {
       console.warn('⚠️ Some systems failed to process:', failedSystems);
     }
 
-    // Get accurate ecosystem stats from storage service, now considering only processed systems
-    const ecosystemStats = await dataStorageService.getEcosystemStats(successfulMetrics.map(m => m.system));
+    // Get accurate ecosystem stats from storage service
+    const ecosystemStats = await dataStorageService.getEcosystemStats();
 
     console.log(`✅ Ecosystem stats computed: ${ecosystemStats.totalSystems} systems, $${ecosystemStats.totalFunding.toLocaleString()} total funding`);
 

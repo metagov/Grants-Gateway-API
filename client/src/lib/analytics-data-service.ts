@@ -518,7 +518,7 @@ class AnalyticsDataService {
           { id: 'arb-2', projectName: 'Lending Platform', poolId: 'ltip', status: 'funded', fundingUSD: 500000, createdAt: '2024-02-20' }
         ]
       },
-      'celo-org': {
+      'celopg': {
         pools: [
           { id: 'cgp-100', name: 'CeloPG Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
         ],
