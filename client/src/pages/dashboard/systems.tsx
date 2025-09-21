@@ -34,6 +34,8 @@ const getSystemId = (systemName: string): string => {
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
     celopg: "celopg", // Updated to correct system ID
+    "celo public goods": "celopg", // Alternative name mapping
+    "celo-public-goods": "celopg", // URL-friendly mapping
     "clr fund": "clrfund",
     "dao drops": "dao-drops-dorgtech",
     "octant (golem)": "octant-golemfoundation",

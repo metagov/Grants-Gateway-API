@@ -181,12 +181,12 @@ function FundingDistributionChart({
   );
 }
 
-// Helper function to extract SCF round number for sorting
+// Helper function to extract round number for sorting (supports both scf_x and round_x patterns)
 const getRoundNumber = (pool: any): number => {
   const src = (pool.name || pool.id || "").toString();
-  // Look for SCF-specific patterns first (scf_38, scf-12, SCF #38)
-  const scfMatch = src.match(/scf[^0-9]*?(\d+)/i);
-  if (scfMatch) return parseInt(scfMatch[1], 10);
+  // Look for round-specific patterns first (round_33, scf_38, scf-12, SCF #38)
+  const roundMatch = src.match(/(?:round|scf)[^0-9]*?(\d+)/i);
+  if (roundMatch) return parseInt(roundMatch[1], 10);
   // Fallback to any number found
   const genericMatch = src.match(/(\d+)/);
   return genericMatch ? parseInt(genericMatch[1], 10) : -Infinity;
@@ -450,6 +450,19 @@ function GrantPoolCard({
 
   // Format pool name to be human-friendly
   const displayName = formatPoolName(pool);
+  
+  // Extract round number for indexing
+  const roundNumber = getRoundNumber(pool);
+  
+  // Extract timestamp information from pool or applications
+  const poolDate = pool.createdAt || pool.startDate || pool.applicationsEndTime;
+  const formattedDate = poolDate 
+    ? new Date(poolDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : 'Date TBD';
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -460,9 +473,17 @@ function GrantPoolCard({
               <div className="text-left">
                 <CardTitle className="text-lg">{displayName}</CardTitle>
                 <CardDescription className="flex items-center space-x-4 mt-2">
-                  <Badge variant="outline" className="text-xs">
-                    {pool.grantFundingMechanism}
-                  </Badge>
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">
+                      Round {roundNumber > 0 ? roundNumber : '?'}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {formattedDate}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {pool.grantFundingMechanism}
+                    </Badge>
+                  </div>
                   <Badge
                     variant={pool.isOpen ? "default" : "secondary"}
                     className="text-xs"
