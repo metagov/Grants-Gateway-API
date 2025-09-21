@@ -270,7 +270,7 @@ export const daoip5Api = {
   },
 
   async getSystems(): Promise<string[]> {
-    return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
+    return ['stellar', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
   },
 
   async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {

@@ -33,7 +33,7 @@ const getSystemId = (systemName: string): string => {
     "stellar community fund": "stellar",
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
-    celopg: "celo-org", // Updated name
+    celopg: "celopg", // Updated to correct system ID
     "clr fund": "clrfund",
     "dao drops": "dao-drops-dorgtech",
     "octant (golem)": "octant-golemfoundation",

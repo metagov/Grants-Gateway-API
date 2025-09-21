@@ -229,7 +229,7 @@ class DataSourceRegistry {
     // DAOIP-5 static data systems 
     const knownDaoip5Systems = [
       'stellar',  // Stellar Community Fund
-      'celo-org'  // Celo Public Goods
+      'celopg'  // Celo Public Goods
     ];
 
     // Register known DAOIP5 systems without external fetch
@@ -479,7 +479,7 @@ class DataSourceRegistry {
         mechanisms: ['Direct Grants', 'Community Voting'],
         addedDate: '2024-02-01'
       },
-      'celo-org': {
+      'celopg': {
         name: 'Celo Public Goods',
         description: 'Celo Foundation public goods funding program',
         compatibility: 90,
