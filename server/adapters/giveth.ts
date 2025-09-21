@@ -210,8 +210,21 @@ export class GivethAdapter extends BaseAdapter {
       let targetQfRoundId: number | null = null;
 
       if (!filters?.poolId) {
+        // DEBUG: Log all pools with their status
+        const debugLog = `🔍 [GIVETH DEBUG] All pools fetched: ${allPools.length}\n` + 
+          allPools.map((pool, index) => {
+            const qfRoundId = pool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
+            return `   Pool ${index + 1}: ${pool.name} (ID: ${qfRoundId}) - isOpen: ${pool.isOpen}, closeDate: ${pool.closeDate}`;
+          }).join('\n');
+        console.log(debugLog);
+        
         // Find the latest closed pool specifically (where isOpen is false)
         const closedPools = allPools.filter(pool => !pool.isOpen);
+        console.log(`🔍 [GIVETH DEBUG] Found ${closedPools.length} closed pools:`);
+        closedPools.forEach((pool, index) => {
+          const qfRoundId = pool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
+          console.log(`   Closed Pool ${index + 1}: ${pool.name} (ID: ${qfRoundId}) - closeDate: ${pool.closeDate}`);
+        });
         
         const latestPool = closedPools.length > 0 
           ? closedPools.reduce((latest, pool) => {
@@ -222,10 +235,15 @@ export class GivethAdapter extends BaseAdapter {
               const poolDate = pool.closeDate
                 ? new Date(pool.closeDate)
                 : new Date(0);
+              
+              // DEBUG: Log date comparison
+              console.log(`🔍 [GIVETH DEBUG] Comparing dates: ${pool.name} (${poolDate.toISOString()}) vs ${latest.name} (${latestDate.toISOString()})`);
+              
               return poolDate > latestDate ? pool : latest;
             })
           : allPools.reduce((latest, pool) => {
               // Fallback to any pool if no closed pools found
+              console.log("🔍 [GIVETH DEBUG] No closed pools found, falling back to latest pool overall");
               if (!latest) return pool;
               const latestDate = latest.closeDate
                 ? new Date(latest.closeDate)
@@ -233,13 +251,31 @@ export class GivethAdapter extends BaseAdapter {
               const poolDate = pool.closeDate
                 ? new Date(pool.closeDate)
                 : new Date(0);
+              
+              // DEBUG: Log fallback date comparison
+              console.log(`🔍 [GIVETH DEBUG] Fallback comparing: ${pool.name} (${poolDate.toISOString()}) vs ${latest.name} (${latestDate.toISOString()})`);
+              
               return poolDate > latestDate ? pool : latest;
             }, allPools[0]);
+
+        // DEBUG: Log selected pool
+        let finalDebugLog = '';
+        if (latestPool) {
+          const selectedQfRoundId = latestPool.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
+          finalDebugLog = `✅ [GIVETH DEBUG] Selected pool: ${latestPool.name} (ID: ${selectedQfRoundId}) - isOpen: ${latestPool.isOpen}, closeDate: ${latestPool.closeDate}`;
+          console.log(finalDebugLog);
+        } else {
+          finalDebugLog = "❌ [GIVETH DEBUG] No pool selected!";
+          console.log(finalDebugLog);
+        }
 
         targetPools = latestPool ? [latestPool] : [];
         const rawQfRoundId =
           latestPool?.extensions?.["io.giveth.roundMetadata"]?.qfRoundId;
         targetQfRoundId = rawQfRoundId ? parseInt(String(rawQfRoundId)) : null;
+        
+        const targetDebugLog = `🎯 [GIVETH DEBUG] Target QF Round ID: ${targetQfRoundId}`;
+        console.log(targetDebugLog);
       } else {
         // Filter to specific pool if poolId is provided
         targetPools = allPools.filter((pool) => pool.id === filters.poolId);

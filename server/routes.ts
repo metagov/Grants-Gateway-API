@@ -103,6 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to get adapter
   function getAdapter(system?: string): BaseAdapter[] {
+    
     if (system && adapters[system]) {
       return [adapters[system]];
     }
