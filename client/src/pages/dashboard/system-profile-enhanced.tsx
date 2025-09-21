@@ -130,6 +130,17 @@ function FundingDistributionChart({ pools, applications }: {
 }
 
 
+// Helper function to format pool names
+const formatPoolName = (pool: any): string => {
+  const rawName = pool.name || pool.id.split(':').pop();
+  // Convert scf_1 -> SCF #1, scf_38 -> SCF #38
+  if (rawName && rawName.toLowerCase().startsWith('scf_')) {
+    const number = rawName.match(/\d+/);
+    return number ? `SCF #${number[0]}` : rawName;
+  }
+  return rawName;
+};
+
 // Applications vs Funding per Round Chart
 function ApplicationsVsFundingChart({ pools, applications }: { 
   pools: any[]; 
@@ -148,11 +159,14 @@ function ApplicationsVsFundingChart({ pools, applications }: {
       app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
     ).length;
     
+    const formattedName = formatPoolName(pool);
+    
     return {
-      name: pool.name || pool.id.split(':').pop(),
+      name: formattedName,
       applications: awardedCount,
       funding: totalFunding,
-      poolId: pool.id
+      poolId: pool.id,
+      rawName: pool.name || pool.id.split(':').pop() // Keep for sorting
     };
   }).filter(item => item.applications > 0 || item.funding > 0)
     .sort((a, b) => {
@@ -161,7 +175,7 @@ function ApplicationsVsFundingChart({ pools, applications }: {
         const match = name.match(/\d+/);
         return match ? parseInt(match[0]) : 0;
       };
-      return getNumber(b.name) - getNumber(a.name); // Latest first
+      return getNumber(b.rawName) - getNumber(a.rawName); // Latest first (descending)
     });
 
   return (
@@ -178,14 +192,16 @@ function ApplicationsVsFundingChart({ pools, applications }: {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="name" 
                 angle={-45}
                 textAnchor="end"
-                height={100}
-                fontSize={12}
+                height={120}
+                fontSize={10}
+                interval={0}
+                tick={{ fontSize: 10 }}
               />
               <YAxis 
                 yAxisId="left"
