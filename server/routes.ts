@@ -103,7 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to get adapter
   function getAdapter(system?: string): BaseAdapter[] {
-    
     if (system && adapters[system]) {
       return [adapters[system]];
     }
@@ -333,19 +332,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
       
-      // If no poolId is provided, fetch the latest grant pool
+      // If no poolId is provided, fetch the latest closed pool
       if (!poolId) {
-        const latestPools = [];
+        const allPools = [];
         for (const adapter of selectedAdapters) {
-          const pools = await adapter.getPools({ limit: 1, offset: 0 });
-          if (pools.length > 0) {
-            latestPools.push(pools[0]);
-          }
+          const pools = await adapter.getPools({ limit: 20 });
+          allPools.push(...pools);
         }
         
-        // Use the first available pool as the latest
-        if (latestPools.length > 0) {
-          finalPoolId = latestPools[0].id;
+        if (allPools.length > 0) {
+          // Find the latest closed pool specifically (where isOpen is false)
+          const closedPools = allPools.filter(pool => !pool.isOpen);
+          
+          const latestPool = closedPools.length > 0 
+            ? closedPools.reduce((latest, pool) => {
+                if (!latest) return pool;
+                const latestDate = latest.closeDate
+                  ? new Date(latest.closeDate)
+                  : new Date(0);
+                const poolDate = pool.closeDate
+                  ? new Date(pool.closeDate)
+                  : new Date(0);
+                return poolDate > latestDate ? pool : latest;
+              })
+            : allPools.reduce((latest, pool) => {
+                // Fallback to any pool if no closed pools found
+                if (!latest) return pool;
+                const latestDate = latest.closeDate
+                  ? new Date(latest.closeDate)
+                  : new Date(0);
+                const poolDate = pool.closeDate
+                  ? new Date(pool.closeDate)
+                  : new Date(0);
+                return poolDate > latestDate ? pool : latest;
+              }, allPools[0]);
+
+          finalPoolId = latestPool?.id;
         }
       }
 
