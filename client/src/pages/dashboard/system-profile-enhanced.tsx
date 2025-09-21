@@ -130,6 +130,17 @@ function FundingDistributionChart({ pools, applications }: {
 }
 
 
+// Helper function to extract SCF round number for sorting
+const getRoundNumber = (pool: any): number => {
+  const src = (pool.name || pool.id || '').toString();
+  // Look for SCF-specific patterns first (scf_38, scf-12, SCF #38)
+  const scfMatch = src.match(/scf[^0-9]*?(\d+)/i);
+  if (scfMatch) return parseInt(scfMatch[1], 10);
+  // Fallback to any number found
+  const genericMatch = src.match(/(\d+)/);
+  return genericMatch ? parseInt(genericMatch[1], 10) : -Infinity;
+};
+
 // Helper function to format pool names
 const formatPoolName = (pool: any): string => {
   const rawName = pool.name || pool.id.split(':').pop();
@@ -170,12 +181,10 @@ function ApplicationsVsFundingChart({ pools, applications }: {
     };
   }).filter(item => item.applications > 0 || item.funding > 0)
     .sort((a, b) => {
-      // Extract round numbers for sorting (e.g., scf_34 -> 34)
-      const getNumber = (name: string) => {
-        const match = name.match(/\d+/);
-        return match ? parseInt(match[0]) : 0;
-      };
-      return getNumber(b.rawName) - getNumber(a.rawName); // Latest first (descending)
+      // Use the same round number extraction logic for consistency
+      const aNumber = getRoundNumber({ name: a.rawName });
+      const bNumber = getRoundNumber({ name: b.rawName });
+      return bNumber - aNumber; // Latest first (descending)
     });
 
   return (
@@ -639,14 +648,10 @@ export default function SystemProfileEnhanced() {
         
         {pools.length > 0 ? (
           <div className="space-y-4">
-            {pools
+            {[...pools]
               .sort((a, b) => {
-                // Extract round numbers for sorting (e.g., scf_34 -> 34)
-                const getNumber = (id: string) => {
-                  const match = id.match(/\d+/);
-                  return match ? parseInt(match[0]) : 0;
-                };
-                return getNumber(b.id) - getNumber(a.id); // Latest rounds first
+                // Use proper round number extraction from name, not ID
+                return getRoundNumber(b) - getRoundNumber(a); // Latest rounds first (descending)
               })
               .map((pool) => (
                 <GrantPoolCard 
