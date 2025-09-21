@@ -487,6 +487,7 @@ export default function SystemProfileEnhanced() {
   const systemColor = getSystemColor(systemName);
 
 
+
   if (isLoading) {
     return (
       <div className="space-y-6">
