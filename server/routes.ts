@@ -328,6 +328,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
+      
+      // DEBUG: Log the incoming query parameters
+      console.log(`[QUERY DEBUG] /api/v1/grantApplications called with:`, { system, poolId, projectId, status, limit, offset });
 
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
