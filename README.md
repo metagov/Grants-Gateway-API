@@ -1,3 +1,4 @@
+
 # OpenGrants Gateway API
 
 A comprehensive grant analysis dashboard that aggregates data from multiple grant systems across the Ethereum ecosystem using the DAOIP-5 metadata standard.
@@ -10,6 +11,7 @@ A comprehensive grant analysis dashboard that aggregates data from multiple gran
 - **Cross-system Analysis**: Compare funding mechanisms and approval rates
 - **Interactive Dashboard**: Modern React-based UI with real-time updates
 - **DAOIP-5 Compliant**: Standardized metadata format for interoperability
+- **Configurable Systems**: Single source of truth for active grant systems
 
 ## 📊 Dashboard Features
 
@@ -25,11 +27,18 @@ A comprehensive grant analysis dashboard that aggregates data from multiple gran
 - Historical trend visualization
 - Cross-system comparisons
 
+### Systems Management
+- **Centralized Configuration**: All system metadata managed in `server/config/systemsConfig.ts`
+- **Security-First Design**: Only manual code changes can enable/disable systems
+- **Read-Only API Access**: Public endpoints only show active system information
+- **Priority-Based Ordering**: Configure system display order and priority
+
 ### Data Accuracy Improvements
 - ✅ **Fixed CORS issues** with API proxy endpoints
 - ✅ **Real data fetching** replacing hardcoded fallbacks
 - ✅ **Accurate currency conversion** with historical rates
 - ✅ **Comprehensive system coverage** (6+ grant systems)
+- ✅ **Secure configuration management** with manual control
 
 ## 🛠️ Prerequisites
 
@@ -97,7 +106,25 @@ Use a cloud provider:
 pnpm run db:push
 ```
 
-### 5. Start Development Server
+### 5. Configure Active Systems
+
+Edit `server/config/systemsConfig.ts` to enable/disable systems:
+
+```typescript
+{
+  "activeSystems": [
+    {
+      "id": "octant",
+      "name": "Octant",
+      "enabled": true,  // Set to false to disable
+      "priority": 1,
+      // ... other metadata
+    }
+  ]
+}
+```
+
+### 6. Start Development Server
 
 ```bash
 # Start the application
@@ -154,6 +181,15 @@ GET /api/v1/analytics/system/:systemName?source=opengrants
 GET /api/v1/analytics/funding-trends
 ```
 
+### Systems Configuration (Read-Only)
+```bash
+# Get active systems configuration
+GET /api/v1/systems/config/active
+
+# Get available source types
+GET /api/v1/systems/config/source-types
+```
+
 ### Grant Data
 ```bash
 # All grant systems
@@ -175,6 +211,46 @@ GET /api/proxy/opengrants/:endpoint
 GET /api/proxy/daoip5/:system/:file
 ```
 
+## 🔒 Security & Configuration
+
+### Systems Management Security
+
+**⚠️ Important Security Note**: System enable/disable operations can **only** be performed by manually editing the configuration file. No API endpoints allow modifying system status for security reasons.
+
+#### To Enable/Disable a System:
+
+1. **Edit Configuration File**: Modify `server/config/systemsConfig.ts`
+2. **Change enabled flag**: Set `"enabled": true/false` for the target system
+3. **Restart Application**: The server must be restarted for changes to take effect
+
+#### Configuration Structure:
+
+```typescript
+{
+  "activeSystems": [
+    {
+      "id": "system-identifier",
+      "name": "System Name",
+      "displayName": "Public Display Name",
+      "source": "opengrants" | "daoip5" | "custom",
+      "enabled": true,  // Manual control only
+      "priority": 1,    // Display order
+      "metadata": {
+        "description": "System description",
+        "website": "https://system-website.com",
+        // ... additional metadata
+      }
+    }
+  ]
+}
+```
+
+#### API Access:
+
+- **Public Endpoints**: Only return information about **enabled** systems
+- **Configuration Viewing**: Read-only access to active systems configuration
+- **No Modification API**: No endpoints exist for changing system status
+
 ## 🚨 Troubleshooting
 
 ### Common Issues
@@ -185,7 +261,13 @@ Error: DATABASE_URL must be set
 ```
 **Solution**: Ensure valid `DATABASE_URL` in `.env` file
 
-#### 2. Port Already in Use
+#### 2. Systems Configuration Error
+```
+Failed to load systems configuration: ENOENT
+```
+**Solution**: Ensure `server/config/systemsConfig.ts` exists and is properly formatted
+
+#### 3. Port Already in Use
 ```
 Error: listen EADDRINUSE: address already in use :::5000
 ```
@@ -198,7 +280,7 @@ echo "PORT=3000" >> .env
 lsof -ti:5000 | xargs kill -9
 ```
 
-#### 3. pnpm Not Found
+#### 4. pnpm Not Found
 ```bash
 # Install pnpm globally
 npm install -g pnpm
@@ -208,7 +290,7 @@ npm install
 npm run dev
 ```
 
-#### 4. TypeScript Errors
+#### 5. TypeScript Errors
 ```bash
 # Check for type errors
 pnpm run check
@@ -217,11 +299,16 @@ pnpm run check
 pnpm run install:clean
 ```
 
-#### 5. Database Schema Issues
+#### 6. Database Schema Issues
 ```bash
 # Reset database schema
 pnpm run db:push
 ```
+
+#### 7. System Not Appearing in Dashboard
+1. Check `systemsConfig.ts` - ensure `"enabled": true`
+2. Restart the development server
+3. Verify system configuration syntax is correct
 
 ## 📈 Data Accuracy Improvements
 
@@ -237,27 +324,43 @@ pnpm run db:push
 
 ### Supported Grant Systems
 
+#### Currently Active (Configurable)
+
 - ✅ **Octant** - Quadratic funding via OpenGrants API
 - ✅ **Giveth** - Donation platform via OpenGrants API  
 - ✅ **Stellar** - Cross-border payments via DAOIP-5
-- ✅ **Optimism** - L2 grants via DAOIP-5
-- ✅ **Arbitrum Foundation** - L2 ecosystem via DAOIP-5
 - ✅ **Celo** - Mobile-first blockchain via DAOIP-5
+
+#### Available for Activation
+
+- 🔄 **Optimism** - L2 grants via DAOIP-5
+- 🔄 **Arbitrum Foundation** - L2 ecosystem via DAOIP-5
 - 🔄 **Gitcoin** - Coming soon (Allo Protocol integration)
+
+**Note**: Systems can be enabled/disabled by editing `server/config/systemsConfig.ts` and restarting the application.
 
 ## 🏗️ Architecture
 
 ### Data Flow
 ```
 External APIs → Server Proxy → Data Validation → Analytics Engine → Dashboard UI
+                      ↕
+              Systems Configuration
 ```
 
 ### Key Components
+- **Systems Configuration Service**: Centralized system management
 - **API Proxy**: Resolves CORS issues for external APIs
 - **Accurate Data Service**: Fetches real data replacing fallbacks
 - **Historical Price Service**: Provides accurate currency conversion
 - **Analytics Engine**: Computes ecosystem-wide metrics
 - **React Dashboard**: Modern UI with real-time updates
+
+### Configuration Management
+- **Single Source of Truth**: `server/config/systemsConfig.ts`
+- **Security-First**: Manual changes only, no API modifications
+- **Type-Safe**: TypeScript interfaces for configuration validation
+- **Hot Reload**: Frontend changes apply immediately, server changes require restart
 
 ## 📚 Documentation
 
@@ -268,11 +371,19 @@ External APIs → Server Proxy → Data Validation → Analytics Engine → Dash
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+### Adding New Systems
+
+1. **Update Configuration**: Add system definition to `systemsConfig.ts`
+2. **Create Adapter**: Implement adapter in `server/adapters/` if needed
+3. **Test Integration**: Verify data fetching and transformation
+4. **Update Documentation**: Add system to supported list
+
+### Security Guidelines
+
+- **Never expose system control APIs** to public endpoints
+- **Always require manual configuration changes** for system modifications
+- **Validate configuration on startup** and fail fast if invalid
+- **Log configuration changes** for audit trails
 
 ## 📄 License
 
@@ -283,7 +394,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **Documentation**: Available at `/endpoints` when running locally
 - **Health Check**: `/api/health` endpoint for monitoring
+- **Configuration Help**: See `server/config/systemsConfig.ts` for examples
 
 ---
 
 **Built with ❤️ for the Ethereum ecosystem**
+
+**Security Notice**: This application implements a security-first approach to system management. All system configuration changes must be made manually through code changes, ensuring complete administrative control and preventing unauthorized modifications.
