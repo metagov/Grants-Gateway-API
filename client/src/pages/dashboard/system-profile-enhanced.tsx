@@ -486,6 +486,29 @@ export default function SystemProfileEnhanced() {
 
   const systemColor = getSystemColor(systemName);
 
+  // Debug: Check for Round 37 and specific rounds
+  if (systemData?.pools && systemData?.applications) {
+    const round37 = systemData.pools.find((p: any) => (p.name || p.id || '').includes('37'));
+    const round29 = systemData.pools.find((p: any) => (p.name || p.id || '').includes('29'));
+    const round34 = systemData.pools.find((p: any) => (p.name || p.id || '').includes('34'));
+    const round35 = systemData.pools.find((p: any) => (p.name || p.id || '').includes('35'));
+    
+    console.log('🔍 Round 37 check:', round37 ? `Found: ${round37.name}` : 'NOT FOUND');
+    console.log('🔍 Round 29 check:', round29 ? `Found: ${round29.name}` : 'NOT FOUND');
+    console.log('🔍 Round 34 check:', round34 ? `Found: ${round34.name}` : 'NOT FOUND');
+    console.log('🔍 Round 35 check:', round35 ? `Found: ${round35.name}` : 'NOT FOUND');
+    
+    const round29Apps = systemData.applications.filter((app: any) => app.grantPoolId === round29?.id);
+    const round34Apps = systemData.applications.filter((app: any) => app.grantPoolId === round34?.id);
+    const round35Apps = systemData.applications.filter((app: any) => app.grantPoolId === round35?.id);
+    
+    console.log('📊 SCF 29 applications count:', round29Apps.length);
+    console.log('📊 SCF 34 applications count:', round34Apps.length);
+    console.log('📊 SCF 35 applications count:', round35Apps.length);
+    console.log('📊 Total applications in system:', systemData.applications.length);
+    console.log('📊 Total pools in system:', systemData.pools.length);
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6">
