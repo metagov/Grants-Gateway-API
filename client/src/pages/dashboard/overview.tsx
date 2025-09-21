@@ -123,6 +123,11 @@ function FundingTrendsChart({ data }: { data: Array<{ quarter: string; funding: 
 
 // Recent systems section
 function RecentSystems({ systems }: { systems: any[] }) {
+  // Filter out Octant and Giveth from dashboard display
+  const filteredSystems = systems.filter(system => 
+    !['octant', 'giveth'].includes(system.name?.toLowerCase() || system.id?.toLowerCase())
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -136,7 +141,7 @@ function RecentSystems({ systems }: { systems: any[] }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {systems.slice(0, 6).map((system, index) => (
+          {filteredSystems.slice(0, 6).map((system, index) => (
             <div key={system.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="h-10 w-10 bg-[#800020] rounded-lg flex items-center justify-center">

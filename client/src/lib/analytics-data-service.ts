@@ -152,8 +152,8 @@ class AnalyticsDataService {
       console.log('🔄 Starting batch data load...');
       const startTime = performance.now();
 
-      // Get all registered data sources
-      const sources = dataSourceRegistry.getActiveSources();
+      // Get data sources for dashboard analytics (excludes Octant and Giveth)
+      const sources = dataSourceRegistry.getActiveSourcesForDashboard();
       
       // Batch load data for all systems
       const systemDataPromises = sources.map(async (source): Promise<SystemData> => {
