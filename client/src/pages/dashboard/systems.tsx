@@ -102,28 +102,28 @@ function SystemCard({ system }: { system: any }) {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-gray-500">Funding:</span>
-              <span className="ml-1 font-medium">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Funding:</span>
+              <span className="font-medium block">
                 {formatCurrency(system.totalFunding || 0)}
               </span>
             </div>
-            <div>
-              <span className="text-gray-500">Applications:</span>
-              <span className="ml-1 font-medium">
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Applications:</span>
+              <span className="font-medium block">
                 {system.totalApplications || 0}
               </span>
             </div>
-            <div>
-              <span className="text-gray-500">Approval:</span>
-              <span className="ml-1 font-medium text-gray-400 italic">
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Approval:</span>
+              <span className="font-medium text-gray-400 italic block">
                 Coming soon
               </span>
             </div>
-            <div>
-              <span className="text-gray-500">Rounds:</span>
-              <span className="ml-1 font-medium">{system.totalPools || 0}</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Rounds:</span>
+              <span className="font-medium block">{system.totalPools || 0}</span>
             </div>
           </div>
 
