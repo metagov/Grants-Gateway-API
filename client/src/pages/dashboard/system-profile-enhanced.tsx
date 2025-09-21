@@ -737,24 +737,57 @@ export default function SystemProfileEnhanced() {
           description="Funding rounds available"
           icon={Calendar}
         />
-        <StatsCard
-          title="Total Awarded"
-          value={formatCurrency(
-            applications.reduce(
-              (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
-              0,
-            ),
+        <div className="relative">
+          <StatsCard
+            title="Total Awarded"
+            value={formatCurrency(
+              applications.reduce(
+                (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
+                0,
+              ),
+            )}
+            description="Funds approved for projects"
+            icon={Award}
+          />
+          {applications.reduce(
+            (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
+            0,
+          ) === 0 && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-xs">
+              <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
           )}
-          description="Funds approved for projects"
-          icon={Award}
-        />
-        <StatsCard
-          title="Total Paid"
-          value={(() => {
-            // Check if we have any payout data in applications
+        </div>
+        <div className="relative">
+          <StatsCard
+            title="Total Paid"
+            value={(() => {
+              // Check if we have any payout data in applications
+              const totalPaid = applications.reduce((sum, app: any) => {
+                if (app.payouts && app.payouts.length > 0) {
+                  // Sum up payouts if available
+                  return (
+                    sum +
+                    app.payouts.reduce((payoutSum: number, payout: any) => {
+                      const amount = parseFloat(payout.value?.amount || "0");
+                      return payoutSum + amount;
+                    }, 0)
+                  );
+                }
+                return sum;
+              }, 0);
+              return totalPaid > 0 ? formatCurrency(totalPaid) : "Coming soon";
+            })()}
+            description="Funds disbursed to projects"
+            icon={CreditCard}
+          />
+          {(() => {
             const totalPaid = applications.reduce((sum, app: any) => {
               if (app.payouts && app.payouts.length > 0) {
-                // Sum up payouts if available
                 return (
                   sum +
                   app.payouts.reduce((payoutSum: number, payout: any) => {
@@ -765,11 +798,17 @@ export default function SystemProfileEnhanced() {
               }
               return sum;
             }, 0);
-            return totalPaid > 0 ? formatCurrency(totalPaid) : "Coming soon";
-          })()}
-          description="Funds disbursed to projects"
-          icon={CreditCard}
-        />
+            return totalPaid === 0;
+          })() && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-xs">
+              <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="relative">
           <StatsCard
             title="Approval Rate"
@@ -783,7 +822,7 @@ export default function SystemProfileEnhanced() {
           />
           {(stats.approvalRate === undefined ||
             stats.approvalRate === null) && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/70 to-gray-200/70 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-xs">
               <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
                 <span className="text-xs font-medium text-gray-600">
                   Coming Soon
