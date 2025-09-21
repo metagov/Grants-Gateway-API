@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Link } from "wouter";
-import { 
-  Building2, 
-  ArrowLeft, 
-  DollarSign, 
-  Users, 
+import {
+  Building2,
+  ArrowLeft,
+  DollarSign,
+  Users,
   TrendingUp,
   Calendar,
   ChevronDown,
@@ -15,23 +15,53 @@ import {
   CreditCard,
   RefreshCw,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { dashboardApi, formatCurrency, getSystemColor, invalidateAllCaches } from "@/lib/dashboard-api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  dashboardApi,
+  formatCurrency,
+  getSystemColor,
+  invalidateAllCaches,
+} from "@/lib/dashboard-api";
 import { queryClient } from "@/lib/queryClient";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { useState } from "react";
 
-function StatsCard({ 
-  title, 
-  value, 
-  description, 
-  icon: Icon, 
-  loading = false 
+function StatsCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+  loading = false,
 }: {
   title: string;
   value: string | number;
@@ -57,7 +87,9 @@ function StatsCard({
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-gray-600">
+          {title}
+        </CardTitle>
         <Icon className="h-4 w-4 text-[#800020]" />
       </CardHeader>
       <CardContent>
@@ -69,23 +101,35 @@ function StatsCard({
 }
 
 // Funding Distribution Chart
-function FundingDistributionChart({ pools, applications }: { 
-  pools: any[]; 
+function FundingDistributionChart({
+  pools,
+  applications,
+}: {
+  pools: any[];
   applications: any[];
 }) {
-  const chartData = pools.map(pool => {
-    const poolApps = applications.filter(app => app.grantPoolId === pool.id);
-    const totalFunding = poolApps.reduce((sum, app) => {
-      return sum + parseFloat(app.fundsApprovedInUSD || '0');
-    }, 0);
-    
-    return {
-      name: pool.name.length > 20 ? pool.name.substring(0, 20) + '...' : pool.name,
-      funding: totalFunding,
-      applications: poolApps.length,
-      approved: poolApps.filter(app => app.status === 'funded' || app.status === 'approved').length
-    };
-  }).filter(item => item.funding > 0);
+  const chartData = pools
+    .map((pool) => {
+      const poolApps = applications.filter(
+        (app) => app.grantPoolId === pool.id,
+      );
+      const totalFunding = poolApps.reduce((sum, app) => {
+        return sum + parseFloat(app.fundsApprovedInUSD || "0");
+      }, 0);
+
+      return {
+        name:
+          pool.name.length > 20
+            ? pool.name.substring(0, 20) + "..."
+            : pool.name,
+        funding: totalFunding,
+        applications: poolApps.length,
+        approved: poolApps.filter(
+          (app) => app.status === "funded" || app.status === "approved",
+        ).length,
+      };
+    })
+    .filter((item) => item.funding > 0);
 
   return (
     <Card>
@@ -101,26 +145,32 @@ function FundingDistributionChart({ pools, applications }: {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="name" 
+              <XAxis
+                dataKey="name"
                 angle={-45}
                 textAnchor="end"
                 height={100}
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => formatCurrency(value)}
                 fontSize={12}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: any, name: any) => [
-                  name === 'funding' ? formatCurrency(value) : value,
-                  name === 'funding' ? 'Total Funding' : 
-                  name === 'applications' ? 'Applications' : 'Approved'
+                  name === "funding" ? formatCurrency(value) : value,
+                  name === "funding"
+                    ? "Total Funding"
+                    : name === "applications"
+                      ? "Applications"
+                      : "Approved",
                 ]}
-                labelStyle={{ color: '#374151' }}
+                labelStyle={{ color: "#374151" }}
               />
               <Bar dataKey="funding" fill="#800020" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -131,10 +181,9 @@ function FundingDistributionChart({ pools, applications }: {
   );
 }
 
-
 // Helper function to extract SCF round number for sorting
 const getRoundNumber = (pool: any): number => {
-  const src = (pool.name || pool.id || '').toString();
+  const src = (pool.name || pool.id || "").toString();
   // Look for SCF-specific patterns first (scf_38, scf-12, SCF #38)
   const scfMatch = src.match(/scf[^0-9]*?(\d+)/i);
   if (scfMatch) return parseInt(scfMatch[1], 10);
@@ -145,9 +194,9 @@ const getRoundNumber = (pool: any): number => {
 
 // Helper function to format pool names
 const formatPoolName = (pool: any): string => {
-  const rawName = pool.name || pool.id.split(':').pop();
+  const rawName = pool.name || pool.id.split(":").pop();
   // Convert scf_1 -> SCF #1, scf_38 -> SCF #38
-  if (rawName && rawName.toLowerCase().startsWith('scf_')) {
+  if (rawName && rawName.toLowerCase().startsWith("scf_")) {
     const number = rawName.match(/\d+/);
     return number ? `SCF #${number[0]}` : rawName;
   }
@@ -155,38 +204,49 @@ const formatPoolName = (pool: any): string => {
 };
 
 // Applications vs Funding per Round Chart
-function ApplicationsVsFundingChart({ pools, applications }: { 
-  pools: any[]; 
+function ApplicationsVsFundingChart({
+  pools,
+  applications,
+}: {
+  pools: any[];
   applications: any[];
 }) {
-  const chartData = pools.map(pool => {
-    const poolApps = applications.filter(app => app.grantPoolId === pool.id);
+  const chartData = pools.map((pool) => {
+    const poolApps = applications.filter((app) => app.grantPoolId === pool.id);
     // Calculate actual distributed funding from awarded applications
     const totalFunding = poolApps.reduce((sum, app) => {
-      if (app.status === 'funded' || app.status === 'approved' || app.status === 'awarded') {
-        return sum + parseFloat(app.fundsApprovedInUSD || '0');
+      if (
+        app.status === "funded" ||
+        app.status === "approved" ||
+        app.status === "awarded"
+      ) {
+        return sum + parseFloat(app.fundsApprovedInUSD || "0");
       }
       return sum;
     }, 0);
-    const awardedCount = poolApps.filter(app => 
-      app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
+    const awardedCount = poolApps.filter(
+      (app) =>
+        app.status === "funded" ||
+        app.status === "approved" ||
+        app.status === "awarded",
     ).length;
-    
+
     const formattedName = formatPoolName(pool);
     // Create short name for chart labels (SCF #38 -> 38)
-    const shortName = formattedName.replace(/^SCF #/, '');
-    
+    const shortName = formattedName.replace(/^SCF #/, "");
+
     return {
       name: formattedName,
       shortName: shortName, // For chart display
       applications: awardedCount,
       funding: totalFunding,
       poolId: pool.id,
-      rawName: pool.name || pool.id.split(':').pop() // Keep for sorting
+      rawName: pool.name || pool.id.split(":").pop(), // Keep for sorting
     };
-  }); 
-  
-  const filteredData = chartData.filter(item => item.applications > 0 || item.funding > 0)
+  });
+
+  const filteredData = chartData
+    .filter((item) => item.applications > 0 || item.funding > 0)
     .sort((a, b) => {
       // Use the same round number extraction logic for consistency
       const aNumber = getRoundNumber({ name: a.rawName });
@@ -202,16 +262,20 @@ function ApplicationsVsFundingChart({ pools, applications }: {
           Applications Awarded vs Funds Distributed
         </CardTitle>
         <CardDescription>
-          Number of awarded applications and actual distributed funding per round
+          Number of awarded applications and actual distributed funding per
+          round
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={filteredData} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
+            <BarChart
+              data={filteredData}
+              margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="shortName" 
+              <XAxis
+                dataKey="shortName"
                 angle={0}
                 textAnchor="middle"
                 height={60}
@@ -219,29 +283,47 @@ function ApplicationsVsFundingChart({ pools, applications }: {
                 interval={chartData.length > 20 ? 2 : 0} // Show every 3rd label if too many
                 tick={{ fontSize: 11 }}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="left"
                 orientation="left"
                 tickFormatter={(value) => value.toString()}
                 fontSize={12}
-                label={{ value: 'Applications', angle: -90, position: 'insideLeft' }}
+                label={{
+                  value: "Applications",
+                  angle: -90,
+                  position: "insideLeft",
+                }}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="right"
                 orientation="right"
                 tickFormatter={(value) => formatCurrency(value)}
                 fontSize={12}
-                label={{ value: 'Funding ($)', angle: 90, position: 'insideRight' }}
+                label={{
+                  value: "Funding ($)",
+                  angle: 90,
+                  position: "insideRight",
+                }}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: any, name: any) => [
-                  name === 'funding' ? formatCurrency(value) : value,
-                  name === 'funding' ? 'Total Funding' : 'Awarded Applications'
+                  name === "funding" ? formatCurrency(value) : value,
+                  name === "funding" ? "Total Funding" : "Awarded Applications",
                 ]}
-                labelStyle={{ color: '#374151' }}
+                labelStyle={{ color: "#374151" }}
               />
-              <Bar yAxisId="left" dataKey="applications" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="right" dataKey="funding" fill="#800020" radius={[4, 4, 0, 0]} />
+              <Bar
+                yAxisId="left"
+                dataKey="applications"
+                fill="#3B82F6"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                yAxisId="right"
+                dataKey="funding"
+                fill="#800020"
+                radius={[6, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -253,32 +335,37 @@ function ApplicationsVsFundingChart({ pools, applications }: {
 // Funding Timeline Chart
 function FundingTimelineChart({ applications }: { applications: any[] }) {
   const timelineData = applications
-    .filter(app => app.createdAt && parseFloat(app.fundsApprovedInUSD || '0') > 0)
-    .map(app => ({
-      date: new Date(app.createdAt!).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short' 
+    .filter(
+      (app) => app.createdAt && parseFloat(app.fundsApprovedInUSD || "0") > 0,
+    )
+    .map((app) => ({
+      date: new Date(app.createdAt!).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
       }),
-      funding: parseFloat(app.fundsApprovedInUSD || '0'),
-      timestamp: new Date(app.createdAt!).getTime()
+      funding: parseFloat(app.fundsApprovedInUSD || "0"),
+      timestamp: new Date(app.createdAt!).getTime(),
     }))
     .sort((a, b) => a.timestamp - b.timestamp);
 
   // Group by month and sum funding
-  const monthlyData = timelineData.reduce((acc, item) => {
-    const existing = acc.find(d => d.month === item.date);
-    if (existing) {
-      existing.funding += item.funding;
-      existing.count += 1;
-    } else {
-      acc.push({
-        month: item.date,
-        funding: item.funding,
-        count: 1
-      });
-    }
-    return acc;
-  }, [] as Array<{ month: string; funding: number; count: number }>);
+  const monthlyData = timelineData.reduce(
+    (acc, item) => {
+      const existing = acc.find((d) => d.month === item.date);
+      if (existing) {
+        existing.funding += item.funding;
+        existing.count += 1;
+      } else {
+        acc.push({
+          month: item.date,
+          funding: item.funding,
+          count: 1,
+        });
+      }
+      return acc;
+    },
+    [] as Array<{ month: string; funding: number; count: number }>,
+  );
 
   if (monthlyData.length === 0) {
     return (
@@ -310,17 +397,20 @@ function FundingTimelineChart({ applications }: { applications: any[] }) {
       <CardContent>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart
+              data={monthlyData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" fontSize={12} />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => formatCurrency(value)}
                 fontSize={12}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: any, name: any) => [
-                  name === 'funding' ? formatCurrency(value) : value,
-                  name === 'funding' ? 'Total Funding' : 'Applications Funded'
+                  name === "funding" ? formatCurrency(value) : value,
+                  name === "funding" ? "Total Funding" : "Applications Funded",
                 ]}
               />
               <Bar dataKey="funding" fill="#800020" radius={[4, 4, 0, 0]} />
@@ -332,17 +422,22 @@ function FundingTimelineChart({ applications }: { applications: any[] }) {
   );
 }
 
-function GrantPoolCard({ pool, applications }: { 
-  pool: any; 
+function GrantPoolCard({
+  pool,
+  applications,
+}: {
+  pool: any;
   applications: any[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const poolApplications = applications.filter(app => app.grantPoolId === pool.id);
-  
+  const poolApplications = applications.filter(
+    (app) => app.grantPoolId === pool.id,
+  );
+
   const totalFunding = poolApplications.reduce((sum, app) => {
-    return sum + parseFloat(app.fundsApprovedInUSD || '0');
+    return sum + parseFloat(app.fundsApprovedInUSD || "0");
   }, 0);
-  
+
   // Format pool name to be human-friendly
   const displayName = formatPoolName(pool);
 
@@ -358,8 +453,8 @@ function GrantPoolCard({ pool, applications }: {
                   <Badge variant="outline" className="text-xs">
                     {pool.grantFundingMechanism}
                   </Badge>
-                  <Badge 
-                    variant={pool.isOpen ? "default" : "secondary"} 
+                  <Badge
+                    variant={pool.isOpen ? "default" : "secondary"}
                     className="text-xs"
                   >
                     {pool.isOpen ? "Open" : "Closed"}
@@ -393,65 +488,86 @@ function GrantPoolCard({ pool, applications }: {
                     <TableRow className="bg-gray-50">
                       <TableHead className="font-medium">Project</TableHead>
                       <TableHead className="font-medium">Status</TableHead>
-                      <TableHead className="font-medium text-right">Funding</TableHead>
+                      <TableHead className="font-medium text-right">
+                        Funding
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {poolApplications
                       .sort((a, b) => {
                         // Sort alphabetically by project name
-                        const nameA = (a.projectName || 'Unknown').toLowerCase();
-                        const nameB = (b.projectName || 'Unknown').toLowerCase();
+                        const nameA = (
+                          a.projectName || "Unknown"
+                        ).toLowerCase();
+                        const nameB = (
+                          b.projectName || "Unknown"
+                        ).toLowerCase();
                         if (nameA < nameB) return -1;
                         if (nameA > nameB) return 1;
                         return 0;
                       })
                       .slice(0, 10)
                       .map((app) => (
-                      <TableRow key={app.id} className="hover:bg-gray-50">
-                        <TableCell>
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {app.projectName || 'Unknown Project'}
+                        <TableRow key={app.id} className="hover:bg-gray-50">
+                          <TableCell>
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {app.projectName || "Unknown Project"}
+                              </div>
+                              {app.category && (
+                                <div className="text-xs text-gray-500">
+                                  {app.category}{" "}
+                                  {app.awardType && `• ${app.awardType}`}
+                                </div>
+                              )}
+                              {app.website && (
+                                <a
+                                  href={app.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  View Website →
+                                </a>
+                              )}
                             </div>
-                            {app.category && (
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                app.status === "funded"
+                                  ? "default"
+                                  : app.status === "awarded"
+                                    ? "default"
+                                    : app.status === "approved"
+                                      ? "secondary"
+                                      : app.status === "rejected"
+                                        ? "destructive"
+                                        : "outline"
+                              }
+                              className="text-xs capitalize"
+                            >
+                              {app.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="font-medium">
+                              {app.fundsApprovedInUSD
+                                ? formatCurrency(
+                                    parseFloat(app.fundsApprovedInUSD),
+                                  )
+                                : "--"}
+                            </div>
+                            {app.fundsApproved && app.fundsApproved[0] && (
                               <div className="text-xs text-gray-500">
-                                {app.category} {app.awardType && `• ${app.awardType}`}
+                                {app.fundsApproved[0].amount}{" "}
+                                {app.fundsApproved[0].denomination}
                               </div>
                             )}
-                            {app.website && (
-                              <a href={app.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
-                                View Website →
-                              </a>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              app.status === 'funded' ? 'default' :
-                              app.status === 'awarded' ? 'default' :
-                              app.status === 'approved' ? 'secondary' :
-                              app.status === 'rejected' ? 'destructive' :
-                              'outline'
-                            }
-                            className="text-xs capitalize"
-                          >
-                            {app.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="font-medium">
-                            {app.fundsApprovedInUSD ? formatCurrency(parseFloat(app.fundsApprovedInUSD)) : '--'}
-                          </div>
-                          {app.fundsApproved && app.fundsApproved[0] && (
-                            <div className="text-xs text-gray-500">
-                              {app.fundsApproved[0].amount} {app.fundsApproved[0].denomination}
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
                 {poolApplications.length > 10 && (
@@ -477,18 +593,20 @@ function GrantPoolCard({ pool, applications }: {
 
 export default function SystemProfileEnhanced() {
   const [, params] = useRoute("/dashboard/systems/:systemName");
-  const systemName = params?.systemName || '';
-  
-  const { data: systemData, isLoading, error } = useQuery({
-    queryKey: ['dashboard-system-details', systemName],
+  const systemName = params?.systemName || "";
+
+  const {
+    data: systemData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dashboard-system-details", systemName],
     queryFn: () => dashboardApi.getSystemDetails(systemName),
     staleTime: 5 * 60 * 1000,
     enabled: !!systemName,
   });
 
   const systemColor = getSystemColor(systemName);
-
-
 
   if (isLoading) {
     return (
@@ -529,14 +647,14 @@ export default function SystemProfileEnhanced() {
           <CardContent className="pt-6">
             <div className="text-center">
               <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">System not found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                System not found
+              </h3>
               <p className="text-gray-600 mb-4">
                 Unable to load data for system "{systemName}".
               </p>
               <Link href="/dashboard/systems">
-                <Button variant="outline">
-                  Back to Systems
-                </Button>
+                <Button variant="outline">Back to Systems</Button>
               </Link>
             </div>
           </CardContent>
@@ -559,25 +677,31 @@ export default function SystemProfileEnhanced() {
             </Button>
           </Link>
           <div className="flex items-center space-x-3">
-            <div 
+            <div
               className="h-12 w-12 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: systemColor }}
             >
               <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 capitalize">{systemName}</h1>
-              <p className="text-gray-600">Grant system profile and funding analytics</p>
+              <h1 className="text-3xl font-bold text-gray-900 capitalize">
+                {systemName}
+              </h1>
+              <p className="text-gray-600">
+                Grant system profile and funding analytics
+              </p>
             </div>
           </div>
         </div>
         <Button
           onClick={async () => {
-            console.log('🔄 User requested cache invalidation');
+            console.log("🔄 User requested cache invalidation");
             await invalidateAllCaches();
             // Refresh this specific query
-            queryClient.invalidateQueries({ queryKey: ['dashboard-system-details', systemName] });
-            console.log('✅ Cache invalidated and data refreshed');
+            queryClient.invalidateQueries({
+              queryKey: ["dashboard-system-details", systemName],
+            });
+            console.log("✅ Cache invalidated and data refreshed");
           }}
           variant="outline"
           size="sm"
@@ -606,7 +730,10 @@ export default function SystemProfileEnhanced() {
         <StatsCard
           title="Total Awarded"
           value={formatCurrency(
-            applications.reduce((sum, app) => sum + parseFloat(app.fundsApprovedInUSD || '0'), 0)
+            applications.reduce(
+              (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
+              0,
+            ),
           )}
           description="Funds approved for projects"
           icon={Award}
@@ -618,10 +745,13 @@ export default function SystemProfileEnhanced() {
             const totalPaid = applications.reduce((sum, app: any) => {
               if (app.payouts && app.payouts.length > 0) {
                 // Sum up payouts if available
-                return sum + app.payouts.reduce((payoutSum: number, payout: any) => {
-                  const amount = parseFloat(payout.value?.amount || '0');
-                  return payoutSum + amount;
-                }, 0);
+                return (
+                  sum +
+                  app.payouts.reduce((payoutSum: number, payout: any) => {
+                    const amount = parseFloat(payout.value?.amount || "0");
+                    return payoutSum + amount;
+                  }, 0)
+                );
               }
               return sum;
             }, 0);
@@ -633,14 +763,21 @@ export default function SystemProfileEnhanced() {
         <div className="relative">
           <StatsCard
             title="Approval Rate"
-            value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
+            value={
+              stats.approvalRate !== undefined
+                ? `${stats.approvalRate.toFixed(1)}%`
+                : "Coming soon"
+            }
             description="Applications approved/funded"
             icon={TrendingUp}
           />
-          {(stats.approvalRate === undefined || stats.approvalRate === null) && (
+          {(stats.approvalRate === undefined ||
+            stats.approvalRate === null) && (
             <div className="absolute inset-0 bg-gradient-to-br from-gray-100/70 to-gray-200/70 rounded-lg flex items-center justify-center backdrop-blur-sm">
               <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
-                <span className="text-xs font-medium text-gray-600">Coming Soon</span>
+                <span className="text-xs font-medium text-gray-600">
+                  Coming Soon
+                </span>
               </div>
             </div>
           )}
@@ -651,9 +788,15 @@ export default function SystemProfileEnhanced() {
       {applications.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-6">
-            <FundingDistributionChart pools={pools} applications={applications} />
+            <FundingDistributionChart
+              pools={pools}
+              applications={applications}
+            />
           </div>
-          <ApplicationsVsFundingChart pools={pools} applications={applications} />
+          <ApplicationsVsFundingChart
+            pools={pools}
+            applications={applications}
+          />
         </>
       )}
 
@@ -670,7 +813,7 @@ export default function SystemProfileEnhanced() {
             {pools.length} rounds
           </Badge>
         </div>
-        
+
         {pools.length > 0 ? (
           <div className="space-y-4">
             {[...pools]
@@ -679,9 +822,9 @@ export default function SystemProfileEnhanced() {
                 return getRoundNumber(b) - getRoundNumber(a); // Latest rounds first (descending)
               })
               .map((pool) => (
-                <GrantPoolCard 
-                  key={pool.id} 
-                  pool={pool} 
+                <GrantPoolCard
+                  key={pool.id}
+                  pool={pool}
                   applications={applications}
                 />
               ))}
@@ -691,7 +834,9 @@ export default function SystemProfileEnhanced() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No grant rounds found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No grant rounds found
+                </h3>
                 <p className="text-gray-600">
                   This system doesn't have any grant rounds available yet.
                 </p>
