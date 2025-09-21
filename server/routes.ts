@@ -217,12 +217,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCount += result.totalCount;
       }
 
+      // Get actual entity metadata for DAOIP-5 compliance
+      let entityName = "Multi-System Grant Data";
+      let entityType = "GrantDataAggregator";
+      let extensions: Record<string, any> = {};
+
+      if (selectedAdapters.length === 1) {
+        // Single system - use actual entity metadata
+        const systemData = await selectedAdapters[0].getSystems();
+        if (systemData.length > 0) {
+          entityName = systemData[0].name;
+          entityType = systemData[0].type;
+        }
+      } else {
+        // Multi-system aggregation - mark as extension
+        extensions["io.opengrants.aggregated"] = {
+          systems: ["Multi-System"],  // Simplified for now
+          totalAdapters: selectedAdapters.length
+        };
+      }
+
+      // Ensure all pools have required DAOIP-5 fields
+      const validatedPools = allPools.map(pool => ({
+        type: "GrantPool",
+        id: pool.id || `unknown:pool:${pool.name?.toLowerCase().replace(/\s+/g, '-') || 'unnamed'}`,
+        name: pool.name || "Unnamed Pool",
+        description: pool.description || "No description available",
+        grantFundingMechanism: pool.grantFundingMechanism || "Direct Grants",
+        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+        // Optional fields
+        ...(pool.closeDate && { closeDate: pool.closeDate }),
+        ...(pool.applicationsURI && { applicationsURI: pool.applicationsURI }),
+        ...(pool.governanceURI && { governanceURI: pool.governanceURI }),
+        ...(pool.attestationIssuersURI && { attestationIssuersURI: pool.attestationIssuersURI }),
+        ...(pool.requiredCredentials && { requiredCredentials: pool.requiredCredentials }),
+        ...(pool.totalGrantPoolSize && { totalGrantPoolSize: pool.totalGrantPoolSize }),
+        ...(pool.email && { email: pool.email }),
+        ...(pool.image && { image: pool.image }),
+        ...(pool.coverImage && { coverImage: pool.coverImage }),
+        ...(pool.extensions && { extensions: pool.extensions })
+      }));
+
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
       
-      const response: PaginatedResponse<any> = {
+      // Add pagination to extensions for API metadata
+      extensions["io.opengrants.pagination"] = paginationMeta;
+      
+      // DAOIP-5 compliant response structure
+      const response = {
         "@context": "http://www.daostar.org/schemas",
-        data: allPools,
-        pagination: paginationMeta
+        name: entityName,
+        type: entityType,
+        grantPools: validatedPools,
+        ...(Object.keys(extensions).length > 0 && { extensions })
       };
 
       res.json(response);
