@@ -271,7 +271,7 @@ function ApplicationsVsFundingChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={filteredData}
-              margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
+              margin={{ top: 20, right: 80, left: 60, bottom: 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
@@ -287,22 +287,32 @@ function ApplicationsVsFundingChart({
                 yAxisId="left"
                 orientation="left"
                 tickFormatter={(value) => value.toString()}
-                fontSize={12}
+                fontSize={10}
+                width={50}
                 label={{
                   value: "Applications",
                   angle: -90,
                   position: "insideLeft",
+                  style: { textAnchor: 'middle' }
                 }}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                tickFormatter={(value) => formatCurrency(value)}
-                fontSize={12}
+                tickFormatter={(value) => {
+                  // Format large numbers with K, M, B notation for better readability
+                  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
+                  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                  return `$${value}`;
+                }}
+                fontSize={10}
+                width={70}
                 label={{
-                  value: "Funding ($)",
+                  value: "Funding",
                   angle: 90,
                   position: "insideRight",
+                  style: { textAnchor: 'middle' }
                 }}
               />
               <Tooltip
