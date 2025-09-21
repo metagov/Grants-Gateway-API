@@ -33,10 +33,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-      res.json(data);
+      if (!res.headersSent) {
+        res.json(data);
+      }
     } catch (error) {
       console.error('OpenGrants proxy error:', error);
-      res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+      }
     }
   });
 
@@ -51,10 +55,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-      res.json(data);
+      if (!res.headersSent) {
+        res.json(data);
+      }
     } catch (error) {
       console.error('DAOIP-5 proxy error:', error);
-      res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
+      }
+    }
+  });
+
+  // Directory listing for DAOIP-5 systems
+  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const url = `https://daoip5.daostar.org/${system}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!res.headersSent) {
+        res.json(data);
+      }
+    } catch (error) {
+      console.error('DAOIP-5 directory proxy error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch directory from DAOIP-5 API' });
+      }
     }
   });
 

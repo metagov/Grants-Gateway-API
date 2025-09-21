@@ -15,6 +15,24 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
 
+// Helper function to get system ID from display name
+const getSystemId = (systemName: string): string => {
+  const nameToIdMap: Record<string, string> = {
+    'octant': 'octant',
+    'giveth': 'giveth',
+    'stellar community fund': 'stellar',
+    'optimism retropgf': 'optimism',
+    'arbitrum foundation': 'arbitrumfoundation',
+    'celopg': 'celo-org', // Updated name
+    'clr fund': 'clrfund',
+    'dao drops': 'dao-drops-dorgtech',
+    'octant (golem)': 'octant-golemfoundation'
+  };
+  
+  const normalizedName = systemName.toLowerCase();
+  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, '-');
+};
+
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
@@ -24,7 +42,7 @@ function SystemCard({ system }: { system: any }) {
       {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
         <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">NEW</Badge>
       )}
-      <Link href={`/dashboard/systems/${system.name.toLowerCase()}`}>
+      <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -74,7 +92,7 @@ function SystemCard({ system }: { system: any }) {
             </div>
             <div>
               <span className="text-gray-500">Approval:</span>
-              <span className="ml-1 font-medium">{(system.approvalRate || 0).toFixed(1)}%</span>
+              <span className="ml-1 font-medium text-gray-400 italic">Coming soon</span>
             </div>
             <div>
               <span className="text-gray-500">Rounds:</span>
@@ -145,7 +163,10 @@ export default function GrantSystems() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const apiSystems = systems?.filter(s => s.source === 'opengrants') || [];
+  const apiSystems = systems?.filter(s => 
+    s.source === 'opengrants' && 
+    !['giveth', 'octant'].includes(s.name.toLowerCase())
+  ) || [];
   const staticSystems = systems?.filter(s => s.source === 'daoip5') || [];
 
   return (
@@ -156,10 +177,6 @@ export default function GrantSystems() {
         <p className="text-gray-600">
           Automatically discovered and integrated grant systems with DAOIP-5 standardization
         </p>
-        <div className="flex items-center space-x-2 text-sm text-green-600">
-          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>Auto-discovery active - new systems are added automatically</span>
-        </div>
       </div>
 
       {/* Summary Stats */}
@@ -315,7 +332,7 @@ export default function GrantSystems() {
                 ensuring data quality and integration reliability.
               </p>
               <div className="text-xs text-purple-600 font-medium">
-                Avg: {Math.round((systems?.reduce((sum, s) => sum + (s.compatibility || 0), 0) / (systems.length || 1)) || 0)}% compatible
+                Avg: {systems && systems.length > 0 ? Math.round(systems.reduce((sum, s) => sum + (s.compatibility || 0), 0) / systems.length) : 0}% compatible
               </div>
             </div>
           </div>

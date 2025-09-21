@@ -123,6 +123,11 @@ function FundingTrendsChart({ data }: { data: Array<{ quarter: string; funding: 
 
 // Recent systems section
 function RecentSystems({ systems }: { systems: any[] }) {
+  // Filter out Octant and Giveth from dashboard display
+  const filteredSystems = systems.filter(system => 
+    !['octant', 'giveth'].includes(system.name?.toLowerCase() || system.id?.toLowerCase())
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -136,7 +141,7 @@ function RecentSystems({ systems }: { systems: any[] }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {systems.slice(0, 6).map((system, index) => (
+          {filteredSystems.slice(0, 6).map((system, index) => (
             <div key={system.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="h-10 w-10 bg-[#800020] rounded-lg flex items-center justify-center">
@@ -172,9 +177,9 @@ export default function DashboardOverview() {
       console.log('✅ Using accurate ecosystem stats from API');
       return {
         totalFunding: accurateStats.totalFunding || 0,
-        totalGrantRounds: accurateStats.totalGrantRounds || 0,
+        totalGrantRounds: accurateStats.totalPools || 0, // Backend provides totalPools
         totalSystems: accurateStats.totalSystems || 0,
-        totalProjects: accurateStats.totalProjects || 0,
+        totalProjects: accurateStats.totalApplications || 0, // Projects are applications
         totalApplications: accurateStats.totalApplications || 0
       };
     }
@@ -236,7 +241,7 @@ export default function DashboardOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatsCard
           title="Total Funding"
           value={stats ? formatCurrency(stats.totalFunding) : "Loading..."}
@@ -264,6 +269,13 @@ export default function DashboardOverview() {
           description="Total grant applications"
           icon={Users}
           loading={statsLoading}
+        />
+        <StatsCard
+          title="Average Approval Rate"
+          value="Coming soon"
+          description="Cross-system approval metrics"
+          icon={Target}
+          loading={false}
         />
       </div>
 

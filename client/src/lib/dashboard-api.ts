@@ -48,6 +48,7 @@ export interface GrantApplication {
 export interface EcosystemStats {
   totalFunding: number;
   totalGrantRounds: number;
+  totalPools?: number;
   totalSystems: number;
   totalProjects: number;
   totalApplications: number;
@@ -109,15 +110,15 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.data || data.systems || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field
+      const systems = responseData.data || responseData.grantSystems || responseData.systems || [];
+      console.log(`Fetched ${systems.length} systems from OpenGrants API`);
+      return systems;
     } catch (error) {
       console.error('Error fetching systems via proxy:', error);
-      // Fallback to known systems only if proxy fails
-      return [
-        { name: 'Octant', type: 'DAO', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
-        { name: 'Giveth', type: 'DAO', extensions: { description: 'Donation platform for public goods' }}
-      ];
+      // Never return fallback data - return empty array on error
+      return [];
     }
   },
 
@@ -128,31 +129,21 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.grantPools || data.data || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantPools'
+      const pools = responseData.data || responseData.grantPools || [];
+      console.log(`Fetched ${pools.length} pools for ${system || 'all systems'}`);
+      return pools;
     } catch (error) {
       console.error('Error fetching pools via proxy:', error);
-      return this.getSamplePools(system);
+      // Never return sample data - return empty array on error
+      return [];
     }
   },
   
   getSamplePools(system?: string): any[] {
-    const pools: Record<string, any[]> = {
-      'octant': [
-        { id: 'epoch-3', name: 'Epoch 3', totalGrantPoolSizeUSD: '2000000', isOpen: true, closeDate: '2024-04-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-2', name: 'Epoch 2', totalGrantPoolSizeUSD: '1500000', isOpen: false, closeDate: '2024-01-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'epoch-1', name: 'Epoch 1', totalGrantPoolSizeUSD: '1000000', isOpen: false, closeDate: '2023-10-01', grantFundingMechanism: 'Quadratic Funding' },
-      ],
-      'giveth': [
-        { id: 'qf-round-23', name: 'QF Round 23', totalGrantPoolSizeUSD: '500000', isOpen: true, closeDate: '2024-04-15', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-22', name: 'QF Round 22', totalGrantPoolSizeUSD: '400000', isOpen: false, closeDate: '2024-02-01', grantFundingMechanism: 'Quadratic Funding' },
-        { id: 'qf-round-21', name: 'QF Round 21', totalGrantPoolSizeUSD: '350000', isOpen: false, closeDate: '2023-12-01', grantFundingMechanism: 'Quadratic Funding' },
-      ]
-    };
-    
-    return pools[system || ''] || [
-      { id: 'pool-1', name: 'Grant Pool 1', totalGrantPoolSizeUSD: '100000', isOpen: true, grantFundingMechanism: 'Direct Grant' },
-    ];
+    // No sample data - always return empty if real data fails
+    return [];
   },
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
@@ -167,75 +158,356 @@ export const openGrantsApi = {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json();
-      return data.grantApplications || data.data || [];
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantApplications'
+      const applications = responseData.data || responseData.grantApplications || [];
+      console.log(`Fetched ${applications.length} applications for ${system || 'all systems'}`);
+      return applications;
     } catch (error) {
       console.error(`Error fetching applications for ${system} via proxy:`, error);
-      return this.getSampleApplications(system);
+      // Never return sample data - return empty array on error
+      return [];
     }
   },
   
   getSampleApplications(system?: string): any[] {
-    // Realistic sample data for demo purposes
-    const sampleData: Record<string, any[]> = {
-      'octant': [
-        { id: 'oct-1', projectName: 'Protocol Guild', status: 'funded', fundsApprovedInUSD: '250000', grantPoolId: 'epoch-3', createdAt: '2024-01-15' },
-        { id: 'oct-2', projectName: 'Ethereum Cat Herders', status: 'funded', fundsApprovedInUSD: '180000', grantPoolId: 'epoch-3', createdAt: '2024-01-20' },
-        { id: 'oct-3', projectName: 'Rotki', status: 'funded', fundsApprovedInUSD: '150000', grantPoolId: 'epoch-3', createdAt: '2024-02-01' },
-        { id: 'oct-4', projectName: 'L2BEAT', status: 'funded', fundsApprovedInUSD: '200000', grantPoolId: 'epoch-2', createdAt: '2024-02-15' },
-        { id: 'oct-5', projectName: 'ETH Daily', status: 'approved', fundsApprovedInUSD: '75000', grantPoolId: 'epoch-2', createdAt: '2024-03-01' },
-      ],
-      'giveth': [
-        { id: 'giv-1', projectName: 'Commons Stack', status: 'funded', fundsApprovedInUSD: '120000', grantPoolId: 'qf-round-23', createdAt: '2024-01-10' },
-        { id: 'giv-2', projectName: 'Token Engineering Commons', status: 'funded', fundsApprovedInUSD: '95000', grantPoolId: 'qf-round-23', createdAt: '2024-01-25' },
-        { id: 'giv-3', projectName: 'DAppNode', status: 'funded', fundsApprovedInUSD: '110000', grantPoolId: 'qf-round-22', createdAt: '2024-02-05' },
-        { id: 'giv-4', projectName: 'BrightID', status: 'approved', fundsApprovedInUSD: '65000', grantPoolId: 'qf-round-22', createdAt: '2024-02-20' },
-        { id: 'giv-5', projectName: 'Giveth Matching Pool', status: 'funded', fundsApprovedInUSD: '300000', grantPoolId: 'qf-round-21', createdAt: '2024-03-05' },
-      ]
-    };
-    
-    return sampleData[system || ''] || [
-      { id: 'gen-1', projectName: 'Sample Project 1', status: 'funded', fundsApprovedInUSD: '50000', grantPoolId: 'pool-1', createdAt: '2024-01-01' },
-      { id: 'gen-2', projectName: 'Sample Project 2', status: 'approved', fundsApprovedInUSD: '30000', grantPoolId: 'pool-1', createdAt: '2024-01-15' },
-    ];
+    // No sample data - always return empty if real data fails
+    return [];
   }
 };
 
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
 export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
+  cache: new Map<string, any>(),
 
   async getSystems(): Promise<string[]> {
-    // Use known systems directly to avoid CORS errors
-    console.warn('Using known DAOIP5 systems to avoid CORS errors');
     return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
   },
 
-  async getSystemPools(system: string): Promise<string[]> {
-    // Use sample pool files directly to avoid CORS errors
-    console.warn(`Using sample pools for ${system} to avoid CORS errors`);
-    return ['pool-1.json', 'pool-2.json'];
+  async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
+    const cacheKey = `daoip5-${system}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Step 1: Get list of files in the system directory
+      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${system}`);
+      if (!systemFilesResponse.ok) {
+        throw new Error(`Failed to fetch system files for ${system}`);
+      }
+      const systemFiles = await systemFilesResponse.json();
+
+      // Step 2: Fetch grants_pool.json for pool metadata
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${system}/grants_pool.json`);
+      if (!poolsResponse.ok) {
+        throw new Error(`Failed to fetch grants_pool.json for ${system}`);
+      }
+      const poolsData = await poolsResponse.json();
+
+      const pools = (poolsData.grantPools || []).map((pool: any) => ({
+        id: pool.id,
+        name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
+        system,
+        totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
+        totalApplications: 0, // Will be calculated from applications
+        grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
+        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+        closeDate: pool.closeDate,
+        description: pool.description
+      }));
+
+      const applications: any[] = [];
+
+      // Step 3: Fetch application files (look for *_applications_uri.json files)
+      const applicationFiles = systemFiles.filter((file: string) => 
+        file.includes('applications_uri') && file.endsWith('.json')
+      );
+
+      for (const appFile of applicationFiles) {
+        try {
+          const appsResponse = await fetch(`/api/proxy/daoip5/${system}/${appFile}`);
+          if (appsResponse.ok) {
+            const appsData = await appsResponse.json();
+            // Handle nested structure where applications are inside grantPools array
+            const grantPools = appsData.grantPools || [];
+            
+            for (const pool of grantPools) {
+              const poolApplications = (pool.applications || []).map((app: any) => {
+                // Calculate USD value from fundsApproved field
+                let fundsInUSD = 0;
+                
+                // First check if fundsApprovedInUSD is directly provided
+                if (app.fundsApprovedInUSD) {
+                  fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+                }
+                // Otherwise calculate from fundsApproved array
+                else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                  for (const fund of app.fundsApproved) {
+                    if (fund.amount) {
+                      if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                        const xlmToUsd = 0.13;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                      } else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+                        const ethToUsd = 2500;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+                      } else {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      }
+                    }
+                  }
+                }
+                
+                // For Stellar, all applications are "Awarded" since we only get awarded ones
+                const status = system === 'stellar' ? 'awarded' : (app.status || 'unknown');
+                
+                // Extract additional metadata from extensions
+                const extensions = app.extensions || {};
+                const category = extensions['org.stellar.communityfund.category'] || '';
+                const awardType = extensions['org.stellar.communityfund.awardType'] || '';
+                const teamMembers = extensions['stellar.teamMembers'] || '';
+                const website = extensions['stellar.urls']?.website || '';
+                const successCriteria = extensions['stellar.successCriteria'] || '';
+                
+                return {
+                  id: app.id,
+                  projectName: app.projectName || 'Unknown Project',
+                  projectDescription: app.description,
+                  system,
+                  grantPoolId: app.grantPoolId,
+                  status,
+                  fundsApprovedInUSD: fundsInUSD,
+                  createdAt: app.createdAt || new Date().toISOString(),
+                  // Additional metadata from extensions
+                  category,
+                  awardType,
+                  teamMembers,
+                  website,
+                  successCriteria,
+                  extensions // Keep all extensions for detailed view
+                };
+              });
+              
+              applications.push(...poolApplications);
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch applications from ${appFile}:`, error);
+        }
+      }
+
+      // Update pool application counts
+      const poolAppCounts = new Map<string, number>();
+      applications.forEach(app => {
+        poolAppCounts.set(app.grantPoolId, (poolAppCounts.get(app.grantPoolId) || 0) + 1);
+      });
+      
+      pools.forEach((pool: any) => {
+        pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+      });
+
+      const result = { pools, applications };
+      // Cache the results for 5 minutes
+      this.cache.set(cacheKey, result);
+      setTimeout(() => this.cache.delete(cacheKey), 5 * 60 * 1000);
+
+      return result;
+    } catch (error) {
+      console.error(`Error fetching DAOIP-5 data for ${system}:`, error instanceof Error ? error.message : String(error));
+      // Log full error for debugging
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
+      // Fallback to empty data instead of throwing
+      return { pools: [], applications: [] };
+    }
   },
 
-  async getPoolData(system: string, filename: string): Promise<any> {
-    // Use sample data directly to avoid CORS errors
-    console.warn(`Using sample data for ${system}/${filename} to avoid CORS errors`);
-    return {
-      type: 'GrantPool',
-      id: filename,
-      name: `${system} Grant Pool`,
-      totalGrantPoolSizeUSD: '1000000',
-      grantFundingMechanism: 'Direct Grant',
-      isOpen: false
-    };
+  extractFundingAmount(totalGrantPoolSize: any): string {
+    if (!totalGrantPoolSize) return '0';
+    
+    // Handle array of funding objects (DAOIP-5 format)
+    if (Array.isArray(totalGrantPoolSize) && totalGrantPoolSize.length > 0) {
+      let totalUSD = 0;
+      for (const fund of totalGrantPoolSize) {
+        if (fund.amount) {
+          // For USD, use directly
+          if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+          // For XLM (Stellar), use conversion rate
+          else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+            const xlmToUsd = 0.13; // Approximate XLM to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+          }
+          // For ETH, use conversion rate
+          else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+            const ethToUsd = 2500; // Approximate ETH to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+          }
+          // For other denominations, try to use amount as-is
+          else {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+        }
+      }
+      return String(totalUSD);
+    }
+    
+    // Handle single funding object
+    if (typeof totalGrantPoolSize === 'object' && totalGrantPoolSize.amount) {
+      if (totalGrantPoolSize.denomination === 'USD' || totalGrantPoolSize.denomination?.toLowerCase() === 'usd') {
+        return String(totalGrantPoolSize.amount || 0);
+      }
+      if (totalGrantPoolSize.denomination === 'XLM' || totalGrantPoolSize.denomination?.toLowerCase() === 'xlm') {
+        const xlmToUsd = 0.13;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * xlmToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'ETH' || totalGrantPoolSize.denomination?.toLowerCase() === 'eth') {
+        const ethToUsd = 2500;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * ethToUsd);
+      }
+      return String(totalGrantPoolSize.amount || 0);
+    }
+    
+    return String(totalGrantPoolSize || 0);
+  },
+
+  async getSystemPools(system: string): Promise<any[]> {
+    try {
+      const { pools } = await this.fetchDaoip5Data(system);
+      return pools;
+    } catch (error) {
+      console.error(`Error fetching pools for ${system}:`, error);
+      return [];
+    }
+  },
+
+  async getSystemApplications(system: string): Promise<any[]> {
+    try {
+      const { applications } = await this.fetchDaoip5Data(system);
+      return applications;
+    } catch (error) {
+      console.error(`Error fetching applications for ${system}:`, error);
+      return [];
+    }
   },
 
   async searchApplications(projectName?: string): Promise<any> {
-    // Use empty results to avoid CORS errors
-    console.warn('Using empty search results to avoid CORS errors');
+    // For now, return empty results as this would require searching across all systems
     return { results: [] };
   }
 };
+
+// Systematic fetching function that fetches pools first, then applications per pool
+async function fetchSystemDataSystematically(systemId: string, source: string): Promise<{
+  pools: any[];
+  applications: any[];
+  totalFunding: number;
+}> {
+  console.log(`Starting systematic fetch for ${systemId} (${source})`);
+  
+  const poolsById = new Map<string, any>();
+  const appsByPoolId = new Map<string, any[]>();
+  let totalFunding = 0;
+  
+  try {
+    // Step 1: Fetch all pools first
+    if (source === 'opengrants') {
+      const [pools, applications] = await Promise.all([
+        openGrantsApi.getPools(systemId),
+        openGrantsApi.getApplications(systemId)
+      ]);
+      
+      console.log(`Fetched ${pools.length} pools and ${applications.length} applications for ${systemId}`);
+      
+      // Build pool map
+      pools.forEach(pool => {
+        poolsById.set(pool.id, {
+          ...pool,
+          totalApplications: 0,
+          totalFunding: 0
+        });
+      });
+      
+      // Group applications by pool
+      applications.forEach((app: any) => {
+        const poolId = app.grantPoolId || app.poolId || 'unknown';
+        
+        if (!appsByPoolId.has(poolId)) {
+          appsByPoolId.set(poolId, []);
+        }
+        
+        const normalizedApp = {
+          ...app,
+          grantPoolId: poolId,
+          fundsApprovedInUSD: typeof app.fundsApprovedInUSD === 'number' 
+            ? app.fundsApprovedInUSD 
+            : parseFloat(app.fundsApprovedInUSD || '0')
+        };
+        
+        appsByPoolId.get(poolId)!.push(normalizedApp);
+        
+        // Update pool stats
+        const pool = poolsById.get(poolId);
+        if (pool) {
+          pool.totalApplications = (pool.totalApplications || 0) + 1;
+          pool.totalFunding = (pool.totalFunding || 0) + normalizedApp.fundsApprovedInUSD;
+        }
+      });
+    } else if (source === 'daoip5') {
+      // For DAOIP-5: fetch pools and applications together
+      const { pools, applications } = await daoip5Api.fetchDaoip5Data(systemId);
+      console.log(`DAOIP-5 fetch for ${systemId}: ${pools.length} pools, ${applications.length} applications`);
+      
+      // Build maps
+      pools.forEach(pool => {
+        poolsById.set(pool.id, {
+          ...pool,
+          totalApplications: 0,
+          totalFunding: 0
+        });
+      });
+      
+      // Group applications by pool
+      applications.forEach(app => {
+        const poolId = app.grantPoolId || 'unknown';
+        if (!appsByPoolId.has(poolId)) {
+          appsByPoolId.set(poolId, []);
+        }
+        appsByPoolId.get(poolId)!.push(app);
+        
+        // Update pool stats
+        const pool = poolsById.get(poolId);
+        if (pool) {
+          pool.totalApplications = (pool.totalApplications || 0) + 1;
+          pool.totalFunding = (pool.totalFunding || 0) + (app.fundsApprovedInUSD || 0);
+        }
+      });
+    }
+    
+    // Calculate total funding
+    const allApplications = Array.from(appsByPoolId.values()).flat();
+    totalFunding = allApplications.reduce((sum, app) => 
+      sum + (typeof app.fundsApprovedInUSD === 'number' ? 
+        app.fundsApprovedInUSD : parseFloat(app.fundsApprovedInUSD || '0')), 0);
+    
+    console.log(`System ${systemId} totals: ${poolsById.size} pools, ${allApplications.length} applications, $${totalFunding.toFixed(2)} funding`);
+    
+    return {
+      pools: Array.from(poolsById.values()),
+      applications: allApplications,
+      totalFunding
+    };
+  } catch (error) {
+    console.error(`Error in systematic fetch for ${systemId}:`, error);
+    return { pools: [], applications: [], totalFunding: 0 };
+  }
+}
 
 // Combined data fetching with caching
 export const dashboardApi = {
@@ -252,27 +524,23 @@ export const dashboardApi = {
       // Get all registered data sources from the registry
       const allSources = dataSourceRegistry.getActiveSources();
       
+      // Focus on only the 3 requested systems: Giveth, Octant, and Stellar
+      const requestedSources = allSources.filter(s => 
+        s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
+      );
+      
       // Separate by source type for appropriate API handling
-      const openGrantsSources = allSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = allSources.filter(s => s.source === 'daoip5');
-      const customSources = allSources.filter(s => s.source === 'custom');
+      const openGrantsSources = requestedSources.filter(s => s.source === 'opengrants');
+      const daoip5Sources = requestedSources.filter(s => s.source === 'daoip5');
+      const customSources = requestedSources.filter(s => s.source === 'custom');
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
-        ...openGrantsSources.map(async (source) => {
+        ...requestedSources.map(async (source) => {
           try {
-            const [pools, applications] = await Promise.all([
-              openGrantsApi.getPools(source.id),
-              openGrantsApi.getApplications(source.id)
-            ]);
+            // Use the new systematic fetching approach
+            const { pools, applications, totalFunding } = await fetchSystemDataSystematically(source.id, source.source);
             
-            const totalFunding = applications.reduce((sum, app) => {
-              return sum + parseFloat(app.fundsApprovedInUSD || '0');
-            }, 0);
-            
-            const approvalRate = applications.length > 0 ? 
-              (applications.filter(app => app.status === 'funded' || app.status === 'approved').length / applications.length) * 100 : 0;
-
             return {
               name: source.name,
               type: source.type,
@@ -280,7 +548,7 @@ export const dashboardApi = {
               totalFunding,
               totalApplications: applications.length,
               totalPools: pools.length,
-              approvalRate,
+              approvalRate: undefined, // Coming soon
               compatibility: source.standardization.compatibility,
               fundingMechanisms: source.features.fundingMechanism,
               description: source.description,
@@ -295,45 +563,13 @@ export const dashboardApi = {
               totalFunding: 0,
               totalApplications: 0,
               totalPools: 0,
-              approvalRate: 0,
+              approvalRate: undefined, // Coming soon
               compatibility: source.standardization.compatibility,
               fundingMechanisms: source.features.fundingMechanism,
               description: source.description,
               addedDate: source.metadata.addedDate
             };
           }
-        }),
-        ...daoip5Sources.map(async (source) => {
-          // For DAOIP5 systems, provide realistic fallback data since API access is limited
-          const fallbackData = {
-            'stellar': { totalFunding: 2500000, totalApplications: 150, totalPools: 25, approvalRate: 65 },
-            'optimism': { totalFunding: 50000000, totalApplications: 300, totalPools: 6, approvalRate: 45 },
-            'arbitrumfoundation': { totalFunding: 15000000, totalApplications: 200, totalPools: 10, approvalRate: 55 },
-            'celo-org': { totalFunding: 8000000, totalApplications: 120, totalPools: 8, approvalRate: 70 },
-            'clrfund': { totalFunding: 1200000, totalApplications: 80, totalPools: 12, approvalRate: 60 },
-            'dao-drops-dorgtech': { totalFunding: 500000, totalApplications: 40, totalPools: 5, approvalRate: 75 }
-          };
-
-          const systemData = fallbackData[source.id as keyof typeof fallbackData] || {
-            totalFunding: Math.floor(Math.random() * 5000000) + 500000,
-            totalApplications: Math.floor(Math.random() * 100) + 20,
-            totalPools: Math.floor(Math.random() * 10) + 2,
-            approvalRate: Math.floor(Math.random() * 40) + 40
-          };
-
-          return {
-            name: source.name,
-            type: source.type,
-            source: source.source,
-            totalFunding: systemData.totalFunding,
-            totalApplications: systemData.totalApplications,
-            totalPools: systemData.totalPools,
-            approvalRate: systemData.approvalRate,
-            compatibility: source.standardization.compatibility,
-            fundingMechanisms: source.features.fundingMechanism,
-            description: source.description,
-            addedDate: source.metadata.addedDate
-          };
         })
       ]);
 
@@ -409,7 +645,7 @@ export const dashboardApi = {
     applications: GrantApplication[];
     stats: {
       totalApplications: number;
-      approvalRate: number;
+      approvalRate?: number;
       totalFunding: number;
     };
   }> {
@@ -418,58 +654,18 @@ export const dashboardApi = {
     if (cached) return cached as any;
 
     try {
-      let pools: GrantPool[] = [];
-      let applications: GrantApplication[] = [];
-
-      // Check if it's an OpenGrants system (octant, giveth)
-      if (['octant', 'giveth'].includes(systemName.toLowerCase())) {
-        [pools, applications] = await Promise.all([
-          openGrantsApi.getPools(systemName),
-          openGrantsApi.getApplications(systemName)
-        ]);
-      } else {
-        // Handle DAOIP5 systems (stellar, optimism, arbitrum, etc.)
-        try {
-          const poolFiles = await daoip5Api.getSystemPools(systemName);
-          const poolDataPromises = poolFiles.map(async (file) => {
-            const filename = file.replace('.json', '');
-            return await daoip5Api.getPoolData(systemName, filename);
-          });
-          
-          const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
-          
-          // For DAOIP5, pool data can be either GrantPool objects or application arrays
-          pools = poolData.filter(data => data && data.type === 'GrantPool');
-          applications = poolData.flatMap(data => {
-            if (Array.isArray(data)) {
-              return data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            if (data && data.data && Array.isArray(data.data)) {
-              return data.data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            return [];
-          });
-        } catch (error) {
-          console.error(`Error fetching DAOIP5 data for ${systemName}:`, error);
-        }
-      }
-
-      // Calculate stats
-      const approvedApps = applications.filter(app => 
-        app.status === 'funded' || app.status === 'approved'
-      ).length;
-
-      const totalFunding = applications.reduce((sum, app) => {
-        const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
-        return sum + fundingUSD;
-      }, 0);
+      // Use the systematic fetching approach for all systems
+      const systemSource = ['octant', 'giveth'].includes(systemName.toLowerCase()) ? 'opengrants' : 'daoip5';
+      const { pools, applications, totalFunding } = await fetchSystemDataSystematically(systemName, systemSource);
+      
+      console.log(`System details for ${systemName}: ${pools.length} pools, ${applications.length} applications, $${totalFunding} funding`);
 
       const result = {
         pools,
         applications,
         stats: {
           totalApplications: applications.length,
-          approvalRate: applications.length > 0 ? (approvedApps / applications.length) * 100 : 0,
+          approvalRate: undefined, // Coming soon - don't calculate
           totalFunding
         }
       };
@@ -484,7 +680,7 @@ export const dashboardApi = {
         applications: [],
         stats: {
           totalApplications: 0,
-          approvalRate: 0,
+          approvalRate: undefined, // Coming soon
           totalFunding: 0
         }
       };
@@ -539,14 +735,14 @@ export const dashboardApi = {
   }
 };
 
-// Utility function to format currency
+// Utility function to format currency with 3 decimal places accuracy
 export const formatCurrency = (amount: number): string => {
   if (amount >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
+    return `$${(amount / 1000000).toFixed(3)}M`;
   } else if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(1)}K`;
+    return `$${(amount / 1000).toFixed(3)}K`;
   } else {
-    return `$${amount.toFixed(0)}`;
+    return `$${amount.toFixed(3)}`;
   }
 };
 

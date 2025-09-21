@@ -1,0 +1,82 @@
+// Fetch real data from DAOIP-5 static files via directory API
+async fetchDaoip5Data(system: string): Promise<{ pools: PoolData[], applications: ApplicationData[] }> {
+  const cacheKey = `daoip5-${system}`;
+  const cached = this.poolsCache.get(cacheKey);
+  if (cached) {
+    return {
+      pools: cached,
+      applications: this.applicationsCache.get(`${cacheKey}-apps`) || []
+    };
+  }
+
+  try {
+    // Step 1: Get list of files in the system directory
+    const systemFilesResponse = await fetch(`https://daoip5.daostar.org/${system}`);
+    if (!systemFilesResponse.ok) throw new Error(`Failed to fetch system files for ${system}`);
+    const systemFiles = await systemFilesResponse.json();
+
+    // Step 2: Fetch grants_pool.json for pool metadata
+    const poolsResponse = await fetch(`https://daoip5.daostar.org/${system}/grants_pool.json`);
+    if (!poolsResponse.ok) throw new Error(`Failed to fetch grants_pool.json for ${system}`);
+    const poolsData = await poolsResponse.json();
+
+    const pools: PoolData[] = (poolsData.grantPools || []).map((pool: any) => ({
+      id: pool.id,
+      name: pool.name,
+      system,
+      totalFunding: this.extractFundingAmount(pool.totalGrantPoolSize),
+      totalApplications: 0, // Will be calculated from applications
+      mechanism: pool.grantFundingMechanism || 'Unknown',
+      isOpen: pool.isOpen,
+      closeDate: pool.closeDate
+    }));
+
+    const applications: ApplicationData[] = [];
+
+    // Step 3: Fetch application files (look for *_applications_uri.json files)
+    const applicationFiles = systemFiles.filter((file: string) => 
+      file.includes('applications_uri') && file.endsWith('.json')
+    );
+
+    for (const appFile of applicationFiles) {
+      try {
+        const appsResponse = await fetch(`https://daoip5.daostar.org/${system}/${appFile}`);
+        if (appsResponse.ok) {
+          const appsData = await appsResponse.json();
+          const fileApplications = (appsData.applications || []).map((app: any) => ({
+            id: app.id,
+            projectName: app.projectName || 'Unknown Project',
+            system,
+            poolId: app.grantPoolId,
+            status: app.status || 'unknown',
+            fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
+            createdAt: app.createdAt || new Date().toISOString()
+          }));
+          
+          applications.push(...fileApplications);
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch applications from ${appFile}:`, error);
+      }
+    }
+
+    // Update pool application counts
+    const poolAppCounts = new Map<string, number>();
+    applications.forEach(app => {
+      poolAppCounts.set(app.poolId, (poolAppCounts.get(app.poolId) || 0) + 1);
+    });
+    
+    pools.forEach(pool => {
+      pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+    });
+
+    // Cache the results
+    this.poolsCache.set(cacheKey, pools);
+    this.applicationsCache.set(`${cacheKey}-apps`, applications);
+
+    return { pools, applications };
+  } catch (error) {
+    console.error(`Error fetching DAOIP-5 data for ${system}:`, error);
+    throw error;
+  }
+}

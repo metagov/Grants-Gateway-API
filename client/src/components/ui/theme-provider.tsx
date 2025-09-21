@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from "react";
-import { useTheme, Theme } from "@/hooks/use-theme";
+import { Theme } from "@/hooks/use-theme";
 
 interface ThemeContextType {
   theme: Theme;
@@ -14,7 +14,12 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const themeData = useTheme();
+  // Fixed light mode only
+  const themeData: ThemeContextType = {
+    theme: "light",
+    setTheme: () => {}, // No-op
+    toggleTheme: () => {} // No-op
+  };
 
   return (
     <ThemeContext.Provider value={themeData}>

@@ -152,8 +152,8 @@ class AnalyticsDataService {
       console.log('🔄 Starting batch data load...');
       const startTime = performance.now();
 
-      // Get all registered data sources
-      const sources = dataSourceRegistry.getActiveSources();
+      // Get data sources for dashboard analytics (excludes Octant and Giveth)
+      const sources = dataSourceRegistry.getActiveSourcesForDashboard();
       
       // Batch load data for all systems
       const systemDataPromises = sources.map(async (source): Promise<SystemData> => {
@@ -437,7 +437,7 @@ class AnalyticsDataService {
       },
       'celo-org': {
         pools: [
-          { id: 'cgp-100', name: 'Celo Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
+          { id: 'cgp-100', name: 'CeloPG Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
         ],
         applications: [
           { id: 'celo-1', projectName: 'Mobile Wallet', poolId: 'cgp-100', status: 'funded', fundingUSD: 50000, createdAt: '2024-01-12' },

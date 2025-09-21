@@ -8,12 +8,9 @@ import {
   Users, 
   TrendingUp,
   Calendar,
-  Award,
-  ExternalLink,
   ChevronDown,
   ChevronRight,
   BarChart3,
-  PieChart
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from "react";
 
 function StatsCard({ 
@@ -84,7 +81,7 @@ function FundingDistributionChart({ pools, applications }: {
       applications: poolApps.length,
       approved: poolApps.filter(app => app.status === 'funded' || app.status === 'approved').length
     };
-  }).filter(item => item.funding > 0).sort((a, b) => b.funding - a.funding);
+  }).filter(item => item.funding > 0);
 
   return (
     <Card>
@@ -130,81 +127,84 @@ function FundingDistributionChart({ pools, applications }: {
   );
 }
 
-// Application Status Chart
-function ApplicationStatusChart({ applications }: { applications: any[] }) {
-  const statusCounts = applications.reduce((acc, app) => {
-    const status = app.status || 'unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
 
-  const chartData = Object.entries(statusCounts).map(([status, count]) => ({
-    name: status.charAt(0).toUpperCase() + status.slice(1),
-    value: count as number,
-    percentage: (((count as number) / applications.length) * 100).toFixed(1)
-  }));
-
-  const COLORS = {
-    'Funded': '#10B981',
-    'Approved': '#3B82F6', 
-    'Pending': '#F59E0B',
-    'Rejected': '#EF4444',
-    'Unknown': '#6B7280'
-  };
+// Applications vs Funding per Round Chart
+function ApplicationsVsFundingChart({ pools, applications }: { 
+  pools: any[]; 
+  applications: any[];
+}) {
+  const chartData = pools.map(pool => {
+    const poolApps = applications.filter(app => app.grantPoolId === pool.id);
+    // Use pool's actual total funding to prevent overlapping/double-counting
+    const totalFunding = parseFloat(pool.totalGrantPoolSizeUSD || '0');
+    const awardedCount = poolApps.filter(app => 
+      app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
+    ).length;
+    
+    return {
+      name: pool.name || pool.id.split(':').pop(),
+      applications: awardedCount,
+      funding: totalFunding,
+      poolId: pool.id
+    };
+  }).filter(item => item.applications > 0 || item.funding > 0)
+    .sort((a, b) => {
+      // Extract round numbers for sorting (e.g., scf_34 -> 34)
+      const getNumber = (name: string) => {
+        const match = name.match(/\d+/);
+        return match ? parseInt(match[0]) : 0;
+      };
+      return getNumber(b.name) - getNumber(a.name); // Latest first
+    });
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
-          <PieChart className="h-5 w-5 text-[#800020] mr-2" />
-          Application Status Distribution
+          <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
+          Applications Awarded vs Funds Distributed
         </CardTitle>
         <CardDescription>
-          Breakdown of application statuses across all rounds
+          Number of awarded applications and total funding per round
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-8">
-          <div className="h-64 w-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={COLORS[entry.name as keyof typeof COLORS] || COLORS.Unknown} 
-                    />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: any, name: any, props: any) => [
-                    `${value} (${props.payload.percentage}%)`,
-                    'Applications'
-                  ]}
-                />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-2">
-            {chartData.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="flex items-center space-x-3">
-                <div 
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] || COLORS.Unknown }}
-                />
-                <span className="text-sm text-gray-600">{item.name}</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {String(item.value)} ({String(item.percentage)}%)
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45}
+                textAnchor="end"
+                height={100}
+                fontSize={12}
+              />
+              <YAxis 
+                yAxisId="left"
+                orientation="left"
+                tickFormatter={(value) => value.toString()}
+                fontSize={12}
+                label={{ value: 'Applications', angle: -90, position: 'insideLeft' }}
+              />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                tickFormatter={(value) => formatCurrency(value)}
+                fontSize={12}
+                label={{ value: 'Funding ($)', angle: 90, position: 'insideRight' }}
+              />
+              <Tooltip 
+                formatter={(value: any, name: any) => [
+                  name === 'funding' ? formatCurrency(value) : value,
+                  name === 'funding' ? 'Total Funding' : 'Awarded Applications'
+                ]}
+                labelStyle={{ color: '#374151' }}
+              />
+              <Bar yAxisId="left" dataKey="applications" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="right" dataKey="funding" fill="#800020" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
@@ -299,9 +299,6 @@ function GrantPoolCard({ pool, applications }: {
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const poolApplications = applications.filter(app => app.grantPoolId === pool.id);
-  const approvedApps = poolApplications.filter(app => 
-    app.status === 'funded' || app.status === 'approved'
-  );
   
   const totalFunding = poolApplications.reduce((sum, app) => {
     return sum + parseFloat(app.fundsApprovedInUSD || '0');
@@ -335,9 +332,6 @@ function GrantPoolCard({ pool, applications }: {
                   <div className="text-sm font-medium text-gray-900">
                     {formatCurrency(totalFunding)}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {approvedApps.length}/{poolApplications.length} approved
-                  </div>
                 </div>
                 {isOpen ? (
                   <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -362,7 +356,14 @@ function GrantPoolCard({ pool, applications }: {
                   </TableHeader>
                   <TableBody>
                     {poolApplications
-                      .sort((a, b) => parseFloat(b.fundsApprovedInUSD || '0') - parseFloat(a.fundsApprovedInUSD || '0'))
+                      .sort((a, b) => {
+                        // Sort alphabetically by project name
+                        const nameA = (a.projectName || 'Unknown').toLowerCase();
+                        const nameB = (b.projectName || 'Unknown').toLowerCase();
+                        if (nameA < nameB) return -1;
+                        if (nameA > nameB) return 1;
+                        return 0;
+                      })
                       .slice(0, 10)
                       .map((app) => (
                       <TableRow key={app.id} className="hover:bg-gray-50">
@@ -371,15 +372,23 @@ function GrantPoolCard({ pool, applications }: {
                             <div className="font-medium text-gray-900">
                               {app.projectName || 'Unknown Project'}
                             </div>
-                            <div className="text-xs text-gray-500 truncate max-w-xs">
-                              {app.id}
-                            </div>
+                            {app.category && (
+                              <div className="text-xs text-gray-500">
+                                {app.category} {app.awardType && `• ${app.awardType}`}
+                              </div>
+                            )}
+                            {app.website && (
+                              <a href={app.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                                View Website →
+                              </a>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge 
                             variant={
                               app.status === 'funded' ? 'default' :
+                              app.status === 'awarded' ? 'default' :
                               app.status === 'approved' ? 'secondary' :
                               app.status === 'rejected' ? 'destructive' :
                               'outline'
@@ -536,7 +545,7 @@ export default function SystemProfileEnhanced() {
         />
         <StatsCard
           title="Approval Rate"
-          value={`${stats.approvalRate.toFixed(1)}%`}
+          value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
           description="Applications approved/funded"
           icon={TrendingUp}
         />
@@ -550,10 +559,12 @@ export default function SystemProfileEnhanced() {
 
       {/* Charts Section */}
       {applications.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <FundingDistributionChart pools={pools} applications={applications} />
-          <ApplicationStatusChart applications={applications} />
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-6">
+            <FundingDistributionChart pools={pools} applications={applications} />
+          </div>
+          <ApplicationsVsFundingChart pools={pools} applications={applications} />
+        </>
       )}
 
       {/* Funding Timeline */}
@@ -574,12 +585,12 @@ export default function SystemProfileEnhanced() {
           <div className="space-y-4">
             {pools
               .sort((a, b) => {
-                if (a.closeDate && b.closeDate) {
-                  return new Date(b.closeDate).getTime() - new Date(a.closeDate).getTime();
-                }
-                if (a.closeDate) return -1;
-                if (b.closeDate) return 1;
-                return 0;
+                // Extract round numbers for sorting (e.g., scf_34 -> 34)
+                const getNumber = (id: string) => {
+                  const match = id.match(/\d+/);
+                  return match ? parseInt(match[0]) : 0;
+                };
+                return getNumber(b.id) - getNumber(a.id); // Latest rounds first
               })
               .map((pool) => (
                 <GrantPoolCard 

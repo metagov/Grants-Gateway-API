@@ -160,41 +160,7 @@ class DataSourceRegistry {
       },
     });
 
-    this.register({
-      id: "optimism",
-      name: "Optimism RetroPGF",
-      description: "Retroactive Public Goods Funding for Optimism ecosystem",
-      type: "static",
-      source: "daoip5",
-      endpoints: {
-        systems: "https://daoip5.daostar.org/",
-        pools: "https://daoip5.daostar.org/optimism",
-      },
-      standardization: {
-        version: "DAOIP-5 v1.0",
-        mappings: {
-          id: "id",
-          name: "projectName",
-          status: "status",
-          fundsApprovedInUSD: "fundsApprovedInUSD",
-        },
-        compatibility: 90,
-      },
-      features: {
-        fundingMechanism: ["Retroactive Public Goods"],
-        dataRefreshRate: "quarterly",
-        historicalData: true,
-      },
-      metadata: {
-        addedDate: "2024-02-15",
-        lastUpdated: new Date().toISOString(),
-        status: "active",
-        network: ["optimism"],
-        currency: ["OP"],
-      },
-    });
-
-    // Removed duplicate Arbitrum and Celo registrations to avoid conflicts with autoDiscover
+    // Only register the 3 requested systems - Octant, Giveth, and Stellar
   }
 
   // Register a new data source
@@ -260,15 +226,10 @@ class DataSourceRegistry {
       console.warn("Could not fetch from OpenGrants API, using existing sources");
     }
 
-    // Known DAOIP5 systems - hardcoded to avoid CORS issues
+    // DAOIP-5 static data systems 
     const knownDaoip5Systems = [
-      'arbitrumfoundation',
-      'clrfund', 
-      'dao-drops-dorgtech',
-      'octant-golemfoundation',
-      'optimism',
-      'stellar',
-      'celo-org'
+      'stellar',  // Stellar Community Fund
+      'celo-org'  // Celo Public Goods
     ];
 
     // Register known DAOIP5 systems without external fetch
@@ -318,6 +279,15 @@ class DataSourceRegistry {
   // Get all registered sources
   getAllSources(): DataSourceConfig[] {
     return Array.from(this.sources.values());
+  }
+
+  // Get active sources for dashboard analytics (excludes Octant and Giveth)
+  getActiveSourcesForDashboard(): DataSourceConfig[] {
+    const allSources = this.getActiveSources();
+    // Filter out Octant and Giveth from dashboard analytics
+    return allSources.filter(source => 
+      source.id !== 'octant' && source.id !== 'giveth'
+    );
   }
 
   // Get active sources, prioritizing grants.daostar.org (Type 1) sources for better data analysis
@@ -502,54 +472,19 @@ class DataSourceRegistry {
 
   private getDaoip5SystemInfo(systemName: string): any {
     const systemInfoMap: Record<string, any> = {
-      'arbitrumfoundation': {
-        name: 'Arbitrum Foundation',
-        description: 'Arbitrum Foundation grants and incentive programs',
-        compatibility: 88,
-        mechanisms: ['Direct Grants', 'Milestone-Based'],
-        addedDate: '2024-03-01'
-      },
-      'clrfund': {
-        name: 'CLR Fund',
-        description: 'CLR Fund quadratic funding rounds',
-        compatibility: 85,
-        mechanisms: ['Quadratic Funding'],
-        addedDate: '2024-03-10'
-      },
-      'dao-drops-dorgtech': {
-        name: 'DAO Drops',
-        description: 'DAO Drops funding rounds by DorgTech',
-        compatibility: 75,
-        mechanisms: ['Direct Grants'],
-        addedDate: '2024-03-15'
-      },
-      'octant-golemfoundation': {
-        name: 'Octant (Golem)',
-        description: 'Octant funding epochs by Golem Foundation',
-        compatibility: 92,
-        mechanisms: ['Quadratic Funding', 'Direct Grants'],
-        addedDate: '2024-02-20'
-      },
-      'optimism': {
-        name: 'Optimism',
-        description: 'Optimism Foundation grants and RetroPGF rounds',
-        compatibility: 90,
-        mechanisms: ['Retroactive Public Goods', 'Direct Grants'],
-        addedDate: '2024-02-15'
-      },
       'stellar': {
-        name: 'Stellar',
+        name: 'Stellar Community Fund',
         description: 'Stellar Development Foundation community fund rounds',
         compatibility: 95,
         mechanisms: ['Direct Grants', 'Community Voting'],
         addedDate: '2024-02-01'
       },
       'celo-org': {
-        name: 'Celo Foundation',
-        description: 'Celo Foundation grants for financial inclusion',
-        compatibility: 85,
-        mechanisms: ['Direct Grants'],
-        addedDate: '2024-03-15'
+        name: 'Celo Public Goods',
+        description: 'Celo Foundation public goods funding program',
+        compatibility: 90,
+        mechanisms: ['Direct Grants', 'Public Goods Funding'],
+        addedDate: '2024-12-01'
       }
     };
 

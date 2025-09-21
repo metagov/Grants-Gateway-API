@@ -23,10 +23,10 @@ export function CodeBlock({ code, language = "json", title, copyable = true }: C
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-700">
+    <div className="bg-gray-50 rounded-lg border border-gray-200">
       {title && (
-        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-slate-700">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</span>
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
+          <span className="text-sm font-medium text-gray-600">{title}</span>
           {copyable && (
             <Button
               variant="ghost"
@@ -45,7 +45,7 @@ export function CodeBlock({ code, language = "json", title, copyable = true }: C
       )}
       <div className="relative">
         <pre className="p-4 text-sm overflow-x-auto">
-          <code className={`language-${language} text-gray-800 dark:text-gray-200`}>
+          <code className={`language-${language} text-gray-800`}>
             {code}
           </code>
         </pre>
