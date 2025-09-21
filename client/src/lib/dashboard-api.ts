@@ -187,6 +187,82 @@ export const daoip5Api = {
     this.cache.clear();
   },
 
+  // Retry failed file fetch with exponential backoff
+  async retryFailedFile(system: string, fileName: string, maxRetries: number, baseDelay: number): Promise<any[]> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Retry attempt ${attempt}/${maxRetries} for ${fileName}`);
+        const response = await fetch(`/api/proxy/daoip5/${system}/${fileName}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ Retry successful for ${fileName} on attempt ${attempt}`);
+          
+          // Parse the applications from this file
+          const applications: any[] = [];
+          const grantPools = data.grantPools || [];
+          
+          for (const pool of grantPools) {
+            const poolApplications = (pool.applications || []).map((app: any) => {
+              // Apply same funding calculation logic
+              let fundsInUSD = 0;
+              if (app.fundsApprovedInUSD) {
+                fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+              } else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                for (const fund of app.fundsApproved) {
+                  if (fund.amount) {
+                    if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                      const xlmToUsd = 0.13;
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                    } else {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    }
+                  }
+                }
+              }
+              
+              return {
+                id: app.id,
+                projectName: app.projectName || 'Unknown Project',
+                projectDescription: app.description,
+                system,
+                grantPoolId: app.grantPoolId,
+                status: system === 'stellar' ? 'awarded' : (app.status || 'unknown'),
+                fundsApprovedInUSD: fundsInUSD,
+                createdAt: app.createdAt || new Date().toISOString(),
+                category: app.extensions?.['org.stellar.communityfund.category'] || '',
+                awardType: app.extensions?.['org.stellar.communityfund.awardType'] || '',
+                extensions: app.extensions || {}
+              };
+            });
+            
+            applications.push(...poolApplications);
+          }
+          
+          return applications;
+        }
+        
+        // If still failing, wait before next retry
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`⏳ Waiting ${delay}ms before retry ${attempt + 1}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (retryError) {
+        console.warn(`❌ Retry attempt ${attempt} failed for ${fileName}:`, retryError);
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    console.error(`💥 All retry attempts failed for ${fileName}`);
+    return []; // Return empty array if all retries fail
+  },
+
   async getSystems(): Promise<string[]> {
     return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
   },
@@ -303,10 +379,16 @@ export const daoip5Api = {
           }
         } catch (error) {
           console.warn(`Failed to fetch applications from ${appFile}:`, error);
-          // For 500 errors, try to keep last good data for this round
+          // For 500 errors, try retry logic with exponential backoff
           if (error instanceof Error && error.message.includes('500')) {
             console.log(`🔄 Attempting retry for ${appFile} due to 500 error`);
-            // TODO: Add retry logic here
+            const retryApplications = await this.retryFailedFile(system, appFile, 2, 1000); // 2 retries, starting with 1s delay
+            if (retryApplications.length > 0) {
+              console.log(`✅ Successfully recovered ${retryApplications.length} applications from ${appFile} via retry`);
+              applications.push(...retryApplications);
+            } else {
+              console.error(`❌ Could not recover data from ${appFile} after retries - missing ${appFile.includes('35') ? 'SCF Round 35' : appFile} applications`);
+            }
           }
         }
       }

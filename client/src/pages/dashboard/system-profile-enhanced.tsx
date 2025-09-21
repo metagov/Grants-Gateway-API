@@ -571,6 +571,22 @@ export default function SystemProfileEnhanced() {
             </div>
           </div>
         </div>
+        <Button
+          onClick={async () => {
+            console.log('🔄 User requested cache invalidation');
+            await invalidateAllCaches();
+            // Refresh this specific query
+            queryClient.invalidateQueries({ queryKey: ['dashboard-system-details', systemName] });
+            console.log('✅ Cache invalidated and data refreshed');
+          }}
+          variant="outline"
+          size="sm"
+          className="text-sm"
+          data-testid="button-refresh-data"
+        >
+          <RefreshCw className="h-4 w-4 mr-1" />
+          Refresh Data
+        </Button>
       </div>
 
       {/* Stats Grid */}
