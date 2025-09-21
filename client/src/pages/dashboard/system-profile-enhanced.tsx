@@ -137,8 +137,13 @@ function ApplicationsVsFundingChart({ pools, applications }: {
 }) {
   const chartData = pools.map(pool => {
     const poolApps = applications.filter(app => app.grantPoolId === pool.id);
-    // Use pool's actual total funding to prevent overlapping/double-counting
-    const totalFunding = parseFloat(pool.totalGrantPoolSizeUSD || '0');
+    // Calculate actual distributed funding from awarded applications
+    const totalFunding = poolApps.reduce((sum, app) => {
+      if (app.status === 'funded' || app.status === 'approved' || app.status === 'awarded') {
+        return sum + parseFloat(app.fundsApprovedInUSD || '0');
+      }
+      return sum;
+    }, 0);
     const awardedCount = poolApps.filter(app => 
       app.status === 'funded' || app.status === 'approved' || app.status === 'awarded'
     ).length;
@@ -167,7 +172,7 @@ function ApplicationsVsFundingChart({ pools, applications }: {
           Applications Awarded vs Funds Distributed
         </CardTitle>
         <CardDescription>
-          Number of awarded applications and total funding per round
+          Number of awarded applications and actual distributed funding per round
         </CardDescription>
       </CardHeader>
       <CardContent>
