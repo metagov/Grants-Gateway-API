@@ -329,11 +329,77 @@ class AnalyticsDataService {
   }
 
   private async _loadDaoip5SystemData(source: any): Promise<SystemData> {
-    // For DAOIP5 systems, use realistic fallback data since external APIs are disabled
-    const fallbackData = this._getDaoip5FallbackData(source.id);
+    // For DAOIP5 systems, use the backend API endpoints that are already working
+    let poolData: PoolData[] = [];
+    let applicationData: ApplicationData[] = [];
     
-    const poolData: PoolData[] = fallbackData.pools;
-    const applicationData: ApplicationData[] = fallbackData.applications;
+    try {
+      // Use the working backend API endpoints for Stellar data
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${source.id}/grants_pool.json`);
+      const applicationsResponse = await fetch(`/api/proxy/daoip5/${source.id}`);
+      
+      if (poolsResponse.ok) {
+        const poolsData = await poolsResponse.json();
+        if (poolsData && poolsData.grantPools) {
+          poolData = poolsData.grantPools.map((pool: any) => ({
+            id: pool.id || pool.name,
+            name: pool.name,
+            system: source.id,
+            totalFunding: parseFloat(pool.totalGrantPoolSizeUSD || pool.totalGrantPoolSize?.[0]?.amount || '0'),
+            isOpen: pool.isOpen || false,
+            closeDate: pool.closeDate,
+            mechanism: pool.grantFundingMechanism || 'Direct Grant'
+          }));
+        }
+      }
+      
+      if (applicationsResponse.ok) {
+        const applicationsData = await applicationsResponse.json();
+        if (Array.isArray(applicationsData)) {
+          // Get application details from each application file
+          const appPromises = applicationsData.map(async (appFile: string) => {
+            try {
+              const appResponse = await fetch(`/api/proxy/daoip5/${source.id}/${appFile}`);
+              if (appResponse.ok) {
+                const appData = await appResponse.json();
+                if (appData && appData.grantApplications) {
+                  return appData.grantApplications.map((app: any) => ({
+                    id: app.id || app.applicationId,
+                    projectName: app.projectName || app.projectId,
+                    system: source.id,
+                    poolId: app.grantPoolId,
+                    status: this._normalizeStatus(app.status || 'approved'),
+                    fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
+                    createdAt: app.createdAt || new Date().toISOString()
+                  }));
+                }
+              }
+            } catch (error) {
+              console.warn(`Failed to load application file ${appFile}:`, error);
+            }
+            return [];
+          });
+          
+          const allApps = await Promise.all(appPromises);
+          applicationData = allApps.flat();
+        }
+      }
+      
+      // If API calls failed, fall back to static data
+      if (poolData.length === 0 && applicationData.length === 0) {
+        console.warn(`Using fallback data for ${source.name} due to API failures`);
+        const fallbackData = this._getDaoip5FallbackData(source.id);
+        poolData = fallbackData.pools;
+        applicationData = fallbackData.applications;
+      }
+      
+    } catch (error) {
+      console.warn(`Failed to load real data for ${source.name}, using fallback:`, error);
+      const fallbackData = this._getDaoip5FallbackData(source.id);
+      poolData = fallbackData.pools;
+      applicationData = fallbackData.applications;
+    }
+    
     const metrics = this._calculateSystemMetrics(applicationData, poolData);
 
     return {
