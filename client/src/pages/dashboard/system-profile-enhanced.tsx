@@ -11,6 +11,8 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
+  Award,
+  CreditCard,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -530,7 +532,7 @@ export default function SystemProfileEnhanced() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCard
           title="Total Funding"
           value={formatCurrency(stats.totalFunding)}
@@ -544,16 +546,30 @@ export default function SystemProfileEnhanced() {
           icon={Users}
         />
         <StatsCard
-          title="Approval Rate"
-          value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
-          description="Applications approved/funded"
-          icon={TrendingUp}
-        />
-        <StatsCard
           title="Grant Rounds"
           value={pools.length}
           description="Funding rounds available"
           icon={Calendar}
+        />
+        <StatsCard
+          title="Total Awarded"
+          value={formatCurrency(
+            applications.reduce((sum, app) => sum + parseFloat(app.fundsApprovedInUSD || '0'), 0)
+          )}
+          description="Funds approved for projects"
+          icon={Award}
+        />
+        <StatsCard
+          title="Total Paid"
+          value="Coming soon"
+          description="Funds disbursed to projects"
+          icon={CreditCard}
+        />
+        <StatsCard
+          title="Approval Rate"
+          value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
+          description="Applications approved/funded"
+          icon={TrendingUp}
         />
       </div>
 
