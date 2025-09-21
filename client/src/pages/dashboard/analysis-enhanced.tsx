@@ -301,13 +301,47 @@ function FundingTrendsChart({ data }: { data: FundingTrend[] }) {
 }
 
 function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
-  const chartData = data.map(system => ({
-    name: system.systemName,
-    x: system.averageFundingPerProject,
-    y: system.approvalRate,
-    totalFunding: system.totalFunding,
-    applications: system.totalApplications
-  }));
+  // Example data for demonstration purposes
+  const exampleData = [
+    {
+      name: "Stellar Community Fund",
+      x: 68622, // Average funding per project
+      y: 45.2, // Approval rate percentage
+      totalFunding: 49133209,
+      applications: 716,
+    },
+    {
+      name: "Celo Public Goods", 
+      x: 138753, // Higher average funding
+      y: 35.8, // Approval rate percentage
+      totalFunding: 82280,
+      applications: 593,
+    },
+    {
+      name: "Example System A",
+      x: 25000,
+      y: 62.5,
+      totalFunding: 1500000,
+      applications: 240,
+    },
+    {
+      name: "Example System B",
+      x: 95000,
+      y: 28.3,
+      totalFunding: 3800000,
+      applications: 180,
+    },
+  ];
+
+  const chartData = data && data.length > 0 && data.some(system => system.averageFundingPerProject > 0 && system.approvalRate > 0)
+    ? data.map(system => ({
+        name: system.systemName,
+        x: system.averageFundingPerProject,
+        y: system.approvalRate,
+        totalFunding: system.totalFunding,
+        applications: system.totalApplications
+      }))
+    : exampleData;
 
   // Custom dot component to show system names
   const CustomDot = (props: any) => {
@@ -337,7 +371,7 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
   };
 
   return (
-    <Card>
+    <Card className="relative" data-testid="card-efficiency-analysis">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Target className="h-5 w-5 text-[#800020] mr-2" />
@@ -363,7 +397,7 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
             </div>
           </div>
           
-          <div className="h-80 w-full">
+          <div className="h-80 w-full" data-testid="chart-efficiency-scatter">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 30, right: 30, left: 20, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -423,11 +457,11 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-700 mb-2">Efficiency Rankings</h4>
             <div className="space-y-1 text-xs">
-              {chartData
+              {[...chartData]
                 .sort((a, b) => (b.x * b.y) - (a.x * a.y))
                 .slice(0, 5)
                 .map((system, index) => (
-                  <div key={system.name} className="flex items-center justify-between">
+                  <div key={system.name} className="flex items-center justify-between" data-testid={`row-efficiency-${index}`}>
                     <span className="text-gray-600">
                       {index + 1}. {system.name}
                     </span>
@@ -440,6 +474,15 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
           </div>
         </div>
       </CardContent>
+      
+      {/* Coming Soon Blur Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-sm" data-testid="status-coming-soon">
+        <div className="bg-white/90 px-4 py-2 rounded-full shadow-sm border border-gray-200">
+          <span className="text-sm font-medium text-gray-600">
+            Coming Soon - Advanced Efficiency Metrics
+          </span>
+        </div>
+      </div>
     </Card>
   );
 }
