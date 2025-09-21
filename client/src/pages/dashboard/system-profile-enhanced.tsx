@@ -182,7 +182,9 @@ function ApplicationsVsFundingChart({ pools, applications }: {
       poolId: pool.id,
       rawName: pool.name || pool.id.split(':').pop() // Keep for sorting
     };
-  }).filter(item => item.applications > 0 || item.funding > 0)
+  }); 
+  
+  const filteredData = chartData.filter(item => item.applications > 0 || item.funding > 0)
     .sort((a, b) => {
       // Use the same round number extraction logic for consistency
       const aNumber = getRoundNumber({ name: a.rawName });
@@ -204,7 +206,7 @@ function ApplicationsVsFundingChart({ pools, applications }: {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
+            <BarChart data={filteredData} margin={{ top: 20, right: 30, left: 40, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="shortName" 
