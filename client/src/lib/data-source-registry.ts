@@ -43,84 +43,10 @@ class DataSourceRegistry {
   }
 
   private initializeCoreSources() {
-    // OpenGrants API sources
-    this.register({
-      id: "octant",
-      name: "Octant",
-      description:
-        "Quadratic funding for Ethereum public goods through ETH staking proceeds",
-      type: "api",
-      source: "opengrants",
-      endpoints: {
-        systems: "https://grants.daostar.org/api/v1/grantSystems",
-        pools: "https://grants.daostar.org/api/v1/grantPools?system=octant",
-        applications:
-          "https://grants.daostar.org/api/v1/grantApplications?system=octant",
-      },
-      standardization: {
-        version: "DAOIP-5 v1.0",
-        mappings: {
-          id: "id",
-          name: "name",
-          status: "status",
-          fundsApprovedInUSD: "fundsApprovedInUSD",
-          grantPoolId: "grantPoolId",
-        },
-        compatibility: 100,
-      },
-      features: {
-        fundingMechanism: ["Quadratic Funding"],
-        dataRefreshRate: "daily",
-        historicalData: true,
-        realTimeUpdates: false,
-      },
-      metadata: {
-        addedDate: "2024-01-15",
-        lastUpdated: new Date().toISOString(),
-        status: "active",
-        network: ["ethereum"],
-        currency: ["ETH"],
-      },
-    });
-
-    this.register({
-      id: "giveth",
-      name: "Giveth",
-      description:
-        "Donation platform for public goods and social impact projects",
-      type: "api",
-      source: "opengrants",
-      endpoints: {
-        systems: "https://grants.daostar.org/api/v1/grantSystems",
-        pools: "https://grants.daostar.org/api/v1/grantPools?system=giveth",
-        applications:
-          "https://grants.daostar.org/api/v1/grantApplications?system=giveth",
-      },
-      standardization: {
-        version: "DAOIP-5 v1.0",
-        mappings: {
-          id: "id",
-          name: "name",
-          status: "status",
-          fundsApprovedInUSD: "fundsApprovedInUSD",
-          grantPoolId: "grantPoolId",
-        },
-        compatibility: 100,
-      },
-      features: {
-        fundingMechanism: ["Donations", "Quadratic Funding"],
-        dataRefreshRate: "real-time",
-        historicalData: true,
-        realTimeUpdates: true,
-      },
-      metadata: {
-        addedDate: "2024-01-15",
-        lastUpdated: new Date().toISOString(),
-        status: "active",
-        network: ["ethereum", "gnosis"],
-        currency: ["ETH", "GIV"],
-      },
-    });
+    // Note: Octant and Giveth removed from systems indexing as they require 
+    // specialized API integration and data analysis approach
+    
+    // Only DAOIP-5 static sources will be indexed for now
 
     // DAOIP5 Static sources
     this.register({
@@ -176,13 +102,10 @@ class DataSourceRegistry {
   async autoDiscover(): Promise<DataSourceConfig[]> {
     const discovered: DataSourceConfig[] = [];
 
-    // Skip external API calls to avoid CORS issues, use known systems directly
+    // Skip OpenGrants API systems (Octant, Giveth) as they require specialized integration
     try {
-      // Register known OpenGrants systems without external fetch
-      const knownOpenGrantsSystems = [
-        { name: 'Octant', extensions: { description: 'Quadratic funding for Ethereum public goods' }},
-        { name: 'Giveth', extensions: { description: 'Donation platform for public goods' }}
-      ];
+      // No OpenGrants systems to auto-discover - they have been removed from indexing
+      const knownOpenGrantsSystems: any[] = [];
       
       const systems = knownOpenGrantsSystems;
 

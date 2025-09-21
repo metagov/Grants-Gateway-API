@@ -3,8 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
-import { OctantAdapter } from "./adapters/octant";
-import { GivethAdapter } from "./adapters/giveth";
+// Octant and Giveth adapters removed - require specialized API integration
 
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
@@ -96,9 +95,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', rateLimitMiddleware as any);
 
   // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
+  // Note: Octant and Giveth adapters removed as they require specialized integration
   const adapters: { [key: string]: BaseAdapter } = {
-    octant: new OctantAdapter(),
-    giveth: new GivethAdapter(),
+    // No adapters currently active - Octant and Giveth moved to specialized integration
   };
 
   // Helper function to get adapter
