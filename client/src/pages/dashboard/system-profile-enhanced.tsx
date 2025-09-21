@@ -559,12 +559,21 @@ export default function SystemProfileEnhanced() {
           description="Funds disbursed to projects"
           icon={CreditCard}
         />
-        <StatsCard
-          title="Approval Rate"
-          value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
-          description="Applications approved/funded"
-          icon={TrendingUp}
-        />
+        <div className="relative">
+          <StatsCard
+            title="Approval Rate"
+            value={stats.approvalRate !== undefined ? `${stats.approvalRate.toFixed(1)}%` : "Coming soon"}
+            description="Applications approved/funded"
+            icon={TrendingUp}
+          />
+          {(stats.approvalRate === undefined || stats.approvalRate === null) && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/70 to-gray-200/70 rounded-lg flex items-center justify-center backdrop-blur-sm">
+              <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">Coming Soon</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Charts Section */}
