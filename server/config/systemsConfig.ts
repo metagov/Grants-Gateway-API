@@ -65,7 +65,7 @@ export default {
       "displayName": "Celo Public Goods",
       "source": "daoip5",
       "type": "Foundation",
-      "enabled": false,
+      "enabled": true,
       "priority": 4,
       "metadata": {
         "description": "Funding public goods in the Celo ecosystem",

@@ -215,6 +215,12 @@ export const daoip5Api = {
                     } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
                       const xlmToUsd = 0.13;
                       fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                    } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                      const celoToUsd = 0.65; // Approximate CELO to USD rate
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                    } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                      // cUSD is pegged to USD
+                      fundsInUSD += parseFloat(fund.amount) || 0;
                     } else {
                       fundsInUSD += parseFloat(fund.amount) || 0;
                     }
@@ -303,10 +309,14 @@ export const daoip5Api = {
 
       const applications: any[] = [];
 
-      // Step 3: Fetch application files (look for *_applications_uri.json files)
-      const applicationFiles = systemFiles.filter((file: string) => 
-        file.includes('applications_uri') && file.endsWith('.json')
-      );
+      // Step 3: Fetch application files (broader pattern matching for Celo compatibility)
+      const applicationFiles = systemFiles.filter((file: string) => {
+        return (
+          (file.includes('applications_uri') && file.endsWith('.json')) ||
+          (file === 'applications.json') ||
+          (file.includes('_applications.json') && file.endsWith('.json'))
+        );
+      });
 
       for (const appFile of applicationFiles) {
         try {
@@ -337,6 +347,12 @@ export const daoip5Api = {
                       } else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
                         const ethToUsd = 2500;
                         fundsInUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+                      } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                        const celoToUsd = 0.65; // Approximate CELO to USD rate
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                      } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                        // cUSD is pegged to USD
+                        fundsInUSD += parseFloat(fund.amount) || 0;
                       } else {
                         fundsInUSD += parseFloat(fund.amount) || 0;
                       }
@@ -442,6 +458,15 @@ export const daoip5Api = {
             const ethToUsd = 2500; // Approximate ETH to USD rate
             totalUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
           }
+          // For CELO, use conversion rate
+          else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+            const celoToUsd = 0.65; // Approximate CELO to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+          }
+          // For cUSD (Celo USD), use 1:1 rate
+          else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
           // For other denominations, try to use amount as-is
           else {
             totalUSD += parseFloat(fund.amount) || 0;
@@ -463,6 +488,13 @@ export const daoip5Api = {
       if (totalGrantPoolSize.denomination === 'ETH' || totalGrantPoolSize.denomination?.toLowerCase() === 'eth') {
         const ethToUsd = 2500;
         return String((parseFloat(totalGrantPoolSize.amount) || 0) * ethToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'CELO' || totalGrantPoolSize.denomination?.toLowerCase() === 'celo') {
+        const celoToUsd = 0.65;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * celoToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'cUSD' || totalGrantPoolSize.denomination?.toLowerCase() === 'cusd') {
+        return String(parseFloat(totalGrantPoolSize.amount) || 0);
       }
       return String(totalGrantPoolSize.amount || 0);
     }
