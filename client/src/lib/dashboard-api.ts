@@ -295,17 +295,30 @@ export const daoip5Api = {
       }
       const poolsData = await poolsResponse.json();
 
-      const pools = (poolsData.grantPools || []).map((pool: any) => ({
-        id: pool.id,
-        name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
-        system,
-        totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
-        totalApplications: 0, // Will be calculated from applications
-        grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
-        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
-        closeDate: pool.closeDate,
-        description: pool.description
-      }));
+      const pools = (poolsData.grantPools || []).map((pool: any) => {
+        // Extract dates from Celo extensions if available
+        let closeDate = pool.closeDate;
+        if (pool.extensions && system === 'celopg') {
+          // Prioritize end dates from Celo extensions
+          closeDate = pool.extensions['celopg.donationsEndTime'] || 
+                     pool.extensions['celopg.applicationsEndTime'] || 
+                     pool.extensions['celopg.timestamp'] ||
+                     closeDate;
+        }
+        
+        return {
+          id: pool.id,
+          name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
+          system,
+          totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
+          totalApplications: 0, // Will be calculated from applications
+          grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
+          isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+          closeDate: closeDate,
+          description: pool.description,
+          extensions: pool.extensions // Pass through extensions for frontend use
+        };
+      });
 
       const applications: any[] = [];
 
