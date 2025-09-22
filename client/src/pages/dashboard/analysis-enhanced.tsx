@@ -46,6 +46,7 @@ import {
   type FundingTrend
 } from "@/lib/cross-system-analysis";
 import { formatCurrency } from "@/lib/dashboard-api";
+import { Link } from "wouter";
 
 // Color palette for consistent visualization
 const COLORS = {
@@ -545,44 +546,50 @@ export default function EcosystemOverview() {
                 <CardContent>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {systemComparison.map((system, index) => (
-                      <Card key={`${system.systemName}-${index}`} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg capitalize">{system.systemName}</CardTitle>
-                            <Badge 
-                              variant={system.status === 'active' ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {system.status}
+                      <Link 
+                        key={`${system.systemName}-${index}`} 
+                        href={`/dashboard/systems/${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
+                        data-testid={`link-system-${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-lg capitalize">{system.systemName}</CardTitle>
+                              <Badge 
+                                variant={system.status === 'active' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {system.status}
+                              </Badge>
+                            </div>
+                            <Badge variant="outline" className="w-fit text-xs">
+                              {system.source.toUpperCase()}
                             </Badge>
-                          </div>
-                          <Badge variant="outline" className="w-fit text-xs">
-                            {system.source.toUpperCase()}
-                          </Badge>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Total Funding:</span>
-                            <span className="text-sm font-medium">{formatCurrency(system.totalFunding)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Applications:</span>
-                            <span className="text-sm font-medium">{system.totalApplications}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Approval Rate:</span>
-                            <span className="text-sm font-medium">{system.approvalRate.toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Grant Rounds:</span>
-                            <span className="text-sm font-medium">{system.totalPools}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Avg per Project:</span>
-                            <span className="text-sm font-medium">{formatCurrency(system.averageFundingPerProject)}</span>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Total Funding:</span>
+                              <span className="text-sm font-medium">{formatCurrency(system.totalFunding)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Applications:</span>
+                              <span className="text-sm font-medium">{system.totalApplications}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Approval Rate:</span>
+                              <span className="text-sm font-medium">{system.approvalRate.toFixed(1)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Grant Rounds:</span>
+                              <span className="text-sm font-medium">{system.totalPools}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Avg per Project:</span>
+                              <span className="text-sm font-medium">{formatCurrency(system.averageFundingPerProject)}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 </CardContent>

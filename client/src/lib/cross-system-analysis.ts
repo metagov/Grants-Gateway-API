@@ -81,7 +81,7 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
       'stellar': ['Direct Grants'],
       'optimism': ['Retroactive Public Goods'],
       'arbitrumfoundation': ['Direct Grants'],
-      'celo-org': ['Direct Grants']
+      'celopg': ['Direct Grants']
     };
 
     systems.forEach(system => {

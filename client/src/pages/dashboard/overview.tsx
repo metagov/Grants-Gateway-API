@@ -123,10 +123,8 @@ function FundingTrendsChart({ data }: { data: Array<{ quarter: string; funding: 
 
 // Recent systems section
 function RecentSystems({ systems }: { systems: any[] }) {
-  // Filter out Octant and Giveth from dashboard display
-  const filteredSystems = systems.filter(system => 
-    !['octant', 'giveth'].includes(system.name?.toLowerCase() || system.id?.toLowerCase())
-  );
+  // Show all enabled systems - remove the hardcoded filter
+  const filteredSystems = systems;
 
   return (
     <Card>

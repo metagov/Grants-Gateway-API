@@ -1,0 +1,32 @@
+{
+    "@context": "http://www.daostar.org/schemas",
+    "name": "<REQUIRED: The name of the entity (DAO, Foundation, etc.).>",
+    "type": "<REQUIRED: The entity type, e.g., 'DAO' or 'Foundation'.>",
+    "grantPools": [
+        {
+            "type": "GrantPool",
+            "id": "<REQUIRED: The ID of the grant pool, typically a CAIP-10 identifier.>",
+            "name": "<REQUIRED: The name of the grant pool.>",
+            "description": "<REQUIRED: A description of the grant pool.>",
+            "grantFundingMechanism": "<REQUIRED: Specifies the grant funding mechanism used for this pool. Enum value: 'Direct Grants', 'Quadratic Funding', 'Streaming Quadratic Funding', 'Retro Funding', 'Conviction Voting', 'Self-Curated Registries', 'Gift Circles', 'Social Media-Based Capital Allocation', 'Futarchy', 'Assurance Contracts', 'Cookie Jar', 'Impact Attestations', 'Stokvel', 'Request for Proposal', 'Delegated Domain Allocation', 'Evolutionary Grants Games', 'Direct to Contract Incentives', 'Angel Investment', 'Dominant Assurance Contracts', 'Community Currencies', 'Universal Basic Income', 'Bounties', 'Gnosis Safe', 'Waqf', 'Ranked Choice Voting', 'Honour', 'Mutual Aid Networks', 'Bonding Curves', 'Zakat', 'Decentralized Validators', 'Revnets'>",
+            "isOpen": "<REQUIRED: Boolean value. 'true' if the grant pool is open to applications, 'false' if closed.>",
+            "closeDate": "<OPTIONAL: The ISO 8601 date-time when the grant pool stops taking applications, e.g., '2025-12-31T23:59:59Z'.>",
+            "applicationsURI": "<RECOMMENDED: A URI pointing to current and past applications received by the grant pool.>",
+            "governanceURI": "<RECOMMENDED: A URI pointing to governance details, requirements, and criteria. Typically a .md file.>",
+            "attestationIssuersURI": "<OPTIONAL: A URI pointing to JSON data listing trusted attestation issuers for the grant pool.>",
+            "requiredCredentials": [
+                "<OPTIONAL: An array of attestation types required for applicants, e.g., 'IdentityVerification', 'DAOContributor'.>"
+            ],
+            "totalGrantPoolSize": [
+                        {
+                            "amount": "<The total amount of funding for the grant pool>",
+                            "denomination": "<The denomination of currency>"
+                        }
+            ],
+            "email": "<OPTIONAL: A contact email for inquiries and support, e.g., 'grants@example.com'.>",
+            "image": "<OPTIONAL: A URI pointing to an image resource (e.g., grant pool logo). Typically a square image.>",
+            "coverImage": "<OPTIONAL: A URI pointing to a large background image for the grant pool.>"
+            "extensions": "<OPTIONAL: Implementation-specific extensions and additional metadata>"
+        }
+    ]
+}

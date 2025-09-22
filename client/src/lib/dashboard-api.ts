@@ -180,9 +180,97 @@ export const openGrantsApi = {
 export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
   cache: new Map<string, any>(),
+  
+  // Clear all cached data
+  clearCache() {
+    console.log('🗑️ Clearing DAOIP-5 cache');
+    this.cache.clear();
+  },
+
+  // Retry failed file fetch with exponential backoff
+  async retryFailedFile(system: string, fileName: string, maxRetries: number, baseDelay: number): Promise<any[]> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Retry attempt ${attempt}/${maxRetries} for ${fileName}`);
+        const response = await fetch(`/api/proxy/daoip5/${system}/${fileName}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ Retry successful for ${fileName} on attempt ${attempt}`);
+          
+          // Parse the applications from this file
+          const applications: any[] = [];
+          const grantPools = data.grantPools || [];
+          
+          for (const pool of grantPools) {
+            const poolApplications = (pool.applications || []).map((app: any) => {
+              // Apply same funding calculation logic
+              let fundsInUSD = 0;
+              if (app.fundsApprovedInUSD) {
+                fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+              } else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                for (const fund of app.fundsApproved) {
+                  if (fund.amount) {
+                    if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                      const xlmToUsd = 0.13;
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                    } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                      const celoToUsd = 0.65; // Approximate CELO to USD rate
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                    } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                      // cUSD is pegged to USD
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    } else {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    }
+                  }
+                }
+              }
+              
+              return {
+                id: app.id,
+                projectName: app.projectName || 'Unknown Project',
+                projectDescription: app.description,
+                system,
+                grantPoolId: app.grantPoolId,
+                status: system === 'stellar' ? 'awarded' : (app.status || 'unknown'),
+                fundsApprovedInUSD: fundsInUSD,
+                createdAt: app.createdAt || new Date().toISOString(),
+                category: app.extensions?.['org.stellar.communityfund.category'] || '',
+                awardType: app.extensions?.['org.stellar.communityfund.awardType'] || '',
+                extensions: app.extensions || {}
+              };
+            });
+            
+            applications.push(...poolApplications);
+          }
+          
+          return applications;
+        }
+        
+        // If still failing, wait before next retry
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`⏳ Waiting ${delay}ms before retry ${attempt + 1}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (retryError) {
+        console.warn(`❌ Retry attempt ${attempt} failed for ${fileName}:`, retryError);
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    console.error(`💥 All retry attempts failed for ${fileName}`);
+    return []; // Return empty array if all retries fail
+  },
 
   async getSystems(): Promise<string[]> {
-    return ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
+    return ['stellar', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
   },
 
   async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
@@ -221,10 +309,14 @@ export const daoip5Api = {
 
       const applications: any[] = [];
 
-      // Step 3: Fetch application files (look for *_applications_uri.json files)
-      const applicationFiles = systemFiles.filter((file: string) => 
-        file.includes('applications_uri') && file.endsWith('.json')
-      );
+      // Step 3: Fetch application files (broader pattern matching for Celo compatibility)
+      const applicationFiles = systemFiles.filter((file: string) => {
+        return (
+          (file.includes('applications_uri') && file.endsWith('.json')) ||
+          (file === 'applications.json') ||
+          (file.includes('_applications.json') && file.endsWith('.json'))
+        );
+      });
 
       for (const appFile of applicationFiles) {
         try {
@@ -255,6 +347,12 @@ export const daoip5Api = {
                       } else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
                         const ethToUsd = 2500;
                         fundsInUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+                      } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                        const celoToUsd = 0.65; // Approximate CELO to USD rate
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                      } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                        // cUSD is pegged to USD
+                        fundsInUSD += parseFloat(fund.amount) || 0;
                       } else {
                         fundsInUSD += parseFloat(fund.amount) || 0;
                       }
@@ -297,6 +395,17 @@ export const daoip5Api = {
           }
         } catch (error) {
           console.warn(`Failed to fetch applications from ${appFile}:`, error);
+          // For 500 errors, try retry logic with exponential backoff
+          if (error instanceof Error && error.message.includes('500')) {
+            console.log(`🔄 Attempting retry for ${appFile} due to 500 error`);
+            const retryApplications = await this.retryFailedFile(system, appFile, 2, 1000); // 2 retries, starting with 1s delay
+            if (retryApplications.length > 0) {
+              console.log(`✅ Successfully recovered ${retryApplications.length} applications from ${appFile} via retry`);
+              applications.push(...retryApplications);
+            } else {
+              console.error(`❌ Could not recover data from ${appFile} after retries - missing ${appFile.includes('35') ? 'SCF Round 35' : appFile} applications`);
+            }
+          }
         }
       }
 
@@ -349,6 +458,15 @@ export const daoip5Api = {
             const ethToUsd = 2500; // Approximate ETH to USD rate
             totalUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
           }
+          // For CELO, use conversion rate
+          else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+            const celoToUsd = 0.65; // Approximate CELO to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+          }
+          // For cUSD (Celo USD), use 1:1 rate
+          else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
           // For other denominations, try to use amount as-is
           else {
             totalUSD += parseFloat(fund.amount) || 0;
@@ -370,6 +488,13 @@ export const daoip5Api = {
       if (totalGrantPoolSize.denomination === 'ETH' || totalGrantPoolSize.denomination?.toLowerCase() === 'eth') {
         const ethToUsd = 2500;
         return String((parseFloat(totalGrantPoolSize.amount) || 0) * ethToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'CELO' || totalGrantPoolSize.denomination?.toLowerCase() === 'celo') {
+        const celoToUsd = 0.65;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * celoToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'cUSD' || totalGrantPoolSize.denomination?.toLowerCase() === 'cusd') {
+        return String(parseFloat(totalGrantPoolSize.amount) || 0);
       }
       return String(totalGrantPoolSize.amount || 0);
     }
@@ -509,14 +634,104 @@ async function fetchSystemDataSystematically(systemId: string, source: string): 
   }
 }
 
+// Global cache invalidation function
+export const invalidateAllCaches = async () => {
+  console.log('🔄 Invalidating all caches and forcing data refresh');
+  
+  // Clear DAOIP-5 cache
+  daoip5Api.clearCache();
+  
+  // Clear analytics data service cache
+  const { analyticsDataService } = await import('./analytics-data-service');
+  analyticsDataService.clearCache();
+  
+  // Clear React Query cache
+  queryClient.clear();
+  
+  console.log('✅ All caches cleared successfully');
+};
+
 // Combined data fetching with caching
 export const dashboardApi = {
-  // Get all grant systems from both APIs with comprehensive data
+  // Get all grant systems using centralized configuration
   async getAllSystems(): Promise<GrantSystem[]> {
     const cacheKey = 'dashboard-all-systems';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as GrantSystem[];
 
+    try {
+      // Fetch systems configuration from server
+      const configResponse = await fetch('/api/v1/systems/config');
+      if (!configResponse.ok) {
+        throw new Error('Failed to fetch systems configuration');
+      }
+      
+      const systemsConfig = await configResponse.json();
+      const activeSystems = (systemsConfig.activeSystems || []).filter((system: any) => system.enabled);
+
+      console.log(`📊 Loading ${activeSystems.length} configured active systems`);
+
+      // Get comprehensive stats for each configured system
+      const systemsWithStats = await Promise.allSettled(
+        activeSystems.map(async (systemConfig: any) => {
+          try {
+            // Use the systematic fetching approach with config data
+            const { pools, applications, totalFunding } = await fetchSystemDataSystematically(
+              systemConfig.id, 
+              systemConfig.source
+            );
+            
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate: undefined, // Coming soon
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          } catch (error) {
+            console.error(`Error fetching data for ${systemConfig.name}:`, error);
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: undefined,
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          }
+        })
+      );
+
+      const validSystems = systemsWithStats
+        .filter(result => result.status === 'fulfilled')
+        .map(result => (result as PromiseFulfilledResult<any>).value);
+
+      console.log(`✅ Successfully loaded ${validSystems.length} systems from configuration`);
+
+      queryClient.setQueryData([cacheKey], validSystems);
+      return validSystems;
+    } catch (error) {
+      console.error('Error fetching configured systems:', error);
+      
+      // Fallback to existing logic if configuration service fails
+      console.warn('⚠️ Falling back to legacy system discovery');
+      return this.getAllSystemsLegacy();
+    }
+  },
+
+  // Legacy method as fallback
+  async getAllSystemsLegacy(): Promise<GrantSystem[]> {
     // Auto-discover new sources dynamically
     await dataSourceRegistry.autoDiscover();
 
@@ -528,11 +743,6 @@ export const dashboardApi = {
       const requestedSources = allSources.filter(s => 
         s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
       );
-      
-      // Separate by source type for appropriate API handling
-      const openGrantsSources = requestedSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = requestedSources.filter(s => s.source === 'daoip5');
-      const customSources = requestedSources.filter(s => s.source === 'custom');
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
@@ -577,7 +787,6 @@ export const dashboardApi = {
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<any>).value);
 
-      queryClient.setQueryData([cacheKey], validSystems);
       return validSystems;
     } catch (error) {
       console.error('Error fetching systems:', error);
@@ -755,6 +964,8 @@ export const getSystemColor = (systemName: string): string => {
     optimism: '#EF4444', // red
     arbitrum: '#06B6D4', // cyan
     celo: '#F59E0B', // amber
+    'celo-org': '#F59E0B', // amber (mapped to celo-org system ID)
+    'celopg': '#F59E0B', // amber (mapped to celopg system ID)
     default: '#800020' // maroon
   };
   

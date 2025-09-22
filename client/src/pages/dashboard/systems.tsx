@@ -1,58 +1,79 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { 
-  Building2, 
-  ExternalLink, 
-  TrendingUp, 
-  Users, 
+import {
+  Building2,
+  ExternalLink,
+  TrendingUp,
+  Users,
   DollarSign,
   Calendar,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
+import {
+  dashboardApi,
+  formatCurrency,
+  getSystemColor,
+} from "@/lib/dashboard-api";
 
 // Helper function to get system ID from display name
 const getSystemId = (systemName: string): string => {
   const nameToIdMap: Record<string, string> = {
-    'octant': 'octant',
-    'giveth': 'giveth',
-    'stellar community fund': 'stellar',
-    'optimism retropgf': 'optimism',
-    'arbitrum foundation': 'arbitrumfoundation',
-    'celopg': 'celo-org', // Updated name
-    'clr fund': 'clrfund',
-    'dao drops': 'dao-drops-dorgtech',
-    'octant (golem)': 'octant-golemfoundation'
+    octant: "octant",
+    giveth: "giveth",
+    "stellar community fund": "stellar",
+    "optimism retropgf": "optimism",
+    "arbitrum foundation": "arbitrumfoundation",
+    celopg: "celopg", // Updated to correct system ID
+    "clr fund": "clrfund",
+    "dao drops": "dao-drops-dorgtech",
+    "octant (golem)": "octant-golemfoundation",
   };
-  
+
   const normalizedName = systemName.toLowerCase();
-  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, '-');
+  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
 };
 
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
-  const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
-  
+  const compatibilityColor =
+    system.compatibility >= 90
+      ? "text-green-600"
+      : system.compatibility >= 75
+        ? "text-yellow-600"
+        : "text-orange-600";
+
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
-      {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
-        <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">NEW</Badge>
-      )}
+      {system.addedDate &&
+        new Date(system.addedDate).getTime() >
+          Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+          <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">
+            NEW
+          </Badge>
+        )}
       <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div 
+              <div
                 className="h-12 w-12 rounded-lg flex items-center justify-center relative"
                 style={{ backgroundColor: systemColor }}
               >
                 <Building2 className="h-6 w-6 text-white" />
                 {system.compatibility && (
-                  <div className={`absolute -bottom-1 -right-1 text-xs font-bold ${compatibilityColor} bg-white rounded-full px-1 border`}>
+                  <div
+                    className={`absolute -bottom-1 -right-1 text-xs font-bold ${compatibilityColor} bg-white rounded-full px-1 border`}
+                  >
                     {system.compatibility}%
                   </div>
                 )}
@@ -62,12 +83,12 @@ function SystemCard({ system }: { system: any }) {
                   {system.name}
                 </CardTitle>
                 <CardDescription className="flex items-center space-x-2">
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className="text-xs"
                     style={{ borderColor: systemColor, color: systemColor }}
                   >
-                    {system.source === 'opengrants' ? 'Type 1' : 'Type 2'}
+                    {system.source === "opengrants" ? "Type 1" : "Type 2"}
                   </Badge>
                   {system.compatibility && (
                     <span className="text-xs text-gray-500">
@@ -81,41 +102,53 @@ function SystemCard({ system }: { system: any }) {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-gray-500">Funding:</span>
-              <span className="ml-1 font-medium">{formatCurrency(system.totalFunding || 0)}</span>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Funding:</span>
+              <span className="font-medium block">
+                {formatCurrency(system.totalFunding || 0)}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Applications:</span>
-              <span className="ml-1 font-medium">{system.totalApplications || 0}</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Applications:</span>
+              <span className="font-medium block">
+                {system.totalApplications || 0}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Approval:</span>
-              <span className="ml-1 font-medium text-gray-400 italic">Coming soon</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Approval:</span>
+              <span className="font-medium text-gray-400 italic block">
+                Coming soon
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Rounds:</span>
-              <span className="ml-1 font-medium">{system.totalPools || 0}</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Rounds:</span>
+              <span className="font-medium block">{system.totalPools || 0}</span>
             </div>
           </div>
-          
+
           {system.fundingMechanisms && system.fundingMechanisms.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-1">
-                {system.fundingMechanisms.slice(0, 2).map((mechanism: string) => (
-                  <Badge key={mechanism} variant="secondary" className="text-xs">
-                    {mechanism}
-                  </Badge>
-                ))}
+                {system.fundingMechanisms
+                  .slice(0, 2)
+                  .map((mechanism: string) => (
+                    <Badge
+                      key={mechanism}
+                      variant="secondary"
+                      className="text-xs"
+                    >
+                      {mechanism}
+                    </Badge>
+                  ))}
               </div>
             </div>
           )}
-          
+
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                {system.source === 'opengrants' ? 'Live API' : 'Static Data'}
+                {system.source === "opengrants" ? "Live API" : "Static Data"}
               </span>
               <div className="flex items-center space-x-1 text-[#800020] text-sm font-medium group-hover:underline">
                 <span>View Details</span>
@@ -157,74 +190,41 @@ function SystemSkeleton() {
 }
 
 export default function GrantSystems() {
-  const { data: systems, isLoading, error } = useQuery({
-    queryKey: ['dashboard-all-systems'],
+  const {
+    data: systems,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dashboard-all-systems"],
     queryFn: dashboardApi.getAllSystems,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const apiSystems = systems?.filter(s => 
-    s.source === 'opengrants' && 
-    !['giveth', 'octant'].includes(s.name.toLowerCase())
-  ) || [];
-  const staticSystems = systems?.filter(s => s.source === 'daoip5') || [];
+  const apiSystems =
+    systems?.filter(
+      (s) =>
+        s.source === "opengrants" &&
+        !["giveth", "octant"].includes(s.name.toLowerCase()),
+    ) || [];
+  const staticSystems = systems?.filter((s) => s.source === "daoip5") || [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Grant Systems</h1>
-        <p className="text-gray-600">
-          Automatically discovered and integrated grant systems with DAOIP-5 standardization
-        </p>
       </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Systems</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? <Skeleton className="h-8 w-12" /> : systems?.length || 0}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Integrated platforms</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Live Integrations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? <Skeleton className="h-8 w-12" /> : apiSystems.length}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Real-time API access</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Data Integrations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {isLoading ? <Skeleton className="h-8 w-12" /> : staticSystems.length}
-            </div>
-            <p className="text-xs text-gray-600 mt-1">Static data sources</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* API Integrated Systems */}
       {apiSystems.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Type 1: Live API Integrations</h2>
-            <Badge variant="secondary" className="text-xs">Real-time data</Badge>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Type 1: Live API Integrations
+            </h2>
+            <Badge variant="secondary" className="text-xs">
+              Real-time data
+            </Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {apiSystems.map((system) => (
@@ -233,15 +233,9 @@ export default function GrantSystems() {
           </div>
         </div>
       )}
-
       {/* Static Data Systems */}
       {staticSystems.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">Type 2: Data Integrations</h2>
-            <Badge variant="secondary" className="text-xs">Static data files</Badge>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {staticSystems.map((system) => (
               <SystemCard key={system.name} system={system} />
@@ -249,11 +243,12 @@ export default function GrantSystems() {
           </div>
         </div>
       )}
-
       {/* Loading State */}
       {isLoading && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Loading Systems...</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Loading Systems...
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <SystemSkeleton key={i} />
@@ -261,19 +256,20 @@ export default function GrantSystems() {
           </div>
         </div>
       )}
-
       {/* Error State */}
       {error && (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load systems</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Unable to load systems
+              </h3>
               <p className="text-gray-600 mb-4">
                 There was an error fetching the grant systems data.
               </p>
-              <Button 
-                onClick={() => window.location.reload()} 
+              <Button
+                onClick={() => window.location.reload()}
                 variant="outline"
               >
                 Try Again
@@ -282,8 +278,8 @@ export default function GrantSystems() {
           </CardContent>
         </Card>
       )}
-
-      {/* DAOIP-5 Value Proposition */}
+      {/* DAOIP-5 Value Proposition */}{" "}
+      {/*
       <Card className="bg-gradient-to-r from-[#800020]/5 to-green-500/5 border-[#800020]/20">
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -354,7 +350,7 @@ export default function GrantSystems() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>  */}
     </div>
   );
 }
