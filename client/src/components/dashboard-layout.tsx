@@ -20,19 +20,19 @@ interface DashboardLayoutProps {
 const navigation = [
   {
     name: "Ecosystem Overview",
-    href: "/dashboard",
+    href: "/",
     icon: Home,
     description: "Ecosystem statistics and trends"
   },
   {
     name: "Grant Systems", 
-    href: "/dashboard/systems",
+    href: "/systems",
     icon: Building2,
     description: "Individual grant system profiles"
   },
   {
     name: "Search & Filter",
-    href: "/dashboard/search",
+    href: "/search",
     icon: Search,
     description: "Advanced search across all systems"
   }
@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/">
+            <Link href="/dev">
               <Button variant="outline" size="sm">
                 Back to API Docs
               </Button>
@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="p-6">
             <nav className="space-y-2">
               {navigation.map((item) => {
-                const isActive = location === item.href || (item.href !== '/dashboard' && location.startsWith(item.href));
+                const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
                 
                 return (
                   <Link key={item.name} href={item.href}>
