@@ -1,0 +1,85 @@
+{
+  "system": "Celo Public Goods",
+  "adapterType": "DAOIP-5 Static Data",
+  "dataSource": "https://daoip5.daostar.org/celopg",
+  "staticDataPath": "/celopg",
+  "lastUpdated": "2025-09-22",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Celo Public Goods",
+        "type": "Foundation",
+        "grantPoolsURI": "grants_pool.json"
+      },
+      "extensions": {
+        "io.celo.systemMetadata": {
+          "platform": "celo",
+          "description": "Funding public goods in the Celo ecosystem through quadratic funding",
+          "website": "https://celo.org",
+          "supportedNetworks": ["celo"],
+          "fundingMechanisms": ["quadratic_funding", "direct_grants"],
+          "established": "2020"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "closeDate": "closeDate (ISO 8601)",
+        "totalGrantPoolSize": "totalGrantPoolSize",
+        "totalGrantPoolSizeUSD": "totalGrantPoolSizeUSD",
+        "grantFundingMechanism": "grantFundingMechanism",
+        "isOpen": "isOpen"
+      },
+      "extensions": {},
+      "date_mappings": {
+        "closeDate": "Native DAOIP-5 closeDate field"
+      },
+      "application_files": {
+        "pattern": "*_applications_uri.json",
+        "examples": [
+          "round_16_applications_uri.json",
+          "round_33_applications_uri.json", 
+          "mint_micro_applications_uri.json",
+          "mint_pilot_applications_uri.json",
+          "mint_growth_applications_uri.json"
+        ]
+      }
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping"
+      },
+      "social_mappings": {
+        "socials": "Native DAOIP-5 socials array"
+      },
+      "extensions": {}
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "status": "status",
+        "fundsApprovedInUSD": "fundsApprovedInUSD",
+        "fundsApproved": "fundsApproved",
+        "createdAt": "createdAt",
+        "projectName": "projectName",
+        "grantPoolId": "grantPoolId"
+      },
+      "extensions": {},
+      "status_mappings": {
+        "submitted": "submitted (Celo-specific status)",
+        "pending": "pending (DAOIP-5 standard)",
+        "approved": "approved (DAOIP-5 standard)",
+        "completed": "completed (DAOIP-5 standard)",
+        "rejected": "rejected (DAOIP-5 standard)"
+      }
+    }
+  },
+  "special_transformations": {
+    "data_fetching": "Sequential API calls to multiple *_applications_uri.json files",
+    "status_handling": "'submitted' status is treated as funded/approved for chart calculations",
+    "file_discovery": "Dynamic discovery of application files from pool metadata",
+    "round_naming": "Supports both numbered rounds (round_X) and named pools (mint_*)"
+  }
+}

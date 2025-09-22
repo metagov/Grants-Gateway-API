@@ -1,0 +1,73 @@
+{
+  "system": "Arbitrum Foundation",
+  "adapterType": "DAOIP-5 Static Data",
+  "dataSource": "https://daoip5.daostar.org/arbitrumfoundation",
+  "staticDataPath": "/arbitrumfoundation",
+  "lastUpdated": "2025-09-22",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Arbitrum Foundation",
+        "type": "Foundation",
+        "grantPoolsURI": "grants_pool.json"
+      },
+      "extensions": {
+        "io.arbitrum.systemMetadata": {
+          "platform": "arbitrum",
+          "description": "Supporting the Arbitrum ecosystem through grants",
+          "website": "https://arbitrum.foundation",
+          "supportedNetworks": ["arbitrum"],
+          "fundingMechanisms": ["direct_grants"],
+          "established": "2021"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "closeDate": "closeDate (ISO 8601)",
+        "totalGrantPoolSize": "totalGrantPoolSize",
+        "totalGrantPoolSizeUSD": "totalGrantPoolSizeUSD",
+        "grantFundingMechanism": "grantFundingMechanism",
+        "isOpen": "isOpen"
+      },
+      "extensions": {},
+      "date_mappings": {
+        "closeDate": "Native DAOIP-5 closeDate field"
+      }
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping"
+      },
+      "social_mappings": {
+        "socials": "Native DAOIP-5 socials array"
+      },
+      "extensions": {}
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "status": "status",
+        "fundsApprovedInUSD": "fundsApprovedInUSD",
+        "fundsApproved": "fundsApproved",
+        "createdAt": "createdAt",
+        "projectName": "projectName",
+        "grantPoolId": "grantPoolId"
+      },
+      "extensions": {},
+      "status_mappings": {
+        "pending": "pending (DAOIP-5 standard)",
+        "approved": "approved (DAOIP-5 standard)",
+        "completed": "completed (DAOIP-5 standard)",
+        "funded": "funded (DAOIP-5 standard)",
+        "rejected": "rejected (DAOIP-5 standard)"
+      }
+    }
+  },
+  "special_transformations": {
+    "funding_mechanism": "Direct grants to ecosystem projects",
+    "ecosystem_focus": "Arbitrum Layer 2 scaling solutions"
+  }
+}

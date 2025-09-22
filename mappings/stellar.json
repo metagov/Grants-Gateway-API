@@ -1,0 +1,82 @@
+{
+  "system": "Stellar Community Fund",
+  "adapterType": "DAOIP-5 Static Data",
+  "dataSource": "https://daoip5.daostar.org/stellar",
+  "staticDataPath": "/stellar",
+  "lastUpdated": "2025-09-22",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Stellar Community Fund",
+        "type": "Foundation",
+        "grantPoolsURI": "grants_pool.json"
+      },
+      "extensions": {
+        "io.stellar.systemMetadata": {
+          "platform": "stellar",
+          "description": "Community-driven funding for projects building on Stellar",
+          "website": "https://communityfund.stellar.org",
+          "supportedNetworks": ["stellar"],
+          "fundingMechanisms": ["direct_grants"],
+          "established": "2018"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "closeDate": "closeDate (ISO 8601)",
+        "totalGrantPoolSize": "totalGrantPoolSize",
+        "totalGrantPoolSizeUSD": "totalGrantPoolSizeUSD",
+        "grantFundingMechanism": "grantFundingMechanism",
+        "isOpen": "isOpen"
+      },
+      "extensions": {},
+      "date_mappings": {
+        "closeDate": "Native DAOIP-5 closeDate field"
+      },
+      "application_files": {
+        "pattern": "*_applications_uri.json",
+        "examples": [
+          "round_19_applications_uri.json",
+          "round_37_applications_uri.json",
+          "round_12_applications_uri.json"
+        ]
+      }
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping"
+      },
+      "social_mappings": {
+        "socials": "Native DAOIP-5 socials array"
+      },
+      "extensions": {}
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "All fields compliant": "Direct DAOIP-5 mapping",
+        "status": "status",
+        "fundsApprovedInUSD": "fundsApprovedInUSD",
+        "fundsApproved": "fundsApproved",
+        "createdAt": "createdAt",
+        "projectName": "projectName",
+        "grantPoolId": "grantPoolId"
+      },
+      "extensions": {},
+      "status_mappings": {
+        "pending": "pending (DAOIP-5 standard)",
+        "approved": "approved (DAOIP-5 standard)",
+        "completed": "completed (DAOIP-5 standard)",
+        "funded": "funded (DAOIP-5 standard)",
+        "rejected": "rejected (DAOIP-5 standard)"
+      }
+    }
+  },
+  "special_transformations": {
+    "data_fetching": "Sequential API calls to multiple *_applications_uri.json files",
+    "round_naming": "SCF round numbering system (scf_X pattern)",
+    "file_discovery": "Dynamic discovery of application files from pool metadata"
+  }
+}
