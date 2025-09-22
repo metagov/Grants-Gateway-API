@@ -306,11 +306,18 @@ export const daoip5Api = {
                      closeDate;
         }
         
+        // Calculate funding amount - prefer pool-level data, fall back to application sum later
+        let totalFunding = this.extractFundingAmount(pool.totalGrantPoolSize);
+        if (totalFunding === '0' || !totalFunding) {
+          // Pool doesn't have funding info, we'll calculate from applications later
+          totalFunding = '0';
+        }
+
         return {
           id: pool.id,
           name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
           system,
-          totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
+          totalGrantPoolSizeUSD: totalFunding,
           totalApplications: 0, // Will be calculated from applications
           grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
           isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
@@ -442,14 +449,28 @@ export const daoip5Api = {
         }
       }
 
-      // Update pool application counts
+      // Update pool application counts and calculate funding from applications for pools with missing funding
       const poolAppCounts = new Map<string, number>();
+      const poolFundingFromApps = new Map<string, number>();
+      
       applications.forEach(app => {
         poolAppCounts.set(app.grantPoolId, (poolAppCounts.get(app.grantPoolId) || 0) + 1);
+        // Accumulate funding for pools that need it calculated from applications
+        const currentFunding = poolFundingFromApps.get(app.grantPoolId) || 0;
+        poolFundingFromApps.set(app.grantPoolId, currentFunding + (app.fundsApprovedInUSD || 0));
       });
       
       pools.forEach((pool: any) => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+        
+        // If pool has no funding data (0 or null), calculate from applications
+        if (pool.totalGrantPoolSizeUSD === '0' || !pool.totalGrantPoolSizeUSD) {
+          const fundingFromApps = poolFundingFromApps.get(pool.id) || 0;
+          if (fundingFromApps > 0) {
+            pool.totalGrantPoolSizeUSD = String(fundingFromApps);
+            console.log(`💰 Updated ${pool.name} funding from applications: $${fundingFromApps}`);
+          }
+        }
       });
 
       const result = { pools, applications };

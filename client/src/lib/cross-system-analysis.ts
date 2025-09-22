@@ -90,17 +90,20 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
     for (const system of systems) {
       try {
         // Fetch pool data for this system to get actual grantFundingMechanism values
-        const systemDetails = await dashboardApi.getSystemDetails(system.name);
+        // Use system ID instead of display name for API calls
+        let systemId = system.name;
+        if (system.name === 'Stellar Community Fund') systemId = 'stellar';
+        if (system.name === 'Celo Public Goods') systemId = 'celopg';
+        if (system.name === 'Octant') systemId = 'octant';
+        if (system.name === 'Giveth') systemId = 'giveth';
+        const systemDetails = await dashboardApi.getSystemDetails(systemId);
         const poolData = systemDetails.pools || [];
-        
-        console.log(`🔍 Analyzing ${system.name}: ${poolData.length} pools`);
         
         // Group pools by mechanism
         const poolsByMechanism = new Map<string, { funding: number; applications: number; }>();
         
         for (const pool of poolData) {
           const normalizedMechanism = normalizeMechanism(pool.grantFundingMechanism);
-          console.log(`📊 Pool ${pool.name || pool.id}: ${pool.grantFundingMechanism} → ${normalizedMechanism}, Funding: $${pool.totalGrantPoolSizeUSD}`);
           
           if (!poolsByMechanism.has(normalizedMechanism)) {
             poolsByMechanism.set(normalizedMechanism, { funding: 0, applications: 0 });
@@ -110,8 +113,6 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
           mechanismData.funding += parseFloat(pool.totalGrantPoolSizeUSD || '0');
           mechanismData.applications += 0; // Pool-level applications count not available in current data structure
         }
-        
-        console.log(`📈 ${system.name} mechanism summary:`, Array.from(poolsByMechanism.entries()).map(([mech, data]) => `${mech}: $${data.funding}`));
         
         // Add to global mechanism map
         for (const [mechanism, data] of Array.from(poolsByMechanism.entries())) {
