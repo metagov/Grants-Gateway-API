@@ -239,54 +239,37 @@ export default function DashboardOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Funding"
+          title="Total Ecosystem Funding"
           value={stats ? formatCurrency(stats.totalFunding) : "Loading..."}
-          description="Distributed across all systems"
+          description="Across all systems"
           icon={DollarSign}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Total Applications"
+          value={stats?.totalApplications.toLocaleString() || 0}
+          description="Grant applications processed"
+          icon={Users}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Active Systems"
+          value={stats?.totalSystems || 0}
+          description="Currently operating"
+          icon={Building2}
           loading={statsLoading}
         />
         <StatsCard
           title="Grant Rounds"
           value={stats?.totalGrantRounds || 0}
-          description="Active and completed rounds"
+          description="Funding rounds available"
           icon={Calendar}
           loading={statsLoading}
         />
-        <StatsCard
-          title="Grant Systems"
-          value={stats?.totalSystems || 0}
-          description="Integrated platforms"
-          icon={Building2}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Projects"
-          value={stats?.totalProjects.toLocaleString() || 0}
-          description="Total grant applications"
-          icon={Users}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Average Approval Rate"
-          value="Coming soon"
-          description="Cross-system approval metrics"
-          icon={Target}
-          loading={false}
-        />
       </div>
 
-      {/* Additional Stats Row - Removed approval rate and ecosystem health */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <StatsCard
-          title="Total Applications"
-          value={stats?.totalApplications.toLocaleString() || 0}
-          description="Applications submitted across all systems"
-          icon={FileText}
-          loading={statsLoading}
-        />
-      </div>
 
       {/* Charts and Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

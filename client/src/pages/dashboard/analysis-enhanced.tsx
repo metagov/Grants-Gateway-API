@@ -109,16 +109,6 @@ function MetricCard({
         </div>
       </CardContent>
       
-      {/* Coming Soon Blur Overlay for Average Approval Rate */}
-      {title === "Average Approval Rate" && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-sm" data-testid="status-approval-rate-coming-soon">
-          <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
-            <span className="text-xs font-medium text-gray-600">
-              Coming Soon
-            </span>
-          </div>
-        </div>
-      )}
     </Card>
   );
 }
@@ -146,14 +136,16 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="name" 
                 angle={-45}
                 textAnchor="end"
-                height={100}
-                fontSize={12}
+                height={80}
+                fontSize={11}
+                interval={0}
+                tick={{ fontSize: 11 }}
               />
               <YAxis 
                 yAxisId="funding"
@@ -216,7 +208,7 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
                   cy="50%"
                   outerRadius={80}
                   dataKey="funding"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                   labelLine={false}
                 >
                   {chartData.map((entry, index) => (
@@ -541,7 +533,7 @@ export default function EcosystemOverview() {
       </div>
 
       {/* Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
           title="Total Ecosystem Funding"
           value={formatCurrency(totalFunding)}
@@ -554,13 +546,6 @@ export default function EcosystemOverview() {
           value={totalApplications.toLocaleString()}
           description="Grant applications processed"
           icon={Users}
-          loading={systemLoading}
-        />
-        <MetricCard
-          title="Average Approval Rate"
-          value={`${averageApproval.toFixed(1)}%`}
-          description="Across active systems"
-          icon={Target}
           loading={systemLoading}
         />
         <MetricCard
