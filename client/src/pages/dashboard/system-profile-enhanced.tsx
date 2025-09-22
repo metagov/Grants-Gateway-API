@@ -225,12 +225,15 @@ function ApplicationsVsFundingChart({
     // Support both OpenGrants and DAOIP-5 status values
     const totalFunding = poolApps.reduce((sum, app) => {
       const status = app.status?.toLowerCase();
+      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
       if (
-        status === "funded" ||
-        status === "approved" ||
-        status === "awarded" ||
-        status === "completed" || // DAOIP-5 standard
-        status === "submitted" // Celo-specific status
+        hasFunding && (
+          status === "funded" ||
+          status === "approved" ||
+          status === "awarded" ||
+          status === "completed" || // DAOIP-5 standard
+          status === "submitted" // For any status, check actual funding
+        )
       ) {
         return sum + parseFloat(app.fundsApprovedInUSD || "0");
       }
@@ -238,12 +241,15 @@ function ApplicationsVsFundingChart({
     }, 0);
     const awardedCount = poolApps.filter((app) => {
       const status = app.status?.toLowerCase();
+      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
       return (
-        status === "funded" ||
-        status === "approved" ||
-        status === "awarded" ||
-        status === "completed" || // DAOIP-5 standard
-        status === "submitted" // Celo-specific status
+        hasFunding && (
+          status === "funded" ||
+          status === "approved" ||
+          status === "awarded" ||
+          status === "completed" || // DAOIP-5 standard
+          status === "submitted" // For any status, check actual funding
+        )
       );
     }).length;
 
@@ -636,7 +642,8 @@ function ApplicationCard({ app }: { app: any }) {
                   <Badge
                     variant={(() => {
                       const status = app.status?.toLowerCase();
-                      if (status === "funded" || status === "awarded" || status === "completed" || status === "submitted") {
+                      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
+                      if (hasFunding && (status === "funded" || status === "awarded" || status === "completed" || status === "submitted")) {
                         return "default";
                       } else if (status === "approved") {
                         return "secondary";

@@ -68,7 +68,7 @@
       },
       "extensions": {},
       "status_mappings": {
-        "submitted": "submitted (Celo-specific status)",
+        "submitted": "submitted (Celo status - actual funding determined by fundsApprovedInUSD > 0)",
         "pending": "pending (DAOIP-5 standard)",
         "approved": "approved (DAOIP-5 standard)",
         "completed": "completed (DAOIP-5 standard)",
@@ -78,7 +78,7 @@
   },
   "special_transformations": {
     "data_fetching": "Sequential API calls to multiple *_applications_uri.json files",
-    "status_handling": "'submitted' status is treated as funded/approved for chart calculations",
+    "status_handling": "All applications checked for fundsApprovedInUSD > 0 to determine actual funding status",
     "file_discovery": "Dynamic discovery of application files from pool metadata",
     "round_naming": "Supports both numbered rounds (round_X) and named pools (mint_*)"
   }

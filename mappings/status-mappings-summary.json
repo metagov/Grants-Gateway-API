@@ -57,9 +57,9 @@
       "mappings": {
         "submitted": {
           "daoip5_status": "submitted",
-          "chart_treatment": "counted_as_funded",
+          "chart_treatment": "counted_as_funded_if_fundsApproved_gt_0",
           "badge_variant": "default",
-          "note": "Celo-specific status, treated as funded in calculations"
+          "note": "Celo status - funding determined by fundsApprovedInUSD > 0, not status alone"
         },
         "pending": {
           "daoip5_status": "pending",
@@ -186,6 +186,6 @@
     "case_sensitivity": "All status comparisons use toLowerCase() normalization",
     "funding_calculation": "Charts sum fundsApprovedInUSD for applications with 'funded' status values",
     "unknown_status_handling": "Unknown status values get 'outline' badge variant",
-    "celo_special_case": "The 'submitted' status is unique to Celo and requires special handling in charts"
+    "celo_special_case": "Celo funding status determined by fundsApprovedInUSD > 0, not just status value"
   }
 }
