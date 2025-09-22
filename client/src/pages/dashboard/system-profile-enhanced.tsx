@@ -622,21 +622,42 @@ function GrantPoolCard({
   );
 }
 
+// Helper function to get system ID from display name
+const getSystemId = (systemName: string): string => {
+  const nameToIdMap: Record<string, string> = {
+    octant: "octant",
+    giveth: "giveth",
+    "stellar community fund": "stellar",
+    "optimism retropgf": "optimism",
+    "arbitrum foundation": "arbitrumfoundation",
+    celopg: "celopg", // Updated to correct system ID
+    "celo public goods": "celopg", // Alternative name mapping
+    "celo-public-goods": "celopg", // URL-friendly mapping
+    "clr fund": "clrfund",
+    "dao drops": "dao-drops-dorgtech",
+    "octant (golem)": "octant-golemfoundation",
+  };
+
+  const normalizedName = systemName.toLowerCase();
+  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
+};
+
 export default function SystemProfileEnhanced() {
   const [, params] = useRoute("/dashboard/systems/:systemName");
   const systemName = params?.systemName || "";
+  const systemId = getSystemId(systemName); // Map URL parameter to correct system ID
 
   const {
     data: systemData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dashboard-system-details", systemName],
-    queryFn: () => dashboardApi.getSystemDetails(systemName),
+    queryKey: ["dashboard-system-details", systemId], // Use mapped system ID
+    queryFn: () => dashboardApi.getSystemDetails(systemId), // Use mapped system ID
     staleTime: 15 * 60 * 1000, // 15 minutes - cached stats
     gcTime: 30 * 60 * 1000, // 30 minutes in cache
     refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
-    enabled: !!systemName,
+    enabled: !!systemId, // Check mapped system ID
   });
 
   const systemColor = getSystemColor(systemName);
@@ -739,7 +760,7 @@ export default function SystemProfileEnhanced() {
             await invalidateAllCaches();
             // Refresh this specific query
             queryClient.invalidateQueries({
-              queryKey: ["dashboard-system-details", systemName],
+              queryKey: ["dashboard-system-details", systemId],
             });
             console.log("✅ Cache invalidated and data refreshed");
           }}
