@@ -67,6 +67,7 @@ export default {
       "type": "Foundation",
       "enabled": true,
       "priority": 4,
+      "status": "work_in_progress",
       "metadata": {
         "description": "Funding public goods in the Celo ecosystem through quadratic funding",
         "website": "https://celo.org",

@@ -295,17 +295,37 @@ export const daoip5Api = {
       }
       const poolsData = await poolsResponse.json();
 
-      const pools = (poolsData.grantPools || []).map((pool: any) => ({
-        id: pool.id,
-        name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
-        system,
-        totalGrantPoolSizeUSD: this.extractFundingAmount(pool.totalGrantPoolSize),
-        totalApplications: 0, // Will be calculated from applications
-        grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
-        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
-        closeDate: pool.closeDate,
-        description: pool.description
-      }));
+      const pools = (poolsData.grantPools || []).map((pool: any) => {
+        // Extract dates from Celo extensions if available
+        let closeDate = pool.closeDate;
+        if (pool.extensions && system === 'celopg') {
+          // Prioritize end dates from Celo extensions
+          closeDate = pool.extensions['celopg.donationsEndTime'] || 
+                     pool.extensions['celopg.applicationsEndTime'] || 
+                     pool.extensions['celopg.timestamp'] ||
+                     closeDate;
+        }
+        
+        // Calculate funding amount - prefer pool-level data, fall back to application sum later
+        let totalFunding = this.extractFundingAmount(pool.totalGrantPoolSize);
+        if (totalFunding === '0' || !totalFunding) {
+          // Pool doesn't have funding info, we'll calculate from applications later
+          totalFunding = '0';
+        }
+
+        return {
+          id: pool.id,
+          name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
+          system,
+          totalGrantPoolSizeUSD: totalFunding,
+          totalApplications: 0, // Will be calculated from applications
+          grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
+          isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+          closeDate: closeDate,
+          description: pool.description,
+          extensions: pool.extensions // Pass through extensions for frontend use
+        };
+      });
 
       const applications: any[] = [];
 
@@ -371,6 +391,26 @@ export const daoip5Api = {
                 const website = extensions['stellar.urls']?.website || '';
                 const successCriteria = extensions['stellar.successCriteria'] || '';
                 
+                // Smart date handling for Celo: use donation timestamps if createdAt is placeholder
+                let bestCreatedAt = app.createdAt;
+                if (system === 'celopg' && (
+                  !app.createdAt || 
+                  app.createdAt === "2024-01-01T00:00:00Z" || 
+                  app.createdAt.startsWith("2024-01-01")
+                )) {
+                  // Use the earliest donation timestamp as creation proxy
+                  const donations = extensions['celopg.donations'] || [];
+                  if (donations.length > 0) {
+                    const sortedDonations = donations.sort((a: any, b: any) => 
+                      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                    );
+                    bestCreatedAt = sortedDonations[0].timestamp;
+                  } else {
+                    // Fallback to a reasonable date for the round
+                    bestCreatedAt = new Date(2024, 9, 1).toISOString(); // Oct 1, 2024
+                  }
+                }
+
                 return {
                   id: app.id,
                   projectName: app.projectName || 'Unknown Project',
@@ -379,7 +419,7 @@ export const daoip5Api = {
                   grantPoolId: app.grantPoolId,
                   status,
                   fundsApprovedInUSD: fundsInUSD,
-                  createdAt: app.createdAt || new Date().toISOString(),
+                  createdAt: bestCreatedAt || new Date().toISOString(),
                   // Additional metadata from extensions
                   category,
                   awardType,
@@ -409,14 +449,28 @@ export const daoip5Api = {
         }
       }
 
-      // Update pool application counts
+      // Update pool application counts and calculate funding from applications for pools with missing funding
       const poolAppCounts = new Map<string, number>();
+      const poolFundingFromApps = new Map<string, number>();
+      
       applications.forEach(app => {
         poolAppCounts.set(app.grantPoolId, (poolAppCounts.get(app.grantPoolId) || 0) + 1);
+        // Accumulate funding for pools that need it calculated from applications
+        const currentFunding = poolFundingFromApps.get(app.grantPoolId) || 0;
+        poolFundingFromApps.set(app.grantPoolId, currentFunding + (app.fundsApprovedInUSD || 0));
       });
       
       pools.forEach((pool: any) => {
         pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+        
+        // If pool has no funding data (0 or null), calculate from applications
+        if (pool.totalGrantPoolSizeUSD === '0' || !pool.totalGrantPoolSizeUSD) {
+          const fundingFromApps = poolFundingFromApps.get(pool.id) || 0;
+          if (fundingFromApps > 0) {
+            pool.totalGrantPoolSizeUSD = String(fundingFromApps);
+            console.log(`💰 Updated ${pool.name} funding from applications: $${fundingFromApps}`);
+          }
+        }
       });
 
       const result = { pools, applications };

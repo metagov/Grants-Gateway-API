@@ -239,54 +239,37 @@ export default function DashboardOverview() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Funding"
+          title="Total Ecosystem Funding"
           value={stats ? formatCurrency(stats.totalFunding) : "Loading..."}
-          description="Distributed across all systems"
+          description="Across all systems"
           icon={DollarSign}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Total Applications"
+          value={stats?.totalApplications.toLocaleString() || 0}
+          description="Grant applications processed"
+          icon={Users}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Active Systems"
+          value={stats?.totalSystems || 0}
+          description="Currently operating"
+          icon={Building2}
           loading={statsLoading}
         />
         <StatsCard
           title="Grant Rounds"
           value={stats?.totalGrantRounds || 0}
-          description="Active and completed rounds"
+          description="Funding rounds available"
           icon={Calendar}
           loading={statsLoading}
         />
-        <StatsCard
-          title="Grant Systems"
-          value={stats?.totalSystems || 0}
-          description="Integrated platforms"
-          icon={Building2}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Projects"
-          value={stats?.totalProjects.toLocaleString() || 0}
-          description="Total grant applications"
-          icon={Users}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Average Approval Rate"
-          value="Coming soon"
-          description="Cross-system approval metrics"
-          icon={Target}
-          loading={false}
-        />
       </div>
 
-      {/* Additional Stats Row - Removed approval rate and ecosystem health */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <StatsCard
-          title="Total Applications"
-          value={stats?.totalApplications.toLocaleString() || 0}
-          description="Applications submitted across all systems"
-          icon={FileText}
-          loading={statsLoading}
-        />
-      </div>
 
       {/* Charts and Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -333,7 +316,7 @@ export default function DashboardOverview() {
             ) : topSystems.length > 0 ? (
               <div className="space-y-3">
                 {topSystems.map((system, index) => (
-                  <Link key={system.systemName} href={`/dashboard/systems/${system.systemName.toLowerCase()}`}>
+                  <Link key={system.systemName} href={`/systems/${system.systemName.toLowerCase()}`}>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group">
                       <div className="flex items-center space-x-3">
                         <Badge variant="outline" className="text-xs min-w-[24px] text-center">#{index + 1}</Badge>
@@ -378,7 +361,7 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <Link href="/dashboard/systems">
+              <Link href="/systems">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <Building2 className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">
@@ -388,7 +371,7 @@ export default function DashboardOverview() {
                   <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
               </Link>
-              <Link href="/dashboard/search">
+              <Link href="/search">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <FileText className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">

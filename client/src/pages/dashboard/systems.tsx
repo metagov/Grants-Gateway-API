@@ -34,6 +34,8 @@ const getSystemId = (systemName: string): string => {
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
     celopg: "celopg", // Updated to correct system ID
+    "celo public goods": "celopg", // Alternative name mapping
+    "celo-public-goods": "celopg", // URL-friendly mapping
     "clr fund": "clrfund",
     "dao drops": "dao-drops-dorgtech",
     "octant (golem)": "octant-golemfoundation",
@@ -45,12 +47,6 @@ const getSystemId = (systemName: string): string => {
 
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
-  const compatibilityColor =
-    system.compatibility >= 90
-      ? "text-green-600"
-      : system.compatibility >= 75
-        ? "text-yellow-600"
-        : "text-orange-600";
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
@@ -61,7 +57,12 @@ function SystemCard({ system }: { system: any }) {
             NEW
           </Badge>
         )}
-      <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
+      {system.status === "work_in_progress" && (
+        <Badge className="absolute -top-2 -left-2 bg-yellow-500 text-white text-xs">
+          WORK IN PROGRESS
+        </Badge>
+      )}
+      <Link href={`/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -69,13 +70,20 @@ function SystemCard({ system }: { system: any }) {
                 className="h-12 w-12 rounded-lg flex items-center justify-center relative"
                 style={{ backgroundColor: systemColor }}
               >
-                <Building2 className="h-6 w-6 text-white" />
-                {system.compatibility && (
-                  <div
-                    className={`absolute -bottom-1 -right-1 text-xs font-bold ${compatibilityColor} bg-white rounded-full px-1 border`}
-                  >
-                    {system.compatibility}%
-                  </div>
+                {system.id === "stellar" ? (
+                  <img 
+                    src="/attached_assets/stellar-logo.png" 
+                    alt="Stellar" 
+                    className="h-6 w-6"
+                  />
+                ) : system.id === "celopg" ? (
+                  <img 
+                    src="/attached_assets/celo-logo.png" 
+                    alt="Celo" 
+                    className="h-6 w-6"
+                  />
+                ) : (
+                  <Building2 className="h-6 w-6 text-white" />
                 )}
               </div>
               <div>
@@ -90,11 +98,6 @@ function SystemCard({ system }: { system: any }) {
                   >
                     {system.source === "opengrants" ? "Type 1" : "Type 2"}
                   </Badge>
-                  {system.compatibility && (
-                    <span className="text-xs text-gray-500">
-                      DAOIP-5: {system.compatibility}%
-                    </span>
-                  )}
                 </CardDescription>
               </div>
             </div>
@@ -116,9 +119,11 @@ function SystemCard({ system }: { system: any }) {
               </span>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 block">Approval:</span>
-              <span className="font-medium text-gray-400 italic block">
-                Coming soon
+              <span className="text-gray-500 block">Avg per Project:</span>
+              <span className="font-medium block">
+                {system.totalApplications && system.totalApplications > 0 
+                  ? formatCurrency((system.totalFunding || 0) / system.totalApplications)
+                  : "--"}
               </span>
             </div>
             <div className="space-y-1">
@@ -197,7 +202,9 @@ export default function GrantSystems() {
   } = useQuery({
     queryKey: ["dashboard-all-systems"],
     queryFn: dashboardApi.getAllSystems,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes - cached stats
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
   });
 
   const apiSystems =

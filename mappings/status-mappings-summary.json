@@ -1,0 +1,191 @@
+{
+  "title": "Comprehensive Status Mappings for All Grant Systems",
+  "lastUpdated": "2025-09-22",
+  "description": "Consolidated view of how each grant system's status values map to DAOIP-5 standards and how they're handled in frontend charts",
+  "chart_logic": {
+    "funding_calculation_includes": [
+      "funded",
+      "approved", 
+      "awarded",
+      "completed",
+      "submitted"
+    ],
+    "badge_styling": {
+      "default_variant": ["funded", "awarded", "completed", "submitted"],
+      "secondary_variant": ["approved"],
+      "destructive_variant": ["rejected"],
+      "outline_variant": ["pending", "unknown"]
+    }
+  },
+  "systems": {
+    "octant": {
+      "adapter_type": "custom",
+      "native_logic": "Based on allocation amount",
+      "mappings": {
+        "allocation > 0": {
+          "daoip5_status": "funded",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "allocation = 0": {
+          "daoip5_status": "pending", 
+          "chart_treatment": "not_counted",
+          "badge_variant": "outline"
+        }
+      }
+    },
+    "giveth": {
+      "adapter_type": "custom",
+      "native_logic": "Based on QF round activity",
+      "mappings": {
+        "qfRound.isActive = true": {
+          "daoip5_status": "approved",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "secondary"
+        },
+        "qfRound.isActive = false": {
+          "daoip5_status": "completed",
+          "chart_treatment": "counted_as_funded", 
+          "badge_variant": "default"
+        }
+      }
+    },
+    "celo": {
+      "adapter_type": "daoip5_static",
+      "native_logic": "Uses DAOIP-5 compliant status values",
+      "special_case": "Uses 'submitted' status which is Celo-specific",
+      "mappings": {
+        "submitted": {
+          "daoip5_status": "submitted",
+          "chart_treatment": "counted_as_funded_if_fundsApproved_gt_0",
+          "badge_variant": "default",
+          "note": "Celo status - funding determined by fundsApprovedInUSD > 0, not status alone"
+        },
+        "pending": {
+          "daoip5_status": "pending",
+          "chart_treatment": "not_counted",
+          "badge_variant": "outline"
+        },
+        "approved": {
+          "daoip5_status": "approved", 
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "secondary"
+        },
+        "completed": {
+          "daoip5_status": "completed",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "rejected": {
+          "daoip5_status": "rejected",
+          "chart_treatment": "not_counted", 
+          "badge_variant": "destructive"
+        }
+      }
+    },
+    "stellar": {
+      "adapter_type": "daoip5_static",
+      "native_logic": "Direct DAOIP-5 compliant mapping",
+      "mappings": {
+        "pending": {
+          "daoip5_status": "pending",
+          "chart_treatment": "not_counted",
+          "badge_variant": "outline"
+        },
+        "approved": {
+          "daoip5_status": "approved",
+          "chart_treatment": "counted_as_funded", 
+          "badge_variant": "secondary"
+        },
+        "funded": {
+          "daoip5_status": "funded",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "completed": {
+          "daoip5_status": "completed", 
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "rejected": {
+          "daoip5_status": "rejected",
+          "chart_treatment": "not_counted",
+          "badge_variant": "destructive"
+        }
+      }
+    },
+    "optimism": {
+      "adapter_type": "daoip5_static",
+      "native_logic": "Direct DAOIP-5 compliant mapping",
+      "mappings": {
+        "pending": {
+          "daoip5_status": "pending",
+          "chart_treatment": "not_counted",
+          "badge_variant": "outline" 
+        },
+        "approved": {
+          "daoip5_status": "approved",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "secondary"
+        },
+        "funded": {
+          "daoip5_status": "funded", 
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "completed": {
+          "daoip5_status": "completed",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "rejected": {
+          "daoip5_status": "rejected",
+          "chart_treatment": "not_counted",
+          "badge_variant": "destructive"
+        }
+      }
+    },
+    "arbitrum": {
+      "adapter_type": "daoip5_static", 
+      "native_logic": "Direct DAOIP-5 compliant mapping",
+      "mappings": {
+        "pending": {
+          "daoip5_status": "pending",
+          "chart_treatment": "not_counted", 
+          "badge_variant": "outline"
+        },
+        "approved": {
+          "daoip5_status": "approved",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "secondary"
+        },
+        "funded": {
+          "daoip5_status": "funded",
+          "chart_treatment": "counted_as_funded",
+          "badge_variant": "default"
+        },
+        "completed": {
+          "daoip5_status": "completed",
+          "chart_treatment": "counted_as_funded", 
+          "badge_variant": "default"
+        },
+        "rejected": {
+          "daoip5_status": "rejected",
+          "chart_treatment": "not_counted",
+          "badge_variant": "destructive"
+        }
+      }
+    },
+    "questbook": {
+      "adapter_type": "custom_placeholder",
+      "native_logic": "Not implemented",
+      "status": "Health check only, no data mapping implemented"
+    }
+  },
+  "implementation_notes": {
+    "case_sensitivity": "All status comparisons use toLowerCase() normalization",
+    "funding_calculation": "Charts sum fundsApprovedInUSD for applications with 'funded' status values",
+    "unknown_status_handling": "Unknown status values get 'outline' badge variant",
+    "celo_special_case": "Celo funding status determined by fundsApprovedInUSD > 0, not just status value"
+  }
+}

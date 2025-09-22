@@ -1,0 +1,112 @@
+{
+  "system": "Giveth",
+  "adapterType": "Custom Adapter",
+  "adapterClass": "GivethAdapter",
+  "apiEndpoint": "https://mainnet.serve.giveth.io/graphql",
+  "lastUpdated": "2025-09-22",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Giveth",
+        "type": "DAO",
+        "grantPoolsURI": "/api/v1/grantPools?system=giveth"
+      },
+      "extensions": {
+        "io.giveth.systemMetadata": {
+          "platform": "giveth",
+          "description": "Donation platform for public goods and social impact projects",
+          "website": "https://giveth.io",
+          "apiEndpoint": "baseUrl",
+          "supportedNetworks": ["ethereum"],
+          "fundingMechanisms": ["donations", "quadratic_funding"],
+          "established": "2016"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "id": "id (formatted as daoip5:giveth:grantPool:{id})",
+        "name": "name",
+        "description": "description",
+        "allocatedFund": "totalGrantPoolSize.amount (in USD)",
+        "USD": "totalGrantPoolSize.denomination",
+        "allocatedFund": "totalGrantPoolSizeUSD",
+        "endDate": "closeDate (ISO 8601)",
+        "Quadratic Funding": "grantFundingMechanism",
+        "!isActive": "isOpen (inverted)"
+      },
+      "extensions": {
+        "io.giveth.roundMetadata": {
+          "qfRoundId": "id",
+          "slug": "slug",
+          "beginDate": "beginDate",
+          "endDate": "endDate",
+          "allocatedFund": "allocatedFund",
+          "roundUSDCapPerProject": "roundUSDCapPerProject",
+          "network": "network"
+        }
+      },
+      "date_mappings": {
+        "closeDate": "endDate (converted to ISO 8601)"
+      }
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "primaryAddress": "id (CAIP-10 format: eip155:1:{address})",
+        "title": "name",
+        "description": "description",
+        "image": "image",
+        "slug": "contentURI (derived)",
+        "creationDate": "createdAt"
+      },
+      "social_mappings": {
+        "socialMedia[].type": "socials[].platform",
+        "socialMedia[].link": "socials[].url"
+      },
+      "extensions": {
+        "x-karmagap-uid": "Retrieved from Karma batch search"
+      }
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "project.id": "id (daoip5:giveth:grantPool:{qfRoundId}:grantApplication:{project.id})",
+        "project.id": "projectId",
+        "project.title": "projectName",
+        "qfRound.id": "grantPoolId",
+        "qfRound.name": "grantPoolName",
+        "project.creationDate": "createdAt",
+        "project.slug": "contentURI",
+        "project.socialMedia": "socials",
+        "calculated_donations": "fundsApproved",
+        "calculated_donations_usd": "fundsApprovedInUSD",
+        "primaryAddress": "payoutAddress",
+        "qfRound.isActive ? 'approved' : 'completed'": "status"
+      },
+      "extensions": {
+        "io.giveth.applicationMetadata": {
+          "qfRoundSlug": "qfRound.slug",
+          "projectStatus": "project.status.name",
+          "qfRoundId": "qfRoundId",
+          "projectDescription": "project.description",
+          "projectImage": "project.image",
+          "projectAddresses": "project.addresses",
+          "projectSocialMedia": "project.socialMedia",
+          "qfRounds": "project.qfRounds"
+        },
+        "x-karmagap-uid": "Retrieved from Karma batch search"
+      },
+      "status_mappings": {
+        "qfRound.isActive = true": "approved",
+        "qfRound.isActive = false": "completed"
+      }
+    }
+  },
+  "special_transformations": {
+    "pool_selection": "Selects latest closed pool by endDate, fallback to latest overall",
+    "funding_calculation": "Uses allocatedFund directly (already in USD)",
+    "primary_address": "Finds first address with isRecipient=true",
+    "karma_integration": "Batch search for project titles to get Karma GAP UIDs",
+    "graphql_queries": "Uses GraphQL for allProjects with QF round filtering"
+  }
+}

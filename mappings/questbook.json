@@ -1,0 +1,56 @@
+{
+  "system": "Questbook",
+  "adapterType": "Custom Adapter (Placeholder)",
+  "adapterClass": "QuestbookAdapter",
+  "apiEndpoint": "https://api.questbook.app",
+  "lastUpdated": "2025-09-22",
+  "status": "Not fully implemented - Health check only",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Questbook",
+        "type": "DAO",
+        "grantPoolsURI": "/api/v1/grantPools?system=questbook"
+      },
+      "extensions": {
+        "app.questbook.systemMetadata": {
+          "platform": "questbook",
+          "description": "Decentralized grants management for Web3 ecosystems",
+          "website": "https://questbook.app",
+          "apiEndpoint": "baseUrl",
+          "supportedNetworks": ["polygon", "ethereum", "arbitrum"],
+          "fundingMechanisms": ["milestone_based", "direct_grants"],
+          "established": "2021",
+          "integrationType": "Direct DAOIP-5"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "Not implemented": "Placeholder returns empty array"
+      },
+      "extensions": {},
+      "date_mappings": {}
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "Not implemented": "Placeholder"
+      },
+      "social_mappings": {},
+      "extensions": {}
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "Not implemented": "Placeholder returns empty array"
+      },
+      "extensions": {},
+      "status_mappings": {}
+    }
+  },
+  "special_transformations": {
+    "implementation_status": "Adapter exists but only implements health check",
+    "cache_mechanism": "5-minute TTL cache implemented but unused",
+    "health_endpoint": "/daoip-5 endpoint for health monitoring"
+  }
+}

@@ -14,6 +14,14 @@ import {
   Award,
   CreditCard,
   RefreshCw,
+  ExternalLink,
+  Twitter,
+  Github,
+  Globe,
+  Mail,
+  MapPin,
+  Star,
+  Eye,
 } from "lucide-react";
 import {
   Card,
@@ -53,6 +61,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 import { useState } from "react";
 
@@ -181,12 +190,12 @@ function FundingDistributionChart({
   );
 }
 
-// Helper function to extract SCF round number for sorting
+// Helper function to extract round number for sorting (supports both scf_x and round_x patterns)
 const getRoundNumber = (pool: any): number => {
   const src = (pool.name || pool.id || "").toString();
-  // Look for SCF-specific patterns first (scf_38, scf-12, SCF #38)
-  const scfMatch = src.match(/scf[^0-9]*?(\d+)/i);
-  if (scfMatch) return parseInt(scfMatch[1], 10);
+  // Look for round-specific patterns first (round_33, scf_38, scf-12, SCF #38)
+  const roundMatch = src.match(/(?:round|scf)[^0-9]*?(\d+)/i);
+  if (roundMatch) return parseInt(roundMatch[1], 10);
   // Fallback to any number found
   const genericMatch = src.match(/(\d+)/);
   return genericMatch ? parseInt(genericMatch[1], 10) : -Infinity;
@@ -195,11 +204,20 @@ const getRoundNumber = (pool: any): number => {
 // Helper function to format pool names
 const formatPoolName = (pool: any): string => {
   const rawName = pool.name || pool.id.split(":").pop();
+  
   // Convert scf_1 -> SCF #1, scf_38 -> SCF #38
   if (rawName && rawName.toLowerCase().startsWith("scf_")) {
     const number = rawName.match(/\d+/);
     return number ? `SCF #${number[0]}` : rawName;
   }
+  
+  // Handle Celo mint rounds: mint_growth -> Mint Growth Pool
+  if (rawName && rawName.startsWith("mint_")) {
+    const poolType = rawName.replace("mint_", "");
+    const capitalizedType = poolType.charAt(0).toUpperCase() + poolType.slice(1);
+    return `Mint ${capitalizedType} Pool`;
+  }
+  
   return rawName;
 };
 
@@ -213,27 +231,54 @@ function ApplicationsVsFundingChart({
 }) {
   const chartData = pools.map((pool) => {
     const poolApps = applications.filter((app) => app.grantPoolId === pool.id);
-    // Calculate actual distributed funding from awarded applications
+    // Calculate actual distributed funding from approved/funded applications
+    // Support both OpenGrants and DAOIP-5 status values
     const totalFunding = poolApps.reduce((sum, app) => {
+      const status = app.status?.toLowerCase();
+      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
       if (
-        app.status === "funded" ||
-        app.status === "approved" ||
-        app.status === "awarded"
+        hasFunding && (
+          status === "funded" ||
+          status === "approved" ||
+          status === "awarded" ||
+          status === "completed" || // DAOIP-5 standard
+          status === "submitted" // For any status, check actual funding
+        )
       ) {
         return sum + parseFloat(app.fundsApprovedInUSD || "0");
       }
       return sum;
     }, 0);
-    const awardedCount = poolApps.filter(
-      (app) =>
-        app.status === "funded" ||
-        app.status === "approved" ||
-        app.status === "awarded",
-    ).length;
+    const awardedCount = poolApps.filter((app) => {
+      const status = app.status?.toLowerCase();
+      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
+      return (
+        hasFunding && (
+          status === "funded" ||
+          status === "approved" ||
+          status === "awarded" ||
+          status === "completed" || // DAOIP-5 standard
+          status === "submitted" // For any status, check actual funding
+        )
+      );
+    }).length;
 
     const formattedName = formatPoolName(pool);
-    // Create short name for chart labels (SCF #38 -> 38)
-    const shortName = formattedName.replace(/^SCF #/, "");
+    // Create short name for chart labels with Celo support
+    let shortName = formattedName.replace(/^SCF #/, "");
+    
+    // Handle Celo round patterns: round_33 -> R33, mint_pilot -> Pilot, etc.
+    const rawName = pool.name || pool.id.split(":").pop() || "";
+    if (rawName.startsWith("round_")) {
+      const match = rawName.match(/round_(\d+)/);
+      shortName = match ? `R${match[1]}` : shortName;
+    } else if (rawName === "mint_pilot") {
+      shortName = "Pilot";
+    } else if (rawName === "mint_growth") {
+      shortName = "Growth";
+    } else if (rawName === "mint_micro") {
+      shortName = "Micro";
+    }
 
     return {
       name: formattedName,
@@ -271,17 +316,18 @@ function ApplicationsVsFundingChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={filteredData}
-              margin={{ top: 20, right: 80, left: 60, bottom: 60 }}
+              margin={{ top: 20, right: 80, left: 60, bottom: 100 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
                 dataKey="shortName"
-                angle={0}
-                textAnchor="middle"
-                height={60}
-                fontSize={11}
-                interval={chartData.length > 20 ? 2 : 0} // Show every 3rd label if too many
-                tick={{ fontSize: 11 }}
+                angle={-45}
+                textAnchor="end"
+                height={90}
+                fontSize={10}
+                interval={0}
+                tick={{ fontSize: 10 }}
+                tickMargin={10}
               />
               <YAxis
                 yAxisId="left"
@@ -327,13 +373,23 @@ function ApplicationsVsFundingChart({
                 dataKey="applications"
                 fill="#3B82F6"
                 radius={[4, 4, 0, 0]}
+                maxBarSize={26}
               />
               <Bar
                 yAxisId="right"
                 dataKey="funding"
                 fill="#800020"
                 radius={[4, 4, 0, 0]}
+                maxBarSize={26}
               />
+              {filteredData.length > 10 && (
+                <Brush
+                  dataKey="shortName"
+                  height={20}
+                  startIndex={Math.max(filteredData.length - 10, 0)}
+                  stroke="#800020"
+                />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -450,6 +506,42 @@ function GrantPoolCard({
 
   // Format pool name to be human-friendly
   const displayName = formatPoolName(pool);
+  
+  // Extract round number for indexing
+  const roundNumber = getRoundNumber(pool);
+  
+  // Extract metadata from extensions (especially Celo)
+  const extensions = pool.extensions || {};
+  const celoRoundName = extensions['celopg.roundName'];
+  const celoRoundType = extensions['celopg.roundType'];
+  const celoPoolType = extensions['celopg.poolType'];
+  const celoCategory = extensions['celopg.category'];
+  const celoFundedAmount = extensions['celopg.fundedAmountInUsd'];
+  const celoMatchAmount = extensions['celopg.matchAmountInUsd'];
+  const celoDonorsCount = extensions['celopg.uniqueDonorsCount'];
+  const celoDonationsCount = extensions['celopg.totalDonationsCount'];
+  const celoQuarter = extensions['celopg.quarter'];
+  const description = pool.description;
+  
+  // Extract timestamp information from pool extensions first, then fallback
+  const poolDate = extensions['celopg.donationsEndTime'] ||
+                  extensions['celopg.applicationsEndTime'] ||
+                  extensions['celopg.timestamp'] ||
+                  pool.closeDate || 
+                  pool.createdAt || 
+                  pool.startDate || 
+                  pool.applicationsEndTime;
+  // For mint rounds, use quarter information as fallback
+  const formattedDate = poolDate 
+    ? new Date(poolDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : (celoQuarter || 'Date TBD');
+
+  // Use enhanced name from extensions if available
+  const enhancedDisplayName = celoRoundName || displayName;
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -458,20 +550,52 @@ function GrantPoolCard({
           <CardHeader className="hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="text-left">
-                <CardTitle className="text-lg">{displayName}</CardTitle>
-                <CardDescription className="flex items-center space-x-4 mt-2">
-                  <Badge variant="outline" className="text-xs">
-                    {pool.grantFundingMechanism}
-                  </Badge>
-                  <Badge
-                    variant={pool.isOpen ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {pool.isOpen ? "Open" : "Closed"}
-                  </Badge>
-                  <span className="text-xs text-gray-500">
-                    {poolApplications.length} applications
-                  </span>
+                <CardTitle className="text-lg">{enhancedDisplayName}</CardTitle>
+                <CardDescription className="space-y-2 mt-2">
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">
+                      Round {roundNumber > 0 ? roundNumber : '?'}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {formattedDate}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {pool.grantFundingMechanism || 'Direct Grant'}
+                    </Badge>
+                    {celoRoundType && (
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {celoRoundType}
+                      </Badge>
+                    )}
+                    {celoPoolType && (
+                      <Badge variant="outline" className="text-xs">
+                        {celoPoolType} Pool
+                      </Badge>
+                    )}
+                    <Badge
+                      variant={pool.isOpen ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {pool.isOpen ? "Open" : "Closed"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <span>{poolApplications.length} applications</span>
+                    {celoDonorsCount && (
+                      <span>{celoDonorsCount} donors</span>
+                    )}
+                    {celoDonationsCount && (
+                      <span>{celoDonationsCount} donations</span>
+                    )}
+                    {celoQuarter && !pool.name?.toLowerCase().includes('mint') && (
+                      <span>{celoQuarter}</span>
+                    )}
+                  </div>
+                  {description && (
+                    <p className="text-xs text-gray-600 line-clamp-2 max-w-md">
+                      {description}
+                    </p>
+                  )}
                 </CardDescription>
               </div>
               <div className="flex items-center space-x-4">
@@ -479,6 +603,16 @@ function GrantPoolCard({
                   <div className="text-sm font-medium text-gray-900">
                     {formatCurrency(totalFunding)}
                   </div>
+                  {celoFundedAmount && celoFundedAmount !== totalFunding && (
+                    <div className="text-xs text-gray-500">
+                      Funded: {formatCurrency(celoFundedAmount)}
+                    </div>
+                  )}
+                  {celoMatchAmount && celoMatchAmount > 0 && (
+                    <div className="text-xs text-blue-600">
+                      Match: {formatCurrency(celoMatchAmount)}
+                    </div>
+                  )}
                 </div>
                 {isOpen ? (
                   <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -492,99 +626,32 @@ function GrantPoolCard({
         <CollapsibleContent>
           <CardContent className="pt-0">
             {poolApplications.length > 0 ? (
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="font-medium">Project</TableHead>
-                      <TableHead className="font-medium">Status</TableHead>
-                      <TableHead className="font-medium text-right">
-                        Funding
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {poolApplications
-                      .sort((a, b) => {
-                        // Sort alphabetically by project name
-                        const nameA = (
-                          a.projectName || "Unknown"
-                        ).toLowerCase();
-                        const nameB = (
-                          b.projectName || "Unknown"
-                        ).toLowerCase();
-                        if (nameA < nameB) return -1;
-                        if (nameA > nameB) return 1;
-                        return 0;
-                      })
-                      .slice(0, 10)
-                      .map((app) => (
-                        <TableRow key={app.id} className="hover:bg-gray-50">
-                          <TableCell>
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {app.projectName || "Unknown Project"}
-                              </div>
-                              {app.category && (
-                                <div className="text-xs text-gray-500">
-                                  {app.category}{" "}
-                                  {app.awardType && `• ${app.awardType}`}
-                                </div>
-                              )}
-                              {app.website && (
-                                <a
-                                  href={app.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 hover:underline"
-                                >
-                                  View Website →
-                                </a>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                app.status === "funded"
-                                  ? "default"
-                                  : app.status === "awarded"
-                                    ? "default"
-                                    : app.status === "approved"
-                                      ? "secondary"
-                                      : app.status === "rejected"
-                                        ? "destructive"
-                                        : "outline"
-                              }
-                              className="text-xs capitalize"
-                            >
-                              {app.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="font-medium">
-                              {app.fundsApprovedInUSD
-                                ? formatCurrency(
-                                    parseFloat(app.fundsApprovedInUSD),
-                                  )
-                                : "--"}
-                            </div>
-                            {app.fundsApproved && app.fundsApproved[0] && (
-                              <div className="text-xs text-gray-500">
-                                {app.fundsApproved[0].amount}{" "}
-                                {app.fundsApproved[0].denomination}
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+              <div className="space-y-2">
+                {poolApplications
+                  .sort((a, b) => {
+                    // Sort by funding amount (highest first)
+                    const fundingA = parseFloat(a.fundsApprovedInUSD || "0");
+                    const fundingB = parseFloat(b.fundsApprovedInUSD || "0");
+                    if (fundingB !== fundingA) return fundingB - fundingA;
+                    
+                    // Then sort alphabetically by project name
+                    const nameA = (a.projectName || "Unknown").toLowerCase();
+                    const nameB = (b.projectName || "Unknown").toLowerCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                  })
+                  .slice(0, 10)
+                  .map((app) => (
+                    <ApplicationCard key={app.id} app={app} />
+                  ))}
+                
                 {poolApplications.length > 10 && (
-                  <div className="p-3 bg-gray-50 text-center">
-                    <span className="text-sm text-gray-600">
+                  <div className="text-center py-4">
+                    <Badge variant="outline" className="text-xs">
+                      <Eye className="h-3 w-3 mr-1" />
                       Showing top 10 of {poolApplications.length} applications
-                    </span>
+                    </Badge>
                   </div>
                 )}
               </div>
@@ -601,22 +668,246 @@ function GrantPoolCard({
   );
 }
 
+// Helper function to render social media icons
+function SocialIcon({ platform }: { platform: string }) {
+  const normalizedPlatform = platform.toLowerCase();
+  
+  if (normalizedPlatform.includes('twitter') || normalizedPlatform.includes('x.com')) {
+    return <Twitter className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('github')) {
+    return <Github className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('website') || normalizedPlatform.includes('www')) {
+    return <Globe className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('email') || normalizedPlatform.includes('mail')) {
+    return <Mail className="h-4 w-4" />;
+  }
+  return <ExternalLink className="h-4 w-4" />;
+}
+
+// Enhanced application card component
+function ApplicationCard({ app }: { app: any }) {
+  const extensions = app.extensions || {};
+  const projectDetails = extensions['app.octant.projectDetails'] || 
+                        extensions['io.giveth.applicationMetadata'] || 
+                        extensions['projectDetails'] || {};
+  const karmaUID = extensions['x-karmagap-uid'];
+  const description = projectDetails.description || 
+                     extensions.projectDescription || 
+                     projectDetails.projectDescription;
+  const projectImage = projectDetails.profileImageSmall || 
+                      projectDetails.profileImageMedium || 
+                      extensions.projectImage ||
+                      projectDetails.image;
+  const website = projectDetails.website || app.website;
+  const socials = app.socials || extensions.projectSocialMedia || [];
+
+  return (
+    <Card className="mb-4 hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex gap-4">
+          {/* Project Image */}
+          {projectImage && (
+            <div className="flex-shrink-0">
+              <img 
+                src={projectImage} 
+                alt={app.projectName || "Project"} 
+                className="w-16 h-16 rounded-lg object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h4 className="font-semibold text-lg text-gray-900 mb-1">
+                  {app.projectName || "Unknown Project"}
+                </h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge
+                    variant={(() => {
+                      const status = app.status?.toLowerCase();
+                      const hasFunding = parseFloat(app.fundsApprovedInUSD || "0") > 0;
+                      if (hasFunding && (status === "funded" || status === "awarded" || status === "completed" || status === "submitted")) {
+                        return "default";
+                      } else if (status === "approved") {
+                        return "secondary";
+                      } else if (status === "rejected") {
+                        return "destructive";
+                      } else {
+                        return "outline";
+                      }
+                    })()}
+                    className="text-xs capitalize"
+                  >
+                    {app.status}
+                  </Badge>
+                  {karmaUID && (
+                    <Badge variant="outline" className="text-xs">
+                      <Star className="h-3 w-3 mr-1" />
+                      Karma: {karmaUID}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              {/* Funding Information */}
+              <div className="text-right">
+                <div className="font-semibold text-lg">
+                  {app.fundsApprovedInUSD
+                    ? formatCurrency(parseFloat(app.fundsApprovedInUSD))
+                    : "--"}
+                </div>
+                {app.fundsApproved && app.fundsApproved[0] && (
+                  <div className="text-sm text-gray-500">
+                    {app.fundsApproved[0].amount} {app.fundsApproved[0].denomination}
+                  </div>
+                )}
+                {app.fundsAsked && app.fundsAsked[0] && app.fundsAskedInUSD && (
+                  <div className="text-xs text-gray-400">
+                    Requested: {formatCurrency(parseFloat(app.fundsAskedInUSD))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Project Description */}
+            {description && (
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                {description}
+              </p>
+            )}
+
+            {/* Links and Social Media */}
+            <div className="flex items-center gap-4 text-sm">
+              {website && (
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-blue-600 hover:underline"
+                >
+                  <Globe className="h-4 w-4" />
+                  Website
+                </a>
+              )}
+              
+              {socials && socials.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {socials.slice(0, 3).map((social: any, index: number) => (
+                    <a
+                      key={index}
+                      href={social.url || social.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-gray-700"
+                      title={social.platform || social.type}
+                    >
+                      <SocialIcon platform={social.platform || social.type} />
+                    </a>
+                  ))}
+                  {socials.length > 3 && (
+                    <span className="text-xs text-gray-400">
+                      +{socials.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Technical Details */}
+              {app.payoutAddress && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <MapPin className="h-3 w-3" />
+                  {app.payoutAddress.slice(0, 8)}...{app.payoutAddress.slice(-6)}
+                </div>
+              )}
+            </div>
+
+            {/* Additional Metadata */}
+            {(app.category || app.awardType || app.createdAt) && (
+              <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                {app.category && <span>{app.category}</span>}
+                {app.awardType && <span>• {app.awardType}</span>}
+                {app.createdAt && (
+                  <span>• Created {new Date(app.createdAt).toLocaleDateString()}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Helper function to get system ID from route name
+const getSystemId = (routeName: string): string => {
+  const routeToIdMap: Record<string, string> = {
+    octant: "octant",
+    giveth: "giveth",
+    "stellar-community-fund": "stellar",
+    "optimism-retropgf": "optimism",
+    "arbitrum-foundation": "arbitrumfoundation",
+    celopg: "celopg", 
+    "celo-public-goods": "celopg", // URL-friendly mapping
+    "clr-fund": "clrfund",
+    "dao-drops": "dao-drops-dorgtech",
+    "octant-golem": "octant-golemfoundation",
+  };
+
+  const normalizedRoute = routeName.toLowerCase();
+  return routeToIdMap[normalizedRoute] || normalizedRoute.replace(/\s+/g, "-");
+};
+
+// Helper function to get display name from route name
+const getDisplayName = (routeName: string): string => {
+  const routeToDisplayMap: Record<string, string> = {
+    octant: "Octant",
+    giveth: "Giveth",
+    "stellar-community-fund": "Stellar Community Fund",
+    "optimism-retropgf": "Optimism RetroPGF",
+    "arbitrum-foundation": "Arbitrum Foundation",
+    celopg: "Celo Public Goods",
+    "celo-public-goods": "Celo Public Goods",
+    "clr-fund": "CLR Fund",
+    "dao-drops": "DAO Drops",
+    "octant-golem": "Octant (Golem)",
+  };
+
+  const normalizedRoute = routeName.toLowerCase();
+  return routeToDisplayMap[normalizedRoute] || 
+         // Fallback: convert route name to title case
+         routeName.split('-').map(word => 
+           word.charAt(0).toUpperCase() + word.slice(1)
+         ).join(' ');
+};
+
 export default function SystemProfileEnhanced() {
-  const [, params] = useRoute("/dashboard/systems/:systemName");
+  const [, params] = useRoute("/systems/:systemName");
   const systemName = params?.systemName || "";
+  const systemId = getSystemId(systemName);
+  const displayName = getDisplayName(systemName); // Map URL parameter to correct system ID
 
   const {
     data: systemData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["dashboard-system-details", systemName],
-    queryFn: () => dashboardApi.getSystemDetails(systemName),
-    staleTime: 5 * 60 * 1000,
-    enabled: !!systemName,
+    queryKey: ["dashboard-system-details", systemId], // Use mapped system ID
+    queryFn: () => dashboardApi.getSystemDetails(systemId), // Use mapped system ID
+    staleTime: 15 * 60 * 1000, // 15 minutes - cached stats
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
+    enabled: !!systemId, // Check mapped system ID
   });
 
-  const systemColor = getSystemColor(systemName);
+  const systemColor = getSystemColor(systemId);
 
   if (isLoading) {
     return (
@@ -646,7 +937,7 @@ export default function SystemProfileEnhanced() {
     return (
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard/systems">
+          <Link href="/systems">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Systems
@@ -661,9 +952,9 @@ export default function SystemProfileEnhanced() {
                 System not found
               </h3>
               <p className="text-gray-600 mb-4">
-                Unable to load data for system "{systemName}".
+                Unable to load data for system "{displayName}".
               </p>
-              <Link href="/dashboard/systems">
+              <Link href="/systems">
                 <Button variant="outline">Back to Systems</Button>
               </Link>
             </div>
@@ -680,7 +971,7 @@ export default function SystemProfileEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard/systems">
+          <Link href="/systems">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Systems
@@ -694,9 +985,16 @@ export default function SystemProfileEnhanced() {
               <Building2 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 capitalize">
-                {systemName}
-              </h1>
+              <div className="flex items-center space-x-3">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {displayName}
+                </h1>
+                {systemId === "celopg" && (
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                    Work in Progress
+                  </Badge>
+                )}
+              </div>
               <p className="text-gray-600">
                 Grant system profile and funding analytics
               </p>
@@ -709,7 +1007,7 @@ export default function SystemProfileEnhanced() {
             await invalidateAllCaches();
             // Refresh this specific query
             queryClient.invalidateQueries({
-              queryKey: ["dashboard-system-details", systemName],
+              queryKey: ["dashboard-system-details", systemId],
             });
             console.log("✅ Cache invalidated and data refreshed");
           }}
@@ -724,7 +1022,7 @@ export default function SystemProfileEnhanced() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <StatsCard
           title="Total Applications"
           value={stats.totalApplications}
@@ -737,24 +1035,57 @@ export default function SystemProfileEnhanced() {
           description="Funding rounds available"
           icon={Calendar}
         />
-        <StatsCard
-          title="Total Awarded"
-          value={formatCurrency(
-            applications.reduce(
-              (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
-              0,
-            ),
+        <div className="relative">
+          <StatsCard
+            title="Total Awarded"
+            value={formatCurrency(
+              applications.reduce(
+                (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
+                0,
+              ),
+            )}
+            description="Funds approved for projects"
+            icon={Award}
+          />
+          {applications.reduce(
+            (sum, app) => sum + parseFloat(app.fundsApprovedInUSD || "0"),
+            0,
+          ) === 0 && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-xs">
+              <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">
+                  Coming Soon
+                </span>
+              </div>
+            </div>
           )}
-          description="Funds approved for projects"
-          icon={Award}
-        />
-        <StatsCard
-          title="Total Paid"
-          value={(() => {
-            // Check if we have any payout data in applications
+        </div>
+        <div className="relative">
+          <StatsCard
+            title="Total Paid"
+            value={(() => {
+              // Check if we have any payout data in applications
+              const totalPaid = applications.reduce((sum, app: any) => {
+                if (app.payouts && app.payouts.length > 0) {
+                  // Sum up payouts if available
+                  return (
+                    sum +
+                    app.payouts.reduce((payoutSum: number, payout: any) => {
+                      const amount = parseFloat(payout.value?.amount || "0");
+                      return payoutSum + amount;
+                    }, 0)
+                  );
+                }
+                return sum;
+              }, 0);
+              return totalPaid > 0 ? formatCurrency(totalPaid) : "Coming soon";
+            })()}
+            description="Funds disbursed to projects"
+            icon={CreditCard}
+          />
+          {(() => {
             const totalPaid = applications.reduce((sum, app: any) => {
               if (app.payouts && app.payouts.length > 0) {
-                // Sum up payouts if available
                 return (
                   sum +
                   app.payouts.reduce((payoutSum: number, payout: any) => {
@@ -765,25 +1096,9 @@ export default function SystemProfileEnhanced() {
               }
               return sum;
             }, 0);
-            return totalPaid > 0 ? formatCurrency(totalPaid) : "Coming soon";
-          })()}
-          description="Funds disbursed to projects"
-          icon={CreditCard}
-        />
-        <div className="relative">
-          <StatsCard
-            title="Approval Rate"
-            value={
-              stats.approvalRate !== undefined
-                ? `${stats.approvalRate.toFixed(1)}%`
-                : "Coming soon"
-            }
-            description="Applications approved/funded"
-            icon={TrendingUp}
-          />
-          {(stats.approvalRate === undefined ||
-            stats.approvalRate === null) && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/70 to-gray-200/70 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            return totalPaid === 0;
+          })() && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-xs">
               <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
                 <span className="text-xs font-medium text-gray-600">
                   Coming Soon
