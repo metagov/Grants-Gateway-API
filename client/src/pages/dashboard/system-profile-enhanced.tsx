@@ -221,23 +221,31 @@ function ApplicationsVsFundingChart({
 }) {
   const chartData = pools.map((pool) => {
     const poolApps = applications.filter((app) => app.grantPoolId === pool.id);
-    // Calculate actual distributed funding from awarded applications
+    // Calculate actual distributed funding from approved/funded applications
+    // Support both OpenGrants and DAOIP-5 status values
     const totalFunding = poolApps.reduce((sum, app) => {
+      const status = app.status?.toLowerCase();
       if (
-        app.status === "funded" ||
-        app.status === "approved" ||
-        app.status === "awarded"
+        status === "funded" ||
+        status === "approved" ||
+        status === "awarded" ||
+        status === "completed" || // DAOIP-5 standard
+        status === "submitted" // Celo-specific status
       ) {
         return sum + parseFloat(app.fundsApprovedInUSD || "0");
       }
       return sum;
     }, 0);
-    const awardedCount = poolApps.filter(
-      (app) =>
-        app.status === "funded" ||
-        app.status === "approved" ||
-        app.status === "awarded",
-    ).length;
+    const awardedCount = poolApps.filter((app) => {
+      const status = app.status?.toLowerCase();
+      return (
+        status === "funded" ||
+        status === "approved" ||
+        status === "awarded" ||
+        status === "completed" || // DAOIP-5 standard
+        status === "submitted" // Celo-specific status
+      );
+    }).length;
 
     const formattedName = formatPoolName(pool);
     // Create short name for chart labels (SCF #38 -> 38)
@@ -462,8 +470,8 @@ function GrantPoolCard({
   // Extract round number for indexing
   const roundNumber = getRoundNumber(pool);
   
-  // Extract timestamp information from pool or applications
-  const poolDate = pool.createdAt || pool.startDate || pool.applicationsEndTime;
+  // Extract timestamp information from pool (DAOIP-5 uses closeDate)
+  const poolDate = pool.closeDate || pool.createdAt || pool.startDate || pool.applicationsEndTime;
   const formattedDate = poolDate 
     ? new Date(poolDate).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -626,15 +634,18 @@ function ApplicationCard({ app }: { app: any }) {
                 </h4>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge
-                    variant={
-                      app.status === "funded" || app.status === "awarded"
-                        ? "default"
-                        : app.status === "approved"
-                          ? "secondary"
-                          : app.status === "rejected"
-                            ? "destructive"
-                            : "outline"
-                    }
+                    variant={(() => {
+                      const status = app.status?.toLowerCase();
+                      if (status === "funded" || status === "awarded" || status === "completed" || status === "submitted") {
+                        return "default";
+                      } else if (status === "approved") {
+                        return "secondary";
+                      } else if (status === "rejected") {
+                        return "destructive";
+                      } else {
+                        return "outline";
+                      }
+                    })()}
                     className="text-xs capitalize"
                   >
                     {app.status}
