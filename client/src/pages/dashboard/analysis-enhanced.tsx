@@ -187,6 +187,95 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
   );
 }
 
+function CeloVsStellarBreakdownChart({ data }: { data: SystemComparisonData[] }) {
+  // Filter for only Celo and Stellar systems  
+  const directGrantSystems = data.filter(system => 
+    system.systemName.includes("Stellar") || system.systemName.includes("Celo")
+  );
+  
+  const chartData = directGrantSystems.map(system => {
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      applications: system.totalApplications,
+      pools: system.totalPools
+    };
+  });
+
+  const totalDirectGrantsFunding = chartData.reduce((sum, item) => sum + item.funding, 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Target className="h-5 w-5 text-[#800020] mr-2" />
+          Direct Grants: Celo vs Stellar Breakdown
+        </CardTitle>
+        <CardDescription>
+          Funding distribution between Celo and Stellar direct grant systems
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-8">
+          <div className="h-64 w-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  dataKey="funding"
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  labelLine={false}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={index === 0 ? '#2563eb' : '#dc2626'} // Blue for first system, red for second
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any) => [formatCurrency(value), 'Funding']}
+                />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-4">
+            <div className="text-center lg:text-left mb-4">
+              <div className="text-sm font-medium text-gray-600">Total Direct Grants</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalDirectGrantsFunding)}</div>
+            </div>
+            {chartData.map((item, index) => (
+              <div key={`${item.name}-${index}`} className="flex items-center justify-between space-x-4 min-w-[300px]">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: index === 0 ? '#2563eb' : '#dc2626' }}
+                  />
+                  <span className="text-sm font-medium text-gray-900">{item.name}</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-medium">{formatCurrency(item.funding)}</div>
+                  <div className="text-xs text-gray-500">{item.pools} rounds, {item.applications} apps</div>
+                  <div className="text-xs text-blue-600">
+                    {((item.funding / totalDirectGrantsFunding) * 100).toFixed(1)}% of direct grants
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[] }) {
   const chartData = data.map(system => {
     // Create shorter names for better chart display
@@ -209,10 +298,10 @@ function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[]
       <CardHeader>
         <CardTitle className="flex items-center">
           <PieChart className="h-5 w-5 text-[#800020] mr-2" />
-          Grant System Funding Distribution
+          All Grant Systems Distribution
         </CardTitle>
         <CardDescription>
-          Distribution of funding across different grant systems
+          Distribution of funding across all grant systems
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -663,7 +752,10 @@ export default function EcosystemOverview() {
 
         <TabsContent value="mechanisms" className="space-y-6">
           {systemComparison && systemComparison.length > 0 ? (
-            <SystemFundingDistributionChart data={systemComparison} />
+            <>
+              <CeloVsStellarBreakdownChart data={systemComparison} />
+              <SystemFundingDistributionChart data={systemComparison} />
+            </>
           ) : (
             <Card>
               <CardContent className="pt-6">
