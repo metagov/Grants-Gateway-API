@@ -316,7 +316,7 @@ export default function DashboardOverview() {
             ) : topSystems.length > 0 ? (
               <div className="space-y-3">
                 {topSystems.map((system, index) => (
-                  <Link key={system.systemName} href={`/dashboard/systems/${system.systemName.toLowerCase()}`}>
+                  <Link key={system.systemName} href={`/systems/${system.systemName.toLowerCase()}`}>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group">
                       <div className="flex items-center space-x-3">
                         <Badge variant="outline" className="text-xs min-w-[24px] text-center">#{index + 1}</Badge>
@@ -361,7 +361,7 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <Link href="/dashboard/systems">
+              <Link href="/systems">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <Building2 className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">
@@ -371,7 +371,7 @@ export default function DashboardOverview() {
                   <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
               </Link>
-              <Link href="/dashboard/search">
+              <Link href="/search">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <FileText className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">

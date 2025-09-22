@@ -694,7 +694,7 @@ export default function EcosystemOverview() {
                     {systemComparison.map((system, index) => (
                       <Link 
                         key={`${system.systemName}-${index}`} 
-                        href={`/dashboard/systems/${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
+                        href={`/systems/${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
                         data-testid={`link-system-${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         <Card className="hover:shadow-lg transition-shadow cursor-pointer">
