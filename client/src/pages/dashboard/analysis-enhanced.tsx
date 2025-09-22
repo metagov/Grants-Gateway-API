@@ -187,24 +187,32 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
   );
 }
 
-function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
-  const chartData = data.map(mechanism => ({
-    name: mechanism.mechanism,
-    funding: mechanism.totalFunding,
-    applications: mechanism.totalApplications,
-    systems: mechanism.systems.length,
-    approvalRate: mechanism.averageApprovalRate
-  }));
+function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[] }) {
+  const chartData = data.map(system => {
+    // Create shorter names for better chart display
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    if (shortName === "Octant") shortName = "Octant";
+    if (shortName === "Giveth") shortName = "Giveth";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      applications: system.totalApplications,
+      pools: system.totalPools
+    };
+  });
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
           <PieChart className="h-5 w-5 text-[#800020] mr-2" />
-          Funding Mechanisms Analysis
+          Grant System Funding Distribution
         </CardTitle>
         <CardDescription>
-          Distribution of funding across different grant mechanisms
+          Distribution of funding across different grant systems
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -246,7 +254,7 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">{formatCurrency(item.funding)}</div>
-                  <div className="text-xs text-gray-500">{item.systems} systems, {item.applications} apps</div>
+                  <div className="text-xs text-gray-500">{item.pools} rounds, {item.applications} apps</div>
                 </div>
               </div>
             ))}
@@ -654,8 +662,8 @@ export default function EcosystemOverview() {
         </TabsContent>
 
         <TabsContent value="mechanisms" className="space-y-6">
-          {mechanismAnalysis && mechanismAnalysis.length > 0 ? (
-            <FundingMechanismChart data={mechanismAnalysis} />
+          {systemComparison && systemComparison.length > 0 ? (
+            <SystemFundingDistributionChart data={systemComparison} />
           ) : (
             <Card>
               <CardContent className="pt-6">
