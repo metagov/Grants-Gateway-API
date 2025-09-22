@@ -587,7 +587,7 @@ function GrantPoolCard({
                     {celoDonationsCount && (
                       <span>{celoDonationsCount} donations</span>
                     )}
-                    {celoQuarter && (
+                    {celoQuarter && !pool.name?.toLowerCase().includes('mint') && (
                       <span>{celoQuarter}</span>
                     )}
                   </div>
