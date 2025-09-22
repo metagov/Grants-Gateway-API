@@ -427,6 +427,8 @@ function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[]
     };
   });
 
+  const totalFunding = chartData.reduce((sum, item) => sum + item.funding, 0);
+
   return (
     <Card>
       <CardHeader>
@@ -439,17 +441,21 @@ function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[]
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-8">
-          <div className="h-64 w-64">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Pie Chart */}
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={100}
                   dataKey="funding"
-                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => {
+                    const percentage = (percent * 100);
+                    return percentage > 5 ? `${name} ${percentage.toFixed(0)}%` : `${percentage.toFixed(1)}%`;
+                  }}
                   labelLine={false}
                 >
                   {chartData.map((entry, index) => (
@@ -465,22 +471,39 @@ function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[]
               </RechartsPieChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-3">
-            {chartData.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="flex items-center justify-between space-x-4 min-w-[300px]">
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                  />
-                  <span className="text-sm font-medium text-gray-900">{item.name}</span>
+          {/* Legend and Details */}
+          <div className="space-y-4">
+            <div className="text-center lg:text-left">
+              <div className="text-sm font-medium text-gray-600">Total Funding</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalFunding)}</div>
+            </div>
+            
+            <div className="space-y-3">
+              {chartData.map((item, index) => (
+                <div key={`${item.name}-${index}`} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                        <div className="text-xs text-gray-600">
+                          {item.pools} rounds, {item.applications} apps
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold">{formatCurrency(item.funding)}</div>
+                      <div className="text-xs text-gray-500">
+                        {((item.funding / totalFunding) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium">{formatCurrency(item.funding)}</div>
-                  <div className="text-xs text-gray-500">{item.pools} rounds, {item.applications} apps</div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>

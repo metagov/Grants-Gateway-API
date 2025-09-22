@@ -74,20 +74,66 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
       approvalRates: number[];
     }>();
 
-    // For now, use known funding mechanisms based on system types
-    const knownMechanisms: Record<string, string[]> = {
-      'octant': ['Quadratic Funding'],
-      'giveth': ['Donations', 'Quadratic Funding'],
-      'stellar': ['Direct Grants'],
-      'optimism': ['Retroactive Public Goods'],
-      'arbitrumfoundation': ['Direct Grants'],
-      'celopg': ['Direct Grants']
+    // Helper function to normalize mechanism names
+    const normalizeMechanism = (mechanism: string): string => {
+      if (!mechanism) return 'Direct Grants';
+      const lower = mechanism.toLowerCase();
+      if (lower.includes('quadratic')) return 'Quadratic Funding';
+      if (lower.includes('direct') || lower.includes('grant')) return 'Direct Grants';
+      if (lower.includes('retro')) return 'Retroactive Public Goods';
+      if (lower.includes('donat')) return 'Donations';
+      if (lower.includes('stream')) return 'Streaming Quadratic Funding';
+      return mechanism; // Keep original if no match
     };
 
-    systems.forEach(system => {
-      const mechanisms = knownMechanisms[system.name.toLowerCase()] || ['Direct Grants'];
-      
-      mechanisms.forEach((mechanism: string) => {
+    // For each system, get detailed pool data to read actual funding mechanisms
+    for (const system of systems) {
+      try {
+        // Fetch pool data for this system to get actual grantFundingMechanism values
+        const systemDetails = await dashboardApi.getSystemDetails(system.name);
+        const poolData = systemDetails.pools || [];
+        
+        console.log(`🔍 Analyzing ${system.name}: ${poolData.length} pools`);
+        
+        // Group pools by mechanism
+        const poolsByMechanism = new Map<string, { funding: number; applications: number; }>();
+        
+        for (const pool of poolData) {
+          const normalizedMechanism = normalizeMechanism(pool.grantFundingMechanism);
+          console.log(`📊 Pool ${pool.name || pool.id}: ${pool.grantFundingMechanism} → ${normalizedMechanism}, Funding: $${pool.totalGrantPoolSizeUSD}`);
+          
+          if (!poolsByMechanism.has(normalizedMechanism)) {
+            poolsByMechanism.set(normalizedMechanism, { funding: 0, applications: 0 });
+          }
+          
+          const mechanismData = poolsByMechanism.get(normalizedMechanism)!;
+          mechanismData.funding += parseFloat(pool.totalGrantPoolSizeUSD || '0');
+          mechanismData.applications += 0; // Pool-level applications count not available in current data structure
+        }
+        
+        console.log(`📈 ${system.name} mechanism summary:`, Array.from(poolsByMechanism.entries()).map(([mech, data]) => `${mech}: $${data.funding}`));
+        
+        // Add to global mechanism map
+        for (const [mechanism, data] of Array.from(poolsByMechanism.entries())) {
+          if (!mechanismMap.has(mechanism)) {
+            mechanismMap.set(mechanism, {
+              systems: new Set(),
+              totalFunding: 0,
+              totalApplications: 0,
+              approvalRates: []
+            });
+          }
+          
+          const globalData = mechanismMap.get(mechanism)!;
+          globalData.systems.add(system.name);
+          globalData.totalFunding += data.funding;
+          globalData.totalApplications += data.applications;
+          if (system.approvalRate) globalData.approvalRates.push(system.approvalRate);
+        }
+      } catch (poolError) {
+        console.warn(`Could not fetch pool data for ${system.name}, using default mechanism:`, poolError);
+        // Fallback to system-level data if pool data unavailable
+        const mechanism = 'Direct Grants'; // Default fallback
         if (!mechanismMap.has(mechanism)) {
           mechanismMap.set(mechanism, {
             systems: new Set(),
@@ -102,17 +148,20 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
         data.totalFunding += system.totalFunding || 0;
         data.totalApplications += system.totalApplications || 0;
         if (system.approvalRate) data.approvalRates.push(system.approvalRate);
-      });
-    });
+      }
+    }
 
-    return Array.from(mechanismMap.entries()).map(([mechanism, data]) => ({
-      mechanism,
-      systems: Array.from(data.systems),
-      totalFunding: data.totalFunding,
-      totalApplications: data.totalApplications,
-      averageApprovalRate: data.approvalRates.length > 0 ? 
-        data.approvalRates.reduce((sum, rate) => sum + rate, 0) / data.approvalRates.length : 0
-    }));
+    return Array.from(mechanismMap.entries())
+      .map(([mechanism, data]) => ({
+        mechanism,
+        systems: Array.from(data.systems),
+        totalFunding: data.totalFunding,
+        totalApplications: data.totalApplications,
+        averageApprovalRate: data.approvalRates.length > 0 ? 
+          data.approvalRates.reduce((sum, rate) => sum + rate, 0) / data.approvalRates.length : 0
+      }))
+      .filter(item => item.totalFunding > 0)
+      .sort((a, b) => b.totalFunding - a.totalFunding);
   } catch (error) {
     console.error('Error in funding mechanism analysis:', error);
     return [];
