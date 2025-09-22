@@ -140,16 +140,28 @@ class AccurateDataService {
       if (!poolsResponse.ok) throw new Error(`Failed to fetch grants_pool.json for ${system}`);
       const poolsData = await poolsResponse.json();
 
-      const pools: PoolData[] = (poolsData.grantPools || []).map((pool: any) => ({
-        id: pool.id,
-        name: pool.name,
-        system,
-        totalFunding: 0, // Will be calculated from applications for DAOIP-5 data
-        totalApplications: 0, // Will be calculated from applications
-        mechanism: pool.grantFundingMechanism || 'Direct Grant',
-        isOpen: pool.isOpen || false,
-        closeDate: pool.closeDate
-      }));
+      const pools: PoolData[] = (poolsData.grantPools || []).map((pool: any) => {
+        // Extract dates from Celo extensions if available
+        let closeDate = pool.closeDate;
+        if (pool.extensions) {
+          // Prioritize end dates from Celo extensions
+          closeDate = pool.extensions['celopg.donationsEndTime'] || 
+                     pool.extensions['celopg.applicationsEndTime'] || 
+                     pool.extensions['celopg.timestamp'] ||
+                     closeDate;
+        }
+        
+        return {
+          id: pool.id,
+          name: pool.name,
+          system,
+          totalFunding: 0, // Will be calculated from applications for DAOIP-5 data
+          totalApplications: 0, // Will be calculated from applications
+          mechanism: pool.grantFundingMechanism || 'Direct Grant',
+          isOpen: pool.isOpen || false,
+          closeDate: closeDate
+        };
+      });
 
       const applications: ApplicationData[] = [];
 
@@ -167,15 +179,35 @@ class AccurateDataService {
             const grantPools = appsData.grantPools || [];
 
             for (const pool of grantPools) {
-              const poolApplications = (pool.applications || []).map((app: any) => ({
-                id: app.id,
-                projectName: app.projectName || 'Unknown Project',
-                system,
-                poolId: app.grantPoolId,
-                status: app.status || 'unknown',
-                fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
-                createdAt: app.createdAt || new Date().toISOString()
-              }));
+              const poolApplications = (pool.applications || []).map((app: any) => {
+                // For Celo mint rounds, applications don't have individual funding amounts
+                // But they might be funded if status is "Awarded"
+                let fundingAmount = parseFloat(app.fundsApprovedInUSD || '0');
+                
+                // For Celo mint rounds with "Awarded" status but no fundsApprovedInUSD,
+                // estimate funding based on program type
+                if (fundingAmount === 0 && app.status === 'Awarded' && app.extensions) {
+                  const poolType = app.extensions['celopg.poolType'];
+                  const round = app.extensions['celopg.round'];
+                  
+                  if (round === 'Mint') {
+                    // Mint program typical amounts based on pool type
+                    if (poolType === 'Micro') fundingAmount = 1000; // $1K for micro grants
+                    else if (poolType === 'Pilot') fundingAmount = 5000; // $5K for pilot grants
+                    else if (poolType === 'Growth') fundingAmount = 15000; // $15K for growth grants
+                  }
+                }
+                
+                return {
+                  id: app.id,
+                  projectName: app.projectName || 'Unknown Project',
+                  system,
+                  poolId: app.grantPoolId,
+                  status: app.status || 'unknown',
+                  fundingUSD: fundingAmount,
+                  createdAt: app.createdAt || new Date().toISOString()
+                };
+              });
 
               applications.push(...poolApplications);
             }
