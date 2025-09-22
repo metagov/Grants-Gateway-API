@@ -371,6 +371,26 @@ export const daoip5Api = {
                 const website = extensions['stellar.urls']?.website || '';
                 const successCriteria = extensions['stellar.successCriteria'] || '';
                 
+                // Smart date handling for Celo: use donation timestamps if createdAt is placeholder
+                let bestCreatedAt = app.createdAt;
+                if (system === 'celopg' && (
+                  !app.createdAt || 
+                  app.createdAt === "2024-01-01T00:00:00Z" || 
+                  app.createdAt.startsWith("2024-01-01")
+                )) {
+                  // Use the earliest donation timestamp as creation proxy
+                  const donations = extensions['celopg.donations'] || [];
+                  if (donations.length > 0) {
+                    const sortedDonations = donations.sort((a: any, b: any) => 
+                      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                    );
+                    bestCreatedAt = sortedDonations[0].timestamp;
+                  } else {
+                    // Fallback to a reasonable date for the round
+                    bestCreatedAt = new Date(2024, 9, 1).toISOString(); // Oct 1, 2024
+                  }
+                }
+
                 return {
                   id: app.id,
                   projectName: app.projectName || 'Unknown Project',
@@ -379,7 +399,7 @@ export const daoip5Api = {
                   grantPoolId: app.grantPoolId,
                   status,
                   fundsApprovedInUSD: fundsInUSD,
-                  createdAt: app.createdAt || new Date().toISOString(),
+                  createdAt: bestCreatedAt || new Date().toISOString(),
                   // Additional metadata from extensions
                   category,
                   awardType,
