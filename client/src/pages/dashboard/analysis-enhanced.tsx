@@ -131,6 +131,15 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
     };
   });
 
+  // Calculate min/max funding for better domain setting
+  const fundingValues = chartData.map(d => d.funding).filter(v => v > 0);
+  const minFunding = Math.min(...fundingValues);
+  const maxFunding = Math.max(...fundingValues);
+  
+  // Set a reasonable domain for log scale - ensure minimum is not too small
+  const logMin = Math.max(1000, minFunding * 0.5); // Minimum $1K or half the smallest value
+  const logMax = maxFunding * 2; // Double the largest value for headroom
+
   return (
     <Card>
       <CardHeader>
@@ -139,7 +148,7 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
           System Funding Comparison
         </CardTitle>
         <CardDescription>
-          Total funding and application metrics across grant systems
+          Total funding and application metrics across grant systems (logarithmic scale)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -160,8 +169,15 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
               <YAxis 
                 yAxisId="funding"
                 orientation="left"
-                tickFormatter={(value) => formatCurrency(value)}
+                scale="log"
+                domain={[logMin, logMax]}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `$${(value/1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `$${(value/1000).toFixed(0)}K`;
+                  return formatCurrency(value);
+                }}
                 fontSize={12}
+                allowDataOverflow={false}
               />
               <YAxis 
                 yAxisId="applications"
@@ -176,6 +192,23 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
                   name === 'approvalRate' ? 'Approval Rate (%)' : 'Avg Funding'
                 ]}
                 labelStyle={{ color: '#374151' }}
+                labelFormatter={(label) => (
+                  <div>
+                    <div className="font-semibold text-gray-900">{label}</div>
+                    {chartData.find(d => d.name === label) && (
+                      <div className="text-sm space-y-1 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Funding:</span>
+                          <span className="font-medium">{formatCurrency(chartData.find(d => d.name === label)!.funding)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Applications:</span>
+                          <span className="font-medium">{chartData.find(d => d.name === label)!.applications}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               />
               <Bar yAxisId="funding" dataKey="funding" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
               <Bar yAxisId="applications" dataKey="applications" fill={COLORS.info} radius={[4, 4, 0, 0]} />
