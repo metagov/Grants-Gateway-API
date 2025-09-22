@@ -92,7 +92,7 @@ function MetricCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow relative">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
         <Icon className="h-4 w-4 text-[#800020]" />
@@ -108,6 +108,17 @@ function MetricCard({
           )}
         </div>
       </CardContent>
+      
+      {/* Coming Soon Blur Overlay for Average Approval Rate */}
+      {title === "Average Approval Rate" && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-sm" data-testid="status-approval-rate-coming-soon">
+          <div className="bg-white/90 px-3 py-1 rounded-full shadow-sm border border-gray-200">
+            <span className="text-xs font-medium text-gray-600">
+              Coming Soon
+            </span>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
