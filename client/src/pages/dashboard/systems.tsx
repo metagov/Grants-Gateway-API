@@ -119,9 +119,11 @@ function SystemCard({ system }: { system: any }) {
               </span>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-500 block">Approval:</span>
-              <span className="font-medium text-gray-400 italic block">
-                Coming soon
+              <span className="text-gray-500 block">Avg per Project:</span>
+              <span className="font-medium block">
+                {system.totalApplications && system.totalApplications > 0 
+                  ? formatCurrency((system.totalFunding || 0) / system.totalApplications)
+                  : "--"}
               </span>
             </div>
             <div className="space-y-1">
