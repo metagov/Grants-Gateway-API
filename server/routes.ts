@@ -1,15 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest } from "./middleware/auth";
+import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
-import { PaginatedResponse } from "../shared/schema";
+import { PaginatedResponse, registrationSchema } from "../shared/schema";
 import cors from "cors";
+import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
@@ -141,16 +143,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Object.values(adapters);
   }
 
-  // API logging middleware
-  app.use('/api', async (req: AuthenticatedRequest, res, next) => {
+  // API logging middleware - only for legacy routes
+  app.use('/api/v1', async (req, res, next) => {
+    const aReq = req as AuthenticatedRequest;
     const start = Date.now();
     
     res.on('finish', async () => {
       const responseTime = Date.now() - start;
       
       try {
+        // Legacy API logging for backward compatibility
+        const userId = typeof aReq.user?.id === 'number' ? aReq.user.id : null;
         await storage.createApiLog({
-          userId: req.user?.id || null,
+          userId,
           endpoint: req.path,
           method: req.method,
           statusCode: res.statusCode,
@@ -167,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Grant Systems endpoints
-  app.get('/api/v1/grantSystems', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantSystems', async (req, res) => {
     try {
       const { system } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -207,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantSystems/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantSystems/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -234,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Grant Pools endpoints
-  app.get('/api/v1/grantPools', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantPools', async (req, res) => {
     try {
       const { system, isOpen, mechanism } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -321,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantPools/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantPools/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -350,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Health endpoints
-  app.get('/api/v1/health', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/health', async (req, res) => {
     try {
       const { healthService } = await import('./services/health');
       const forceRefresh = req.query.refresh === 'true';
@@ -371,7 +376,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/health/:adapter', async (req: AuthenticatedRequest, res) => {
+  // Public endpoints for frontend (cached data, no auth required)
+  app.get('/api/public/daoip5/systems', async (req, res) => {
+    try {
+      const { daoip5Service } = await import('./services/daoip5-service');
+      const summaries = await daoip5Service.getAllSystemSummaries();
+      res.json(summaries);
+    } catch (error) {
+      console.error('Failed to fetch DAOIP5 systems:', error);
+      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
+    }
+  });
+
+  app.get('/api/public/daoip5/:system/summary', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const { daoip5Service } = await import('./services/daoip5-service');
+      const summary = await daoip5Service.getSystemSummary(system);
+      res.json(summary);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 summary for ${req.params.system}:`, error);
+      res.status(500).json({ error: `Failed to fetch summary for ${req.params.system}` });
+    }
+  });
+
+  app.get('/api/public/daoip5/:system/:pool', async (req, res) => {
+    try {
+      const { system, pool } = req.params;
+      const { daoip5Service } = await import('./services/daoip5-service');
+      const poolData = await daoip5Service.getPoolData(system, pool);
+      res.json(poolData);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.pool}:`, error);
+      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
+    }
+  });
+
+  // Apply authentication middleware to all proxy endpoints - REQUIRE API tokens
+  app.use('/api/proxy', authenticateApiKey, requireAuth);
+  app.use('/api/proxy', rateLimitMiddleware);
+
+  // DAOIP5 API Proxy endpoints to handle CORS
+  app.get('/api/proxy/daoip5', async (req, res) => {
+    try {
+      const response = await fetch('https://daoip5.daostar.org/', {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Failed to fetch DAOIP5 systems:', error);
+      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
+    }
+  });
+
+  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const response = await fetch(`https://daoip5.daostar.org/${system}`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 pools for ${req.params.system}:`, error);
+      res.status(500).json({ error: `Failed to fetch pools for ${req.params.system}` });
+    }
+  });
+
+  app.get('/api/proxy/daoip5/:system/:filename', async (req, res) => {
+    try {
+      const { system, filename } = req.params;
+      const response = await fetch(`https://daoip5.daostar.org/${system}/${filename}.json`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.filename}:`, error);
+      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
+    }
+  });
+
+  app.get('/api/v1/health/:adapter', async (req, res) => {
     try {
       const { healthService } = await import('./services/health');
       const { adapter } = req.params;
@@ -399,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Quick health check endpoint (no detailed checks, uses cache)
-  app.get('/api/v1/health-quick', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/health-quick', async (req, res) => {
     try {
       const { healthService } = await import('./services/health');
       const quickHealth = healthService.getQuickHealth();
@@ -410,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Applications endpoints
-  app.get('/api/v1/grantApplications', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantApplications', async (req, res) => {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -530,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantApplications/:id', async (req: AuthenticatedRequest, res) => {
+  app.get('/api/v1/grantApplications/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;

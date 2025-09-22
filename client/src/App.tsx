@@ -16,18 +16,31 @@ import GrantSystems from "@/pages/dashboard/systems";
 import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
 import SearchAndFilter from "@/pages/dashboard/search";
 import DashboardOverviewArchived from "@/pages/dashboard/overview-archived";
+import GetApiAccess from "@/pages/get-api-access";
+import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import MobileToast from "@/components/mobile-toast";
 
 function Router() {
   return (
     <Switch>
+<<<<<<< HEAD
       {/* Dashboard Routes - Now at Root */}
       <Route path="/" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
       <Route path="/systems" component={() => <DashboardLayout><GrantSystems /></DashboardLayout>} />
       <Route path="/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
       <Route path="/search" component={() => <DashboardLayout><SearchAndFilter /></DashboardLayout>} />
       <Route path="/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
+=======
+      {/* Main API Documentation Routes */}
+      <Route path="/" component={() => <Layout><OverviewPage /></Layout>} />
+      <Route path="/query-builder" component={() => <Layout><QueryBuilderPage /></Layout>} />
+      <Route path="/endpoints" component={() => <Layout><EndpointsPage /></Layout>} />
+      <Route path="/get-api-access" component={() => <Layout><GetApiAccess /></Layout>} />
+      <Route path="/admin" component={() => <Layout><AdminDashboard /></Layout>} />
+      <Route path="/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
+      <Route path="/health" component={() => <Layout><HealthPage /></Layout>} />
+>>>>>>> main
       
       {/* API Documentation Routes - Now under /dev */}
       <Route path="/dev" component={() => <Layout><OverviewPage /></Layout>} />

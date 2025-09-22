@@ -494,6 +494,7 @@ function GrantPoolCard({
 }: {
   pool: any;
   applications: any[];
+  systemId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const poolApplications = applications.filter(
@@ -545,7 +546,7 @@ function GrantPoolCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={handleToggle}>
         <CollapsibleTrigger className="w-full">
           <CardHeader className="hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between w-full">
@@ -1151,6 +1152,7 @@ export default function SystemProfileEnhanced() {
                   key={pool.id}
                   pool={pool}
                   applications={applications}
+                  systemId={systemId}
                 />
               ))}
           </div>

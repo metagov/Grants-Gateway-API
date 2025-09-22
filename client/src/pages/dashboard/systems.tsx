@@ -8,6 +8,11 @@ import {
   DollarSign,
   Calendar,
   ArrowRight,
+<<<<<<< HEAD
+=======
+  AlertTriangle,
+  RefreshCw
+>>>>>>> main
 } from "lucide-react";
 import {
   Card,
@@ -47,6 +52,10 @@ const getSystemId = (systemName: string): string => {
 
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
+<<<<<<< HEAD
+=======
+  const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
+>>>>>>> main
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
@@ -221,6 +230,7 @@ export default function GrantSystems() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Grant Systems</h1>
       </div>
+<<<<<<< HEAD
       {/* API Integrated Systems */}
       {apiSystems.length > 0 && (
         <div className="space-y-4">
@@ -245,6 +255,53 @@ export default function GrantSystems() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {staticSystems.map((system) => (
+=======
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Systems</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {isLoading ? <Skeleton className="h-8 w-12" /> : systems?.length || 0}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">Integrated platforms</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">Live Integrations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {isLoading ? <Skeleton className="h-8 w-12" /> : apiSystems.length}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">Real-time API access</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-600">Data Integrations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">
+              {isLoading ? <Skeleton className="h-8 w-12" /> : staticSystems.length}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">Static data sources</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* All Systems */}
+      {systems && systems.length > 0 && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {systems.map((system) => (
+>>>>>>> main
               <SystemCard key={system.name} system={system} />
             ))}
           </div>
@@ -268,23 +325,35 @@ export default function GrantSystems() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
+<<<<<<< HEAD
               <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Unable to load systems
               </h3>
+=======
+              <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Error</h3>
+>>>>>>> main
               <p className="text-gray-600 mb-4">
-                There was an error fetching the grant systems data.
+                Unable to connect to the grant systems API. The OpenGrants API server may be unavailable.
               </p>
+<<<<<<< HEAD
               <Button
                 onClick={() => window.location.reload()}
                 variant="outline"
               >
                 Try Again
+=======
+              <Button onClick={() => window.location.reload()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+>>>>>>> main
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
+<<<<<<< HEAD
       {/* DAOIP-5 Value Proposition */}{" "}
       {/*
       <Card className="bg-gradient-to-r from-[#800020]/5 to-green-500/5 border-[#800020]/20">
@@ -358,6 +427,10 @@ export default function GrantSystems() {
           </div>
         </CardContent>
       </Card>  */}
+=======
+
+      
+>>>>>>> main
     </div>
   );
 }

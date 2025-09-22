@@ -1,19 +1,50 @@
 import { 
   users, grantSystems, fieldMappings, apiConfigurations, apiLogs,
+  oauthUsers, apiUsers, apiKeys, requestLogs, rateLimits,
   type User, type InsertUser, type GrantSystem, type InsertGrantSystem,
   type FieldMapping, type InsertFieldMapping, type ApiConfiguration, 
-  type InsertApiConfiguration, type ApiLog
+  type InsertApiConfiguration, type ApiLog,
+  type OAuthUser, type UpsertOAuthUser, type ApiUser, type InsertApiUser,
+  type ApiKey, type InsertApiKey, type RequestLog, type InsertRequestLog,
+  type RateLimit
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, sql } from "drizzle-orm";
+import crypto from "crypto";
 
 export interface IStorage {
-  // User methods
+  // Legacy user methods (keep for existing data)
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByApiKey(apiKey: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserApiKey(id: number, apiKey: string): Promise<User>;
+
+  // New OAuth user methods (for Replit Auth)
+  getOAuthUser(id: string): Promise<OAuthUser | undefined>;
+  upsertOAuthUser(user: UpsertOAuthUser): Promise<OAuthUser>;
+
+  // API user methods (for registration and API access)
+  getApiUser(id: string): Promise<ApiUser | undefined>;
+  getApiUserByReplitId(replitUserId: string): Promise<ApiUser | undefined>;
+  createApiUser(user: InsertApiUser): Promise<ApiUser>;
+  updateApiUser(id: string, user: Partial<InsertApiUser>): Promise<ApiUser>;
+
+  // API key methods
+  createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
+  getApiKeyByHash(keyHash: string): Promise<ApiKey | undefined>;
+  getApiKeysByUserId(userId: string): Promise<ApiKey[]>;
+  updateApiKeyLastUsed(id: string): Promise<void>;
+  revokeApiKey(id: string): Promise<ApiKey>;
+
+  // Request logging methods
+  createRequestLog(log: InsertRequestLog): Promise<RequestLog>;
+  getRequestLogs(userId?: string, limit?: number): Promise<RequestLog[]>;
+
+  // Rate limiting methods
+  getRateLimit(userId: string, endpointPattern: string): Promise<RateLimit | undefined>;
+  updateRateLimit(userId: string, endpointPattern: string, increment: number): Promise<RateLimit>;
+  resetRateLimit(userId: string, endpointPattern: string): Promise<void>;
 
   // Grant system methods
   getGrantSystems(): Promise<GrantSystem[]>;
@@ -31,9 +62,18 @@ export interface IStorage {
   getApiConfigurations(systemId: number): Promise<ApiConfiguration[]>;
   createApiConfiguration(config: InsertApiConfiguration): Promise<ApiConfiguration>;
 
-  // API logging methods
+  // API logging methods (legacy)
   createApiLog(log: Omit<ApiLog, 'id' | 'createdAt'>): Promise<ApiLog>;
-  getApiLogs(userId?: number, limit?: number): Promise<ApiLog[]>;
+  getApiLogs(params?: { userId?: number; limit?: number; startDate?: Date }): Promise<ApiLog[]>;
+
+  // Admin methods for dashboard
+  getAllApiKeys(): Promise<ApiKey[]>;
+  getAllApiUsers(): Promise<ApiUser[]>;
+  getApiLogsByUserId(userId: string, params?: { limit?: number }): Promise<ApiLog[]>;
+  
+  // New request logs methods for modern analytics
+  getAllRequestLogs(params?: { limit?: number; startDate?: Date }): Promise<RequestLog[]>;
+  getRequestLogsByUserId(userId: string, params?: { limit?: number }): Promise<RequestLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {

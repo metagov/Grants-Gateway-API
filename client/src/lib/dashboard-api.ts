@@ -177,6 +177,7 @@ export const openGrantsApi = {
 };
 
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
+// Using server-side proxy to handle CORS issues
 export const daoip5Api = {
   baseUrl: 'https://daoip5.daostar.org',
   cache: new Map<string, any>(),
@@ -916,6 +917,33 @@ export const dashboardApi = {
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as any;
 
+    // Map display names to proper system IDs  
+    const systemIdMap: Record<string, string> = {
+      'stellar': 'stellar',
+      'stellar community fund': 'stellar',
+      'stellar-community-fund': 'stellar',
+      'optimism': 'optimism', 
+      'optimism retropgf': 'optimism',
+      'optimism-retropgf': 'optimism',
+      'arbitrum foundation': 'arbitrumfoundation',
+      'arbitrum-foundation': 'arbitrumfoundation',
+      'arbitrumfoundation': 'arbitrumfoundation',
+      'celo': 'celo-org',
+      'celo foundation': 'celo-org',
+      'celo-foundation': 'celo-org',
+      'celo-org': 'celo-org',
+      'clr fund': 'clrfund',
+      'clr-fund': 'clrfund',
+      'clrfund': 'clrfund',
+      'dao drops': 'dao-drops-dorgtech',
+      'dao-drops': 'dao-drops-dorgtech',
+      'dao-drops-dorgtech': 'dao-drops-dorgtech',
+      'octant': 'octant',
+      'giveth': 'giveth'
+    };
+    
+    const systemId = systemIdMap[systemName.toLowerCase()] || systemName.toLowerCase();
+
     try {
       // Use the systematic fetching approach for all systems
       const systemSource = ['octant', 'giveth'].includes(systemName.toLowerCase()) ? 'opengrants' : 'daoip5';
@@ -1025,3 +1053,25 @@ export const getSystemColor = (systemName: string): string => {
   
   return colors[systemName.toLowerCase()] || colors.default;
 };
+
+// Initialize iterative caching for DAOIP5 systems on startup
+let cacheInitialized = false;
+const initializeIterativeCache = async () => {
+  if (cacheInitialized) return;
+  cacheInitialized = true;
+  
+  try {
+    const { iterativeCacheService } = await import('./iterative-cache-service');
+    const daoip5Systems = ['stellar', 'optimism', 'arbitrumfoundation', 'celo-org', 'clrfund', 'dao-drops-dorgtech'];
+    
+    console.log('🚀 Starting background iterative cache for DAOIP5 systems...');
+    iterativeCacheService.preloadSystems(daoip5Systems);
+  } catch (error) {
+    console.error('Failed to initialize iterative cache:', error);
+  }
+};
+
+// Auto-initialize on import
+if (typeof window !== 'undefined') {
+  setTimeout(initializeIterativeCache, 2000); // Start after 2 seconds
+}
