@@ -61,6 +61,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 import { useState } from "react";
 
@@ -254,8 +255,21 @@ function ApplicationsVsFundingChart({
     }).length;
 
     const formattedName = formatPoolName(pool);
-    // Create short name for chart labels (SCF #38 -> 38)
-    const shortName = formattedName.replace(/^SCF #/, "");
+    // Create short name for chart labels with Celo support
+    let shortName = formattedName.replace(/^SCF #/, "");
+    
+    // Handle Celo round patterns: round_33 -> R33, mint_pilot -> Pilot, etc.
+    const rawName = pool.name || pool.id.split(":").pop() || "";
+    if (rawName.startsWith("round_")) {
+      const match = rawName.match(/round_(\d+)/);
+      shortName = match ? `R${match[1]}` : shortName;
+    } else if (rawName === "mint_pilot") {
+      shortName = "Pilot";
+    } else if (rawName === "mint_growth") {
+      shortName = "Growth";
+    } else if (rawName === "mint_micro") {
+      shortName = "Micro";
+    }
 
     return {
       name: formattedName,
@@ -293,17 +307,18 @@ function ApplicationsVsFundingChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={filteredData}
-              margin={{ top: 20, right: 80, left: 60, bottom: 60 }}
+              margin={{ top: 20, right: 80, left: 60, bottom: 100 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
                 dataKey="shortName"
-                angle={0}
-                textAnchor="middle"
-                height={60}
-                fontSize={11}
-                interval={chartData.length > 20 ? 2 : 0} // Show every 3rd label if too many
-                tick={{ fontSize: 11 }}
+                angle={-45}
+                textAnchor="end"
+                height={90}
+                fontSize={10}
+                interval={0}
+                tick={{ fontSize: 10 }}
+                tickMargin={10}
               />
               <YAxis
                 yAxisId="left"
@@ -349,13 +364,23 @@ function ApplicationsVsFundingChart({
                 dataKey="applications"
                 fill="#3B82F6"
                 radius={[4, 4, 0, 0]}
+                maxBarSize={26}
               />
               <Bar
                 yAxisId="right"
                 dataKey="funding"
                 fill="#800020"
                 radius={[4, 4, 0, 0]}
+                maxBarSize={26}
               />
+              {filteredData.length > 10 && (
+                <Brush
+                  dataKey="shortName"
+                  height={20}
+                  startIndex={Math.max(filteredData.length - 10, 0)}
+                  stroke="#800020"
+                />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
