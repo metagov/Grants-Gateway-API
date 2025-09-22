@@ -114,13 +114,22 @@ function MetricCard({
 }
 
 function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
-  const chartData = data.map(system => ({
-    name: system.systemName,
-    funding: system.totalFunding,
-    applications: system.totalApplications,
-    approvalRate: system.approvalRate,
-    avgFunding: system.averageFundingPerProject
-  }));
+  const chartData = data.map(system => {
+    // Create shorter names for better chart display
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    if (shortName === "Octant") shortName = "Octant";
+    if (shortName === "Giveth") shortName = "Giveth";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      applications: system.totalApplications,
+      approvalRate: system.approvalRate,
+      avgFunding: system.averageFundingPerProject
+    };
+  });
 
   return (
     <Card>
@@ -136,16 +145,17 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="name" 
                 angle={-45}
                 textAnchor="end"
-                height={80}
-                fontSize={11}
+                height={90}
+                fontSize={12}
                 interval={0}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
+                tickMargin={15}
               />
               <YAxis 
                 yAxisId="funding"
@@ -613,10 +623,6 @@ export default function EcosystemOverview() {
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Applications:</span>
                               <span className="text-sm font-medium">{system.totalApplications}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Approval Rate:</span>
-                              <span className="text-sm font-medium">{system.approvalRate.toFixed(1)}%</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Grant Rounds:</span>
