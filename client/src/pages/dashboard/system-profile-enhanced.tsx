@@ -501,8 +501,27 @@ function GrantPoolCard({
   // Extract round number for indexing
   const roundNumber = getRoundNumber(pool);
   
-  // Extract timestamp information from pool (DAOIP-5 uses closeDate)
-  const poolDate = pool.closeDate || pool.createdAt || pool.startDate || pool.applicationsEndTime;
+  // Extract metadata from extensions (especially Celo)
+  const extensions = pool.extensions || {};
+  const celoRoundName = extensions['celopg.roundName'];
+  const celoRoundType = extensions['celopg.roundType'];
+  const celoPoolType = extensions['celopg.poolType'];
+  const celoCategory = extensions['celopg.category'];
+  const celoFundedAmount = extensions['celopg.fundedAmountInUsd'];
+  const celoMatchAmount = extensions['celopg.matchAmountInUsd'];
+  const celoDonorsCount = extensions['celopg.uniqueDonorsCount'];
+  const celoDonationsCount = extensions['celopg.totalDonationsCount'];
+  const celoQuarter = extensions['celopg.quarter'];
+  const description = pool.description;
+  
+  // Extract timestamp information from pool extensions first, then fallback
+  const poolDate = extensions['celopg.donationsEndTime'] ||
+                  extensions['celopg.applicationsEndTime'] ||
+                  extensions['celopg.timestamp'] ||
+                  pool.closeDate || 
+                  pool.createdAt || 
+                  pool.startDate || 
+                  pool.applicationsEndTime;
   const formattedDate = poolDate 
     ? new Date(poolDate).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -511,6 +530,9 @@ function GrantPoolCard({
       })
     : 'Date TBD';
 
+  // Use enhanced name from extensions if available
+  const enhancedDisplayName = celoRoundName || displayName;
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -518,9 +540,9 @@ function GrantPoolCard({
           <CardHeader className="hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="text-left">
-                <CardTitle className="text-lg">{displayName}</CardTitle>
-                <CardDescription className="flex items-center space-x-4 mt-2">
-                  <div className="flex gap-2 flex-wrap">
+                <CardTitle className="text-lg">{enhancedDisplayName}</CardTitle>
+                <CardDescription className="space-y-2 mt-2">
+                  <div className="flex items-center space-x-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">
                       Round {roundNumber > 0 ? roundNumber : '?'}
                     </Badge>
@@ -528,18 +550,42 @@ function GrantPoolCard({
                       {formattedDate}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {pool.grantFundingMechanism}
+                      {pool.grantFundingMechanism || 'Direct Grant'}
+                    </Badge>
+                    {celoRoundType && (
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {celoRoundType}
+                      </Badge>
+                    )}
+                    {celoPoolType && (
+                      <Badge variant="outline" className="text-xs">
+                        {celoPoolType} Pool
+                      </Badge>
+                    )}
+                    <Badge
+                      variant={pool.isOpen ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {pool.isOpen ? "Open" : "Closed"}
                     </Badge>
                   </div>
-                  <Badge
-                    variant={pool.isOpen ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {pool.isOpen ? "Open" : "Closed"}
-                  </Badge>
-                  <span className="text-xs text-gray-500">
-                    {poolApplications.length} applications
-                  </span>
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <span>{poolApplications.length} applications</span>
+                    {celoDonorsCount && (
+                      <span>{celoDonorsCount} donors</span>
+                    )}
+                    {celoDonationsCount && (
+                      <span>{celoDonationsCount} donations</span>
+                    )}
+                    {celoQuarter && (
+                      <span>{celoQuarter}</span>
+                    )}
+                  </div>
+                  {description && (
+                    <p className="text-xs text-gray-600 line-clamp-2 max-w-md">
+                      {description}
+                    </p>
+                  )}
                 </CardDescription>
               </div>
               <div className="flex items-center space-x-4">
@@ -547,6 +593,16 @@ function GrantPoolCard({
                   <div className="text-sm font-medium text-gray-900">
                     {formatCurrency(totalFunding)}
                   </div>
+                  {celoFundedAmount && celoFundedAmount !== totalFunding && (
+                    <div className="text-xs text-gray-500">
+                      Funded: {formatCurrency(celoFundedAmount)}
+                    </div>
+                  )}
+                  {celoMatchAmount && celoMatchAmount > 0 && (
+                    <div className="text-xs text-blue-600">
+                      Match: {formatCurrency(celoMatchAmount)}
+                    </div>
+                  )}
                 </div>
                 {isOpen ? (
                   <ChevronDown className="h-5 w-5 text-gray-400" />
