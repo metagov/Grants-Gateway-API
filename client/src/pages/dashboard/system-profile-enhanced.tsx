@@ -14,6 +14,14 @@ import {
   Award,
   CreditCard,
   RefreshCw,
+  ExternalLink,
+  Twitter,
+  Github,
+  Globe,
+  Mail,
+  MapPin,
+  Star,
+  Eye,
 } from "lucide-react";
 import {
   Card,
@@ -513,99 +521,32 @@ function GrantPoolCard({
         <CollapsibleContent>
           <CardContent className="pt-0">
             {poolApplications.length > 0 ? (
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="font-medium">Project</TableHead>
-                      <TableHead className="font-medium">Status</TableHead>
-                      <TableHead className="font-medium text-right">
-                        Funding
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {poolApplications
-                      .sort((a, b) => {
-                        // Sort alphabetically by project name
-                        const nameA = (
-                          a.projectName || "Unknown"
-                        ).toLowerCase();
-                        const nameB = (
-                          b.projectName || "Unknown"
-                        ).toLowerCase();
-                        if (nameA < nameB) return -1;
-                        if (nameA > nameB) return 1;
-                        return 0;
-                      })
-                      .slice(0, 10)
-                      .map((app) => (
-                        <TableRow key={app.id} className="hover:bg-gray-50">
-                          <TableCell>
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {app.projectName || "Unknown Project"}
-                              </div>
-                              {app.category && (
-                                <div className="text-xs text-gray-500">
-                                  {app.category}{" "}
-                                  {app.awardType && `• ${app.awardType}`}
-                                </div>
-                              )}
-                              {app.website && (
-                                <a
-                                  href={app.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 hover:underline"
-                                >
-                                  View Website →
-                                </a>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                app.status === "funded"
-                                  ? "default"
-                                  : app.status === "awarded"
-                                    ? "default"
-                                    : app.status === "approved"
-                                      ? "secondary"
-                                      : app.status === "rejected"
-                                        ? "destructive"
-                                        : "outline"
-                              }
-                              className="text-xs capitalize"
-                            >
-                              {app.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="font-medium">
-                              {app.fundsApprovedInUSD
-                                ? formatCurrency(
-                                    parseFloat(app.fundsApprovedInUSD),
-                                  )
-                                : "--"}
-                            </div>
-                            {app.fundsApproved && app.fundsApproved[0] && (
-                              <div className="text-xs text-gray-500">
-                                {app.fundsApproved[0].amount}{" "}
-                                {app.fundsApproved[0].denomination}
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+              <div className="space-y-2">
+                {poolApplications
+                  .sort((a, b) => {
+                    // Sort by funding amount (highest first)
+                    const fundingA = parseFloat(a.fundsApprovedInUSD || "0");
+                    const fundingB = parseFloat(b.fundsApprovedInUSD || "0");
+                    if (fundingB !== fundingA) return fundingB - fundingA;
+                    
+                    // Then sort alphabetically by project name
+                    const nameA = (a.projectName || "Unknown").toLowerCase();
+                    const nameB = (b.projectName || "Unknown").toLowerCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                  })
+                  .slice(0, 10)
+                  .map((app) => (
+                    <ApplicationCard key={app.id} app={app} />
+                  ))}
+                
                 {poolApplications.length > 10 && (
-                  <div className="p-3 bg-gray-50 text-center">
-                    <span className="text-sm text-gray-600">
+                  <div className="text-center py-4">
+                    <Badge variant="outline" className="text-xs">
+                      <Eye className="h-3 w-3 mr-1" />
                       Showing top 10 of {poolApplications.length} applications
-                    </span>
+                    </Badge>
                   </div>
                 )}
               </div>
@@ -618,6 +559,180 @@ function GrantPoolCard({
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
+    </Card>
+  );
+}
+
+// Helper function to render social media icons
+function SocialIcon({ platform }: { platform: string }) {
+  const normalizedPlatform = platform.toLowerCase();
+  
+  if (normalizedPlatform.includes('twitter') || normalizedPlatform.includes('x.com')) {
+    return <Twitter className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('github')) {
+    return <Github className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('website') || normalizedPlatform.includes('www')) {
+    return <Globe className="h-4 w-4" />;
+  }
+  if (normalizedPlatform.includes('email') || normalizedPlatform.includes('mail')) {
+    return <Mail className="h-4 w-4" />;
+  }
+  return <ExternalLink className="h-4 w-4" />;
+}
+
+// Enhanced application card component
+function ApplicationCard({ app }: { app: any }) {
+  const extensions = app.extensions || {};
+  const projectDetails = extensions['app.octant.projectDetails'] || 
+                        extensions['io.giveth.applicationMetadata'] || 
+                        extensions['projectDetails'] || {};
+  const karmaUID = extensions['x-karmagap-uid'];
+  const description = projectDetails.description || 
+                     extensions.projectDescription || 
+                     projectDetails.projectDescription;
+  const projectImage = projectDetails.profileImageSmall || 
+                      projectDetails.profileImageMedium || 
+                      extensions.projectImage ||
+                      projectDetails.image;
+  const website = projectDetails.website || app.website;
+  const socials = app.socials || extensions.projectSocialMedia || [];
+
+  return (
+    <Card className="mb-4 hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex gap-4">
+          {/* Project Image */}
+          {projectImage && (
+            <div className="flex-shrink-0">
+              <img 
+                src={projectImage} 
+                alt={app.projectName || "Project"} 
+                className="w-16 h-16 rounded-lg object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h4 className="font-semibold text-lg text-gray-900 mb-1">
+                  {app.projectName || "Unknown Project"}
+                </h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge
+                    variant={
+                      app.status === "funded" || app.status === "awarded"
+                        ? "default"
+                        : app.status === "approved"
+                          ? "secondary"
+                          : app.status === "rejected"
+                            ? "destructive"
+                            : "outline"
+                    }
+                    className="text-xs capitalize"
+                  >
+                    {app.status}
+                  </Badge>
+                  {karmaUID && (
+                    <Badge variant="outline" className="text-xs">
+                      <Star className="h-3 w-3 mr-1" />
+                      Karma: {karmaUID}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              {/* Funding Information */}
+              <div className="text-right">
+                <div className="font-semibold text-lg">
+                  {app.fundsApprovedInUSD
+                    ? formatCurrency(parseFloat(app.fundsApprovedInUSD))
+                    : "--"}
+                </div>
+                {app.fundsApproved && app.fundsApproved[0] && (
+                  <div className="text-sm text-gray-500">
+                    {app.fundsApproved[0].amount} {app.fundsApproved[0].denomination}
+                  </div>
+                )}
+                {app.fundsAsked && app.fundsAsked[0] && app.fundsAskedInUSD && (
+                  <div className="text-xs text-gray-400">
+                    Requested: {formatCurrency(parseFloat(app.fundsAskedInUSD))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Project Description */}
+            {description && (
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                {description}
+              </p>
+            )}
+
+            {/* Links and Social Media */}
+            <div className="flex items-center gap-4 text-sm">
+              {website && (
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-blue-600 hover:underline"
+                >
+                  <Globe className="h-4 w-4" />
+                  Website
+                </a>
+              )}
+              
+              {socials && socials.length > 0 && (
+                <div className="flex items-center gap-2">
+                  {socials.slice(0, 3).map((social: any, index: number) => (
+                    <a
+                      key={index}
+                      href={social.url || social.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-500 hover:text-gray-700"
+                      title={social.platform || social.type}
+                    >
+                      <SocialIcon platform={social.platform || social.type} />
+                    </a>
+                  ))}
+                  {socials.length > 3 && (
+                    <span className="text-xs text-gray-400">
+                      +{socials.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Technical Details */}
+              {app.payoutAddress && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <MapPin className="h-3 w-3" />
+                  {app.payoutAddress.slice(0, 8)}...{app.payoutAddress.slice(-6)}
+                </div>
+              )}
+            </div>
+
+            {/* Additional Metadata */}
+            {(app.category || app.awardType || app.createdAt) && (
+              <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                {app.category && <span>{app.category}</span>}
+                {app.awardType && <span>• {app.awardType}</span>}
+                {app.createdAt && (
+                  <span>• Created {new Date(app.createdAt).toLocaleDateString()}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }
