@@ -737,30 +737,53 @@ function ApplicationCard({ app }: { app: any }) {
   );
 }
 
-// Helper function to get system ID from display name
-const getSystemId = (systemName: string): string => {
-  const nameToIdMap: Record<string, string> = {
+// Helper function to get system ID from route name
+const getSystemId = (routeName: string): string => {
+  const routeToIdMap: Record<string, string> = {
     octant: "octant",
     giveth: "giveth",
-    "stellar community fund": "stellar",
-    "optimism retropgf": "optimism",
-    "arbitrum foundation": "arbitrumfoundation",
-    celopg: "celopg", // Updated to correct system ID
-    "celo public goods": "celopg", // Alternative name mapping
+    "stellar-community-fund": "stellar",
+    "optimism-retropgf": "optimism",
+    "arbitrum-foundation": "arbitrumfoundation",
+    celopg: "celopg", 
     "celo-public-goods": "celopg", // URL-friendly mapping
-    "clr fund": "clrfund",
-    "dao drops": "dao-drops-dorgtech",
-    "octant (golem)": "octant-golemfoundation",
+    "clr-fund": "clrfund",
+    "dao-drops": "dao-drops-dorgtech",
+    "octant-golem": "octant-golemfoundation",
   };
 
-  const normalizedName = systemName.toLowerCase();
-  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
+  const normalizedRoute = routeName.toLowerCase();
+  return routeToIdMap[normalizedRoute] || normalizedRoute.replace(/\s+/g, "-");
+};
+
+// Helper function to get display name from route name
+const getDisplayName = (routeName: string): string => {
+  const routeToDisplayMap: Record<string, string> = {
+    octant: "Octant",
+    giveth: "Giveth",
+    "stellar-community-fund": "Stellar Community Fund",
+    "optimism-retropgf": "Optimism RetroPGF",
+    "arbitrum-foundation": "Arbitrum Foundation",
+    celopg: "Celo Public Goods",
+    "celo-public-goods": "Celo Public Goods",
+    "clr-fund": "CLR Fund",
+    "dao-drops": "DAO Drops",
+    "octant-golem": "Octant (Golem)",
+  };
+
+  const normalizedRoute = routeName.toLowerCase();
+  return routeToDisplayMap[normalizedRoute] || 
+         // Fallback: convert route name to title case
+         routeName.split('-').map(word => 
+           word.charAt(0).toUpperCase() + word.slice(1)
+         ).join(' ');
 };
 
 export default function SystemProfileEnhanced() {
   const [, params] = useRoute("/dashboard/systems/:systemName");
   const systemName = params?.systemName || "";
-  const systemId = getSystemId(systemName); // Map URL parameter to correct system ID
+  const systemId = getSystemId(systemName);
+  const displayName = getDisplayName(systemName); // Map URL parameter to correct system ID
 
   const {
     data: systemData,
@@ -775,7 +798,7 @@ export default function SystemProfileEnhanced() {
     enabled: !!systemId, // Check mapped system ID
   });
 
-  const systemColor = getSystemColor(systemName);
+  const systemColor = getSystemColor(systemId);
 
   if (isLoading) {
     return (
@@ -820,7 +843,7 @@ export default function SystemProfileEnhanced() {
                 System not found
               </h3>
               <p className="text-gray-600 mb-4">
-                Unable to load data for system "{systemName}".
+                Unable to load data for system "{displayName}".
               </p>
               <Link href="/dashboard/systems">
                 <Button variant="outline">Back to Systems</Button>
@@ -854,10 +877,10 @@ export default function SystemProfileEnhanced() {
             </div>
             <div>
               <div className="flex items-center space-x-3">
-                <h1 className="text-3xl font-bold text-gray-900 capitalize">
-                  {systemName}
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {displayName}
                 </h1>
-                {systemName === "celopg" && (
+                {systemId === "celopg" && (
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
                     Work in Progress
                   </Badge>
