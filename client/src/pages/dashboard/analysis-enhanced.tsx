@@ -133,55 +133,80 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
   }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
-          System Funding Comparison
-        </CardTitle>
-        <CardDescription>
-          Total funding and application metrics across grant systems
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="name" 
-                angle={-45}
-                textAnchor="end"
-                height={100}
-                fontSize={12}
-              />
-              <YAxis 
-                yAxisId="funding"
-                orientation="left"
-                tickFormatter={(value) => formatCurrency(value)}
-                fontSize={12}
-              />
-              <YAxis 
-                yAxisId="applications"
-                orientation="right"
-                fontSize={12}
-              />
-              <Tooltip 
-                formatter={(value: any, name: any) => [
-                  name.includes('funding') || name.includes('Funding') ? formatCurrency(value) : value,
-                  name === 'funding' ? 'Total Funding' : 
-                  name === 'applications' ? 'Applications' : 
-                  name === 'approvalRate' ? 'Approval Rate (%)' : 'Avg Funding'
-                ]}
-                labelStyle={{ color: '#374151' }}
-              />
-              <Bar yAxisId="funding" dataKey="funding" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="applications" dataKey="applications" fill={COLORS.info} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      {/* Total Funding Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
+            Total Funding by System
+          </CardTitle>
+          <CardDescription>
+            Cumulative funding across grant systems (note: Stellar has significantly higher funding)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-60 w-full" data-testid="chart-funding-by-system">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  fontSize={12}
+                />
+                <YAxis 
+                  tickFormatter={(value) => formatCurrency(value)}
+                  fontSize={12}
+                />
+                <Tooltip 
+                  formatter={(value: any) => [formatCurrency(value), 'Total Funding']}
+                  labelStyle={{ color: '#374151' }}
+                />
+                <Bar dataKey="funding" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Applications Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Users className="h-5 w-5 text-[#800020] mr-2" />
+            Applications by System
+          </CardTitle>
+          <CardDescription>
+            Number of grant applications processed by each system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-60 w-full" data-testid="chart-applications-by-system">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  fontSize={12}
+                />
+                <YAxis fontSize={12} />
+                <Tooltip 
+                  formatter={(value: any) => [value.toLocaleString(), 'Applications']}
+                  labelStyle={{ color: '#374151' }}
+                />
+                <Bar dataKey="applications" fill={COLORS.info} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
