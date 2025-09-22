@@ -204,11 +204,20 @@ const getRoundNumber = (pool: any): number => {
 // Helper function to format pool names
 const formatPoolName = (pool: any): string => {
   const rawName = pool.name || pool.id.split(":").pop();
+  
   // Convert scf_1 -> SCF #1, scf_38 -> SCF #38
   if (rawName && rawName.toLowerCase().startsWith("scf_")) {
     const number = rawName.match(/\d+/);
     return number ? `SCF #${number[0]}` : rawName;
   }
+  
+  // Handle Celo mint rounds: mint_growth -> Mint Growth Pool
+  if (rawName && rawName.startsWith("mint_")) {
+    const poolType = rawName.replace("mint_", "");
+    const capitalizedType = poolType.charAt(0).toUpperCase() + poolType.slice(1);
+    return `Mint ${capitalizedType} Pool`;
+  }
+  
   return rawName;
 };
 
@@ -522,13 +531,14 @@ function GrantPoolCard({
                   pool.createdAt || 
                   pool.startDate || 
                   pool.applicationsEndTime;
+  // For mint rounds, use quarter information as fallback
   const formattedDate = poolDate 
     ? new Date(poolDate).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
       })
-    : 'Date TBD';
+    : (celoQuarter || 'Date TBD');
 
   // Use enhanced name from extensions if available
   const enhancedDisplayName = celoRoundName || displayName;
