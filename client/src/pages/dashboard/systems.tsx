@@ -62,7 +62,7 @@ function SystemCard({ system }: { system: any }) {
           WORK IN PROGRESS
         </Badge>
       )}
-      <Link href={`/dashboard/systems/${getSystemId(system.name)}`}>
+      <Link href={`/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
