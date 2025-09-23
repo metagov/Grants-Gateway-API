@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center space-x-4">
             <Link href="/dev">
               <Button variant="outline" size="sm">
-                Back to API Docs
+                Go to API Docs
               </Button>
             </Link>
           </div>
