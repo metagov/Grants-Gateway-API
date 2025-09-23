@@ -35,7 +35,9 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Radar
+  Radar,
+  ComposedChart,
+  Area
 } from 'recharts';
 import { 
   getCrossSystemComparison, 
@@ -126,90 +128,129 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
     return {
       name: shortName,
       funding: system.totalFunding,
+      fundingMillions: system.totalFunding / 1000000, // Convert to millions for better display
       applications: system.totalApplications,
       approvalRate: system.approvalRate,
       avgFunding: system.averageFundingPerProject
     };
   });
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Funding Comparison Cards */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
-            System Funding Overview
-          </CardTitle>
-          <CardDescription>
-            Total funding distributed by each system
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {chartData.map((system, index) => (
-            <div key={system.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div
-                  className="h-4 w-4 rounded-full"
-                  style={{ backgroundColor: index === 0 ? COLORS.primary : COLORS.info }}
-                />
-                <div>
-                  <p className="font-medium text-gray-900">{system.name}</p>
-                  <p className="text-sm text-gray-600">{system.applications} applications</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-lg">{formatCurrency(system.funding)}</p>
-                <p className="text-xs text-gray-500">
-                  Avg: {formatCurrency(system.avgFunding)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Applications Comparison */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="h-5 w-5 text-[#800020] mr-2" />
-            Application Metrics
-          </CardTitle>
-          <CardDescription>
-            Application counts and approval rates
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="name" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  fontSize={12}
-                  interval={0}
-                />
-                <YAxis 
-                  fontSize={12}
-                />
-                <Tooltip 
-                  formatter={(value: any, name: any) => [
-                    value,
-                    name === 'applications' ? 'Applications' : 'Approval Rate (%)'
-                  ]}
-                  labelStyle={{ color: '#374151' }}
-                />
-                <Bar dataKey="applications" fill={COLORS.info} radius={[4, 4, 0, 0]} name="applications" />
-              </BarChart>
-            </ResponsiveContainer>
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-900">{label}</p>
+          <div className="space-y-1 mt-2">
+            <p className="text-sm">
+              <span className="font-medium text-[#800020]">Total Funding:</span> {formatCurrency(data.funding)}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-[#3B82F6]">Applications:</span> {data.applications}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-gray-600">Approval Rate:</span> {data.approvalRate}%
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-gray-600">Avg Funding:</span> {formatCurrency(data.avgFunding)}
+            </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
+          System Funding Overview & Application Metrics
+        </CardTitle>
+        <CardDescription>
+          Combined view of funding amounts and application counts by system
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-96 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis 
+                dataKey="name" 
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                fontSize={12}
+                interval={0}
+                stroke="#6B7280"
+              />
+              <YAxis 
+                yAxisId="funding"
+                orientation="left"
+                fontSize={12}
+                stroke="#6B7280"
+                label={{ 
+                  value: 'Funding (Millions USD)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle' }
+                }}
+              />
+              <YAxis 
+                yAxisId="applications"
+                orientation="right"
+                fontSize={12}
+                stroke="#6B7280"
+                label={{ 
+                  value: 'Applications Count', 
+                  angle: 90, 
+                  position: 'insideRight',
+                  style: { textAnchor: 'middle' }
+                }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              
+              {/* Funding bars */}
+              <Bar 
+                yAxisId="funding"
+                dataKey="fundingMillions" 
+                fill={COLORS.primary} 
+                radius={[4, 4, 0, 0]} 
+                name="Funding (Millions)"
+                opacity={0.8}
+              />
+              
+              {/* Applications bars */}
+              <Bar 
+                yAxisId="applications"
+                dataKey="applications" 
+                fill={COLORS.info} 
+                radius={[4, 4, 0, 0]} 
+                name="Applications"
+                opacity={0.7}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        
+        {/* Legend */}
+        <div className="flex justify-center mt-4 space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.primary, opacity: 0.8 }}></div>
+            <span className="text-sm text-gray-600">Total Funding (Millions USD)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.info, opacity: 0.7 }}></div>
+            <span className="text-sm text-gray-600">Application Count</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
