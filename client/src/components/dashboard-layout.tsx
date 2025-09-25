@@ -8,7 +8,6 @@ import {
   Users,
   ChevronRight
 } from "lucide-react";
-import openGrantsLogo from "@/assets/opengrants-logo.png";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,14 +46,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4">
-            <img 
-              src={openGrantsLogo} 
-              alt="OpenGrants" 
-              className="h-8 object-contain"
-              data-testid="opengrants-logo"
-            />
+            <h1 
+              className="text-3xl font-bold bg-gradient-to-r from-[#800020] to-[#a0002a] bg-clip-text text-transparent"
+              data-testid="opengrants-title"
+            >
+              OpenGrants
+            </h1>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Grant Ecosystem Analytics</h1>
+              <h2 className="text-2xl font-bold text-gray-900">Grant Ecosystem Analytics</h2>
               <p className="text-sm text-gray-600">Comprehensive dashboard for grant data insights</p>
             </div>
           </div>
