@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { 
-  BarChart3, 
   Building2, 
   Home, 
   Search,
@@ -9,6 +8,7 @@ import {
   Users,
   ChevronRight
 } from "lucide-react";
+import openGrantsLogo from "@/assets/opengrants-logo.png";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,7 +47,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4">
-            <BarChart3 className="h-8 w-8 text-[#800020]" />
+            <img 
+              src={openGrantsLogo} 
+              alt="OpenGrants" 
+              className="h-8 object-contain"
+              data-testid="opengrants-logo"
+            />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Grant Ecosystem Analytics</h1>
               <p className="text-sm text-gray-600">Comprehensive dashboard for grant data insights</p>
