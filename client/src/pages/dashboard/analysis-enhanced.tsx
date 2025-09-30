@@ -194,6 +194,7 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
                 orientation="left"
                 fontSize={12}
                 stroke="#6B7280"
+                domain={[0, 'auto']}
                 label={{ 
                   value: 'Funding (Millions USD)', 
                   angle: -90, 
@@ -206,6 +207,7 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
                 orientation="right"
                 fontSize={12}
                 stroke="#6B7280"
+                domain={[0, 'auto']}
                 label={{ 
                   value: 'Applications Count', 
                   angle: 90, 
