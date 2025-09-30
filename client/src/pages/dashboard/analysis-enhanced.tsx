@@ -223,6 +223,7 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
                 radius={[4, 4, 0, 0]} 
                 name="Funding (Millions)"
                 opacity={0.8}
+                minPointSize={5}
               />
               
               {/* Applications bars */}
@@ -233,6 +234,7 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
                 radius={[4, 4, 0, 0]} 
                 name="Applications"
                 opacity={0.7}
+                minPointSize={5}
               />
             </ComposedChart>
           </ResponsiveContainer>
