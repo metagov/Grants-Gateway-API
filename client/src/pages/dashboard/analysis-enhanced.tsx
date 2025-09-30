@@ -135,6 +135,8 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
     };
   });
 
+  console.log("📊 Chart Data for System Comparison:", chartData);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -178,6 +180,8 @@ function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
             <ComposedChart
               data={chartData}
               margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
+              barGap={8}
+              barCategoryGap="20%"
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
