@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { 
   BarChart3, 
   PieChart, 
@@ -10,7 +11,9 @@ import {
   Activity,
   Layers,
   Shuffle,
-  FileText
+  FileText,
+  X,
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -804,6 +807,20 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
 }
 
 export default function EcosystemOverview() {
+  const [showIntroBanner, setShowIntroBanner] = useState(true);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('opengrants-intro-dismissed');
+    if (dismissed === 'true') {
+      setShowIntroBanner(false);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    localStorage.setItem('opengrants-intro-dismissed', 'true');
+    setShowIntroBanner(false);
+  };
+
   const { data: systemComparison, isLoading: systemLoading } = useQuery({
     queryKey: ['cross-system-comparison'],
     queryFn: getCrossSystemComparison,
@@ -837,6 +854,50 @@ export default function EcosystemOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Intro Banner */}
+      {showIntroBanner && (
+        <Card className="bg-gradient-to-r from-[#800020]/5 to-[#a0002a]/5 border-[#800020]/20" data-testid="banner-intro">
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-[#800020]" />
+                  <h3 className="text-lg font-bold bg-gradient-to-r from-[#800020] to-[#a0002a] bg-clip-text text-transparent">
+                    Welcome to OpenGrants Analytics
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  A comprehensive grant ecosystem analytics platform that standardizes and visualizes grant data across blockchain ecosystems using DAOIP-5 compliance. 
+                  Compare funding across systems, analyze trends, and discover accessible data for grant seekers and administrators.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
+                    <Target className="h-3 w-3 mr-1" />
+                    95-100% DAOIP-5 Compliance
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Cross-System Analysis
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Real-Time Data
+                  </Badge>
+                </div>
+              </div>
+              <button 
+                onClick={handleDismissBanner}
+                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                aria-label="Dismiss intro"
+                data-testid="button-dismiss-intro"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Ecosystem Overview</h1>
