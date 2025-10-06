@@ -870,20 +870,6 @@ export default function EcosystemOverview() {
                   A comprehensive grant ecosystem analytics platform that standardizes and visualizes grant data across blockchain ecosystems using DAOIP-5 compliance. 
                   Compare funding across systems, analyze trends, and discover accessible data for grant seekers and administrators.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
-                    <Target className="h-3 w-3 mr-1" />
-                    95-100% DAOIP-5 Compliance
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
-                    <Globe className="h-3 w-3 mr-1" />
-                    Cross-System Analysis
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#800020]/10 text-[#800020] border-[#800020]/20">
-                    <BarChart3 className="h-3 w-3 mr-1" />
-                    Real-Time Data
-                  </Badge>
-                </div>
               </div>
               <button 
                 onClick={handleDismissBanner}
