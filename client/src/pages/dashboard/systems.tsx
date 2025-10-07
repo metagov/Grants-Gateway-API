@@ -51,6 +51,22 @@ const getSystemId = (systemName: string): string => {
   return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
 };
 
+// Helper function to format funding mechanism names
+const formatMechanismName = (mechanism: string): string => {
+  const mechanismMap: Record<string, string> = {
+    quadratic_funding: "Quadratic Funding",
+    direct_grants: "Direct Grants",
+    donations: "Donations",
+    retroactive_funding: "Retroactive Funding",
+    milestone_based: "Milestone Based",
+  };
+
+  return mechanismMap[mechanism] || mechanism
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
 
@@ -164,7 +180,7 @@ function SystemCard({ system }: { system: any }) {
                       variant="secondary"
                       className="text-xs"
                     >
-                      {mechanism}
+                      {formatMechanismName(mechanism)}
                     </Badge>
                   ))}
               </div>
