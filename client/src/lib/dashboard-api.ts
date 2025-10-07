@@ -281,15 +281,27 @@ export const daoip5Api = {
     }
 
     try {
+      // Map system ID to actual DAOIP-5 data path
+      const dataPathMap: Record<string, string> = {
+        'scf': 'stellar',
+        'celopg': 'celopg',
+        'optimism': 'optimism',
+        'arbitrumfoundation': 'arbitrumfoundation',
+        'clrfund': 'clrfund',
+        'dao-drops-dorgtech': 'dao-drops-dorgtech'
+      };
+      
+      const dataPath = dataPathMap[system] || system;
+      
       // Step 1: Get list of files in the system directory
-      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${system}`);
+      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${dataPath}`);
       if (!systemFilesResponse.ok) {
         throw new Error(`Failed to fetch system files for ${system}`);
       }
       const systemFiles = await systemFilesResponse.json();
 
       // Step 2: Fetch grants_pool.json for pool metadata
-      const poolsResponse = await fetch(`/api/proxy/daoip5/${system}/grants_pool.json`);
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/grants_pool.json`);
       if (!poolsResponse.ok) {
         throw new Error(`Failed to fetch grants_pool.json for ${system}`);
       }
@@ -340,7 +352,7 @@ export const daoip5Api = {
 
       for (const appFile of applicationFiles) {
         try {
-          const appsResponse = await fetch(`/api/proxy/daoip5/${system}/${appFile}`);
+          const appsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/${appFile}`);
           if (appsResponse.ok) {
             const appsData = await appsResponse.json();
             // Handle nested structure where applications are inside grantPools array
