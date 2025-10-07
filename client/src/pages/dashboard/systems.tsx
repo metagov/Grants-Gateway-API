@@ -30,7 +30,7 @@ const getSystemId = (systemName: string): string => {
   const nameToIdMap: Record<string, string> = {
     octant: "octant",
     giveth: "giveth",
-    "stellar community fund": "stellar",
+    "stellar community fund": "scf",
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
     celopg: "celopg", // Updated to correct system ID
@@ -70,7 +70,7 @@ function SystemCard({ system }: { system: any }) {
                 className="h-12 w-12 rounded-lg flex items-center justify-center relative"
                 style={{ backgroundColor: systemColor }}
               >
-                {system.id === "stellar" ? (
+                {system.id === "scf" ? (
                   <img 
                     src="/attached_assets/stellar-logo.png" 
                     alt="Stellar" 

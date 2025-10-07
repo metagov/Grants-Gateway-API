@@ -343,7 +343,7 @@ class AccurateDataService {
       let source: 'opengrants' | 'daoip5';
       // Determine the data source based on system name or configuration
       // This is a placeholder logic, you might need a more robust way to determine the source
-      if (system.name === 'stellar' || system.name === 'optimism' || system.name === 'arbitrumfoundation' || system.name === 'celopg') {
+      if (system.name === 'scf' || system.name === 'optimism' || system.name === 'arbitrumfoundation' || system.name === 'celopg') {
         source = 'daoip5';
       } else if (system.name === 'octant' || system.name === 'giveth') {
         source = 'opengrants';

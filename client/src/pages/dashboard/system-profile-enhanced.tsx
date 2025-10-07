@@ -851,7 +851,7 @@ const getSystemId = (routeName: string): string => {
   const routeToIdMap: Record<string, string> = {
     octant: "octant",
     giveth: "giveth",
-    "stellar-community-fund": "stellar",
+    "stellar-community-fund": "scf",
     "optimism-retropgf": "optimism",
     "arbitrum-foundation": "arbitrumfoundation",
     celopg: "celopg", 

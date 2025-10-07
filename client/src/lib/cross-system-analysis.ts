@@ -92,7 +92,7 @@ export async function getFundingMechanismAnalysis(): Promise<FundingMechanismAna
         // Fetch pool data for this system to get actual grantFundingMechanism values
         // Use system ID instead of display name for API calls
         let systemId = system.name;
-        if (system.name === 'Stellar Community Fund') systemId = 'stellar';
+        if (system.name === 'Stellar Community Fund') systemId = 'scf';
         if (system.name === 'Celo Public Goods') systemId = 'celopg';
         if (system.name === 'Octant') systemId = 'octant';
         if (system.name === 'Giveth') systemId = 'giveth';

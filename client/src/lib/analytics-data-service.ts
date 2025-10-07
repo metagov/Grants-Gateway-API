@@ -486,15 +486,15 @@ class AnalyticsDataService {
 
   private _getDaoip5FallbackData(systemId: string): { pools: PoolData[], applications: ApplicationData[] } {
     const fallbackData: Record<string, any> = {
-      'stellar': {
+      'scf': {
         pools: [
           { id: 'scf-24', name: 'Stellar Community Fund 24', totalFunding: 100000, mechanism: 'Direct Grant' },
           { id: 'scf-25', name: 'Stellar Community Fund 25', totalFunding: 100000, mechanism: 'Direct Grant' }
         ],
         applications: [
-          { id: 'stellar-1', projectName: 'Stellar Wallet', poolId: 'scf-24', status: 'funded', fundingUSD: 25000, createdAt: '2024-01-15' },
-          { id: 'stellar-2', projectName: 'Payment Gateway', poolId: 'scf-24', status: 'funded', fundingUSD: 30000, createdAt: '2024-01-20' },
-          { id: 'stellar-3', name: 'DeFi Bridge', poolId: 'scf-25', status: 'approved', fundingUSD: 35000, createdAt: '2024-02-10' }
+          { id: 'scf-1', projectName: 'Stellar Wallet', poolId: 'scf-24', status: 'funded', fundingUSD: 25000, createdAt: '2024-01-15' },
+          { id: 'scf-2', projectName: 'Payment Gateway', poolId: 'scf-24', status: 'funded', fundingUSD: 30000, createdAt: '2024-01-20' },
+          { id: 'scf-3', name: 'DeFi Bridge', poolId: 'scf-25', status: 'approved', fundingUSD: 35000, createdAt: '2024-02-10' }
         ]
       },
       'optimism': {

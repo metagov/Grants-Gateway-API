@@ -234,7 +234,7 @@ export const daoip5Api = {
                 projectDescription: app.description,
                 system,
                 grantPoolId: app.grantPoolId,
-                status: system === 'stellar' ? 'awarded' : (app.status || 'unknown'),
+                status: system === 'scf' ? 'awarded' : (app.status || 'unknown'),
                 fundsApprovedInUSD: fundsInUSD,
                 createdAt: app.createdAt || new Date().toISOString(),
                 category: app.extensions?.['org.stellar.communityfund.category'] || '',
@@ -270,7 +270,7 @@ export const daoip5Api = {
   },
 
   async getSystems(): Promise<string[]> {
-    return ['stellar', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
+    return ['scf', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
   },
 
   async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
@@ -381,7 +381,7 @@ export const daoip5Api = {
                 }
                 
                 // For Stellar, all applications are "Awarded" since we only get awarded ones
-                const status = system === 'stellar' ? 'awarded' : (app.status || 'unknown');
+                const status = system === 'scf' ? 'awarded' : (app.status || 'unknown');
                 
                 // Extract additional metadata from extensions
                 const extensions = app.extensions || {};
@@ -795,7 +795,7 @@ export const dashboardApi = {
       
       // Focus on only the 3 requested systems: Giveth, Octant, and Stellar
       const requestedSources = allSources.filter(s => 
-        s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
+        s.id === 'octant' || s.id === 'giveth' || s.id === 'scf'
       );
 
       // Get comprehensive stats for each registered system dynamically
@@ -1014,7 +1014,7 @@ export const getSystemColor = (systemName: string): string => {
   const colors: Record<string, string> = {
     octant: '#10B981', // green
     giveth: '#8B5CF6', // purple
-    stellar: '#0EA5E9', // blue
+    scf: '#0EA5E9', // blue
     optimism: '#EF4444', // red
     arbitrum: '#06B6D4', // cyan
     celo: '#F59E0B', // amber
