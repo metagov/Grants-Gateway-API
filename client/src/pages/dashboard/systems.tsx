@@ -20,6 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   dashboardApi,
   formatCurrency,
   getSystemColor,
@@ -91,13 +97,28 @@ function SystemCard({ system }: { system: any }) {
                   {system.name}
                 </CardTitle>
                 <CardDescription className="flex items-center space-x-2">
-                  <Badge
-                    variant="outline"
-                    className="text-xs"
-                    style={{ borderColor: systemColor, color: systemColor }}
-                  >
-                    {system.source === "opengrants" ? "Type 1" : "Type 2"}
-                  </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-block">
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-help"
+                            style={{ borderColor: systemColor, color: systemColor }}
+                          >
+                            {system.source === "opengrants" ? "Type 1" : "Type 2"}
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {system.source === "opengrants" 
+                            ? "Type 1: Live API Integration" 
+                            : "Type 2: DAOIP-5 Static Data"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </CardDescription>
               </div>
             </div>
