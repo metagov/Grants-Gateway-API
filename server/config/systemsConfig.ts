@@ -8,7 +8,7 @@ export default {
       "displayName": "Octant (Golem)",
       "source": "opengrants",
       "type": "DAO",
-      "enabled": true,
+      "enabled": false,
       "priority": 2,
       "metadata": {
         "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
