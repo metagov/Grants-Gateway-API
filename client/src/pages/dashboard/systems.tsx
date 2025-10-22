@@ -36,7 +36,7 @@ const getSystemId = (systemName: string): string => {
   const nameToIdMap: Record<string, string> = {
     octant: "octant",
     giveth: "giveth",
-    "stellar community fund": "scf",
+    "stellar community fund": "Stellar Community Fund",
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
     celopg: "celopg", // Updated to correct system ID
@@ -61,10 +61,13 @@ const formatMechanismName = (mechanism: string): string => {
     milestone_based: "Milestone Based",
   };
 
-  return mechanismMap[mechanism] || mechanism
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return (
+    mechanismMap[mechanism] ||
+    mechanism
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  );
 };
 
 function SystemCard({ system }: { system: any }) {
@@ -93,15 +96,15 @@ function SystemCard({ system }: { system: any }) {
                 style={{ backgroundColor: systemColor }}
               >
                 {system.id === "scf" ? (
-                  <img 
-                    src="/attached_assets/stellar-logo.png" 
-                    alt="Stellar" 
+                  <img
+                    src="/attached_assets/stellar-logo.png"
+                    alt="Stellar"
                     className="h-6 w-6"
                   />
                 ) : system.id === "celopg" ? (
-                  <img 
-                    src="/attached_assets/celo-logo.png" 
-                    alt="Celo" 
+                  <img
+                    src="/attached_assets/celo-logo.png"
+                    alt="Celo"
                     className="h-6 w-6"
                   />
                 ) : (
@@ -120,16 +123,21 @@ function SystemCard({ system }: { system: any }) {
                           <Badge
                             variant="outline"
                             className="text-xs cursor-help"
-                            style={{ borderColor: systemColor, color: systemColor }}
+                            style={{
+                              borderColor: systemColor,
+                              color: systemColor,
+                            }}
                           >
-                            {system.source === "opengrants" ? "Type 1" : "Type 2"}
+                            {system.source === "opengrants"
+                              ? "Type 1"
+                              : "Type 2"}
                           </Badge>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
-                          {system.source === "opengrants" 
-                            ? "Type 1: Live API Integration" 
+                          {system.source === "opengrants"
+                            ? "Type 1: Live API Integration"
                             : "Type 2: DAOIP-5 Static Data"}
                         </p>
                       </TooltipContent>
@@ -158,14 +166,18 @@ function SystemCard({ system }: { system: any }) {
             <div className="space-y-1">
               <span className="text-gray-500 block">Avg per Project:</span>
               <span className="font-medium block">
-                {system.totalApplications && system.totalApplications > 0 
-                  ? formatCurrency((system.totalFunding || 0) / system.totalApplications)
+                {system.totalApplications && system.totalApplications > 0
+                  ? formatCurrency(
+                      (system.totalFunding || 0) / system.totalApplications,
+                    )
                   : "--"}
               </span>
             </div>
             <div className="space-y-1">
               <span className="text-gray-500 block">Rounds:</span>
-              <span className="font-medium block">{system.totalPools || 0}</span>
+              <span className="font-medium block">
+                {system.totalPools || 0}
+              </span>
             </div>
           </div>
 
