@@ -1021,18 +1021,18 @@ export const formatCurrency = (amount: number): string => {
   }
 };
 
-// Utility function to get system color
+// Utility function to get system color using brand palette
 export const getSystemColor = (systemName: string): string => {
   const colors: Record<string, string> = {
-    octant: '#10B981', // green
-    giveth: '#8B5CF6', // purple
-    scf: '#0EA5E9', // blue
-    optimism: '#EF4444', // red
-    arbitrum: '#06B6D4', // cyan
-    celo: '#F59E0B', // amber
-    'celo-org': '#F59E0B', // amber (mapped to celo-org system ID)
-    'celopg': '#F59E0B', // amber (mapped to celopg system ID)
-    default: '#800020' // maroon
+    octant: '#8B9A46', // olive green (brand color)
+    giveth: '#2A0055', // deep purple (brand color)
+    scf: '#006E7F', // teal (brand color)
+    optimism: '#800020', // maroon (brand primary)
+    arbitrum: '#006E7F', // teal (brand color)
+    celo: '#8B9A46', // olive green (brand color)
+    'celo-org': '#8B9A46', // olive green (brand color)
+    'celopg': '#8B9A46', // olive green (brand color)
+    default: '#800020' // maroon (brand primary)
   };
   
   return colors[systemName.toLowerCase()] || colors.default;

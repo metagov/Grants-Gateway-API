@@ -112,7 +112,7 @@ function SystemCard({ system }: { system: any }) {
                 )}
               </div>
               <div>
-                <CardTitle className="text-lg group-hover:text-[#800020] transition-colors">
+                <CardTitle className="text-lg group-hover:text-primary transition-colors">
                   {system.name}
                 </CardTitle>
                 <CardDescription className="flex items-center space-x-2">
@@ -146,7 +146,7 @@ function SystemCard({ system }: { system: any }) {
                 </CardDescription>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#800020] transition-colors" />
+            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
           </div>
         </CardHeader>
         <CardContent className="pt-0">
@@ -204,7 +204,7 @@ function SystemCard({ system }: { system: any }) {
               <span className="text-sm text-gray-600">
                 {system.source === "opengrants" ? "Live API" : "Static Data"}
               </span>
-              <div className="flex items-center space-x-1 text-[#800020] text-sm font-medium group-hover:underline">
+              <div className="flex items-center space-x-1 text-primary text-sm font-medium group-hover:underline">
                 <span>View Details</span>
                 <ExternalLink className="h-3 w-3" />
               </div>
