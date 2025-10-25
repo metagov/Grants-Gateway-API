@@ -55,18 +55,19 @@ import {
 } from "@/lib/analytics-hooks";
 import { formatCurrency } from "@/lib/dashboard-api";
 
-// Color palette for consistent visualization
+// Color palette for consistent visualization - using brand colors
 const COLORS = {
-  primary: '#800020',
-  secondary: '#B91C1C', 
-  accent: '#DC2626',
+  primary: '#800020',      // Maroon (Brand Primary)
+  secondary: '#8B9A46',    // Olive Green
+  accent: '#006E7F',       // Teal
+  purple: '#2A0055',       // Deep Purple
   info: '#3B82F6',
   success: '#10B981',
   warning: '#F59E0B',
   muted: '#6B7280'
 };
 
-const CHART_COLORS = [COLORS.primary, COLORS.info, COLORS.success, COLORS.warning, COLORS.accent, COLORS.muted];
+const CHART_COLORS = [COLORS.primary, COLORS.secondary, COLORS.accent, COLORS.purple, COLORS.info, COLORS.success];
 
 // Memoized metric card component
 const MetricCard = React.memo(({ 
