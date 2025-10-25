@@ -14,20 +14,20 @@
   --card-foreground: hsl(20, 14.3%, 4.1%);
   --border: hsl(20, 5.9%, 90%);
   --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(350, 100%, 25%); /* Maroon #800020 */
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --primary: hsl(350, 100%, 25%); /* Maroon #800020 - Brand Primary */
+  --primary-foreground: hsl(0, 0%, 93%); /* #EEEEEE - Brand Text Color */
+  --secondary: hsl(73, 36%, 45%); /* Olive Green #8B9A46 */
+  --secondary-foreground: hsl(0, 0%, 93%);
+  --accent: hsl(190, 100%, 25%); /* Teal #006E7F */
+  --accent-foreground: hsl(0, 0%, 93%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
-  --chart-1: hsl(207, 90%, 54%);
-  --chart-2: hsl(173, 80%, 40%);
-  --chart-3: hsl(197, 40%, 50%);
-  --chart-4: hsl(43, 74%, 66%);
+  --chart-1: hsl(350, 100%, 25%); /* Maroon #800020 */
+  --chart-2: hsl(73, 36%, 45%); /* Olive Green #8B9A46 */
+  --chart-3: hsl(190, 100%, 25%); /* Teal #006E7F */
+  --chart-4: hsl(270, 100%, 17%); /* Deep Purple #2A0055 */
   --chart-5: hsl(27, 87%, 67%);
   --sidebar-background: hsl(0, 0%, 98%);
   --sidebar-foreground: hsl(240, 5.3%, 26.1%);

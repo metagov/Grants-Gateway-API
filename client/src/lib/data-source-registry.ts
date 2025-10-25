@@ -128,7 +128,7 @@ class DataSourceRegistry {
 
     // DAOIP5 Static sources
     this.register({
-      id: "stellar",
+      id: "scf",
       name: "Stellar Community Fund",
       description: "Supporting projects that advance the Stellar ecosystem through direct grants and funding rounds",
       type: "foundation",
@@ -486,7 +486,7 @@ class DataSourceRegistry {
 
   private getDaoip5SystemInfo(systemName: string): any {
     const systemInfoMap: Record<string, any> = {
-      'stellar': {
+      'scf': {
         name: 'Stellar Community Fund',
         description: 'Stellar Development Foundation community fund rounds',
         compatibility: 95,

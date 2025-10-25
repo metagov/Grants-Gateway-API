@@ -235,7 +235,7 @@ export const daoip5Api = {
                 projectDescription: app.description,
                 system,
                 grantPoolId: app.grantPoolId,
-                status: system === 'stellar' ? 'awarded' : (app.status || 'unknown'),
+                status: system === 'scf' ? 'awarded' : (app.status || 'unknown'),
                 fundsApprovedInUSD: fundsInUSD,
                 createdAt: app.createdAt || new Date().toISOString(),
                 category: app.extensions?.['org.stellar.communityfund.category'] || '',
@@ -271,7 +271,7 @@ export const daoip5Api = {
   },
 
   async getSystems(): Promise<string[]> {
-    return ['stellar', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
+    return ['scf', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
   },
 
   async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
@@ -282,15 +282,27 @@ export const daoip5Api = {
     }
 
     try {
+      // Map system ID to actual DAOIP-5 data path
+      const dataPathMap: Record<string, string> = {
+        'scf': 'stellar',
+        'celopg': 'celopg',
+        'optimism': 'optimism',
+        'arbitrumfoundation': 'arbitrumfoundation',
+        'clrfund': 'clrfund',
+        'dao-drops-dorgtech': 'dao-drops-dorgtech'
+      };
+      
+      const dataPath = dataPathMap[system] || system;
+      
       // Step 1: Get list of files in the system directory
-      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${system}`);
+      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${dataPath}`);
       if (!systemFilesResponse.ok) {
         throw new Error(`Failed to fetch system files for ${system}`);
       }
       const systemFiles = await systemFilesResponse.json();
 
       // Step 2: Fetch grants_pool.json for pool metadata
-      const poolsResponse = await fetch(`/api/proxy/daoip5/${system}/grants_pool.json`);
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/grants_pool.json`);
       if (!poolsResponse.ok) {
         throw new Error(`Failed to fetch grants_pool.json for ${system}`);
       }
@@ -341,7 +353,7 @@ export const daoip5Api = {
 
       for (const appFile of applicationFiles) {
         try {
-          const appsResponse = await fetch(`/api/proxy/daoip5/${system}/${appFile}`);
+          const appsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/${appFile}`);
           if (appsResponse.ok) {
             const appsData = await appsResponse.json();
             // Handle nested structure where applications are inside grantPools array
@@ -382,7 +394,7 @@ export const daoip5Api = {
                 }
                 
                 // For Stellar, all applications are "Awarded" since we only get awarded ones
-                const status = system === 'stellar' ? 'awarded' : (app.status || 'unknown');
+                const status = system === 'scf' ? 'awarded' : (app.status || 'unknown');
                 
                 // Extract additional metadata from extensions
                 const extensions = app.extensions || {};
@@ -796,7 +808,7 @@ export const dashboardApi = {
       
       // Focus on only the 3 requested systems: Giveth, Octant, and Stellar
       const requestedSources = allSources.filter(s => 
-        s.id === 'octant' || s.id === 'giveth' || s.id === 'stellar'
+        s.id === 'octant' || s.id === 'giveth' || s.id === 'scf'
       );
 
       // Get comprehensive stats for each registered system dynamically
@@ -1037,18 +1049,18 @@ export const formatCurrency = (amount: number): string => {
   }
 };
 
-// Utility function to get system color
+// Utility function to get system color using brand palette
 export const getSystemColor = (systemName: string): string => {
   const colors: Record<string, string> = {
-    octant: '#10B981', // green
-    giveth: '#8B5CF6', // purple
-    stellar: '#0EA5E9', // blue
-    optimism: '#EF4444', // red
-    arbitrum: '#06B6D4', // cyan
-    celo: '#F59E0B', // amber
-    'celo-org': '#F59E0B', // amber (mapped to celo-org system ID)
-    'celopg': '#F59E0B', // amber (mapped to celopg system ID)
-    default: '#800020' // maroon
+    octant: '#8B9A46', // olive green (brand color)
+    giveth: '#2A0055', // deep purple (brand color)
+    scf: '#006E7F', // teal (brand color)
+    optimism: '#800020', // maroon (brand primary)
+    arbitrum: '#006E7F', // teal (brand color)
+    celo: '#8B9A46', // olive green (brand color)
+    'celo-org': '#8B9A46', // olive green (brand color)
+    'celopg': '#8B9A46', // olive green (brand color)
+    default: '#800020' // maroon (brand primary)
   };
   
   return colors[systemName.toLowerCase()] || colors.default;

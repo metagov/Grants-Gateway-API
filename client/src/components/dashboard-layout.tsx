@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { 
-  BarChart3, 
   Building2, 
   Home, 
   Search,
@@ -47,16 +46,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4">
-            <BarChart3 className="h-8 w-8 text-[#800020]" />
+            <h1 
+              className="text-3xl font-bold bg-gradient-to-r from-[#800020] to-[#a0002a] bg-clip-text text-transparent"
+              data-testid="opengrants-title"
+            >
+              OpenGrants
+            </h1>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Grant Ecosystem Analytics</h1>
+              <h2 className="text-2xl font-bold text-gray-900">Grant Ecosystem Analytics</h2>
               <p className="text-sm text-gray-600">Comprehensive dashboard for grant data insights</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/dev">
               <Button variant="outline" size="sm">
-                Back to API Docs
+                Go to API Docs
               </Button>
             </Link>
           </div>

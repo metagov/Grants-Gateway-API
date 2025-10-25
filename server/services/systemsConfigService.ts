@@ -119,7 +119,7 @@ class SystemsConfigService {
           }
         },
         {
-          id: "stellar",
+          id: "scf",
           name: "Stellar Community Fund",
           displayName: "Stellar Community Fund",
           source: "daoip5",

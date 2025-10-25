@@ -27,7 +27,7 @@ export default {
       "displayName": "Giveth",
       "source": "opengrants", 
       "type": "DAO",
-      "enabled": false,
+      "enabled": true,
       "priority": 3,
       "metadata": {
         "description": "Donation platform for public goods and social impact projects",
@@ -41,7 +41,7 @@ export default {
       }
     },
     {
-      "id": "stellar",
+      "id": "scf",
       "name": "Stellar Community Fund",
       "displayName": "Stellar Community Fund",
       "source": "daoip5",

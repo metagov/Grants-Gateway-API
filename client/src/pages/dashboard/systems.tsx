@@ -25,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   dashboardApi,
   formatCurrency,
   getSystemColor,
@@ -35,7 +41,7 @@ const getSystemId = (systemName: string): string => {
   const nameToIdMap: Record<string, string> = {
     octant: "octant",
     giveth: "giveth",
-    "stellar community fund": "stellar",
+    "stellar community fund": "Stellar Community Fund",
     "optimism retropgf": "optimism",
     "arbitrum foundation": "arbitrumfoundation",
     celopg: "celopg", // Updated to correct system ID
@@ -48,6 +54,25 @@ const getSystemId = (systemName: string): string => {
 
   const normalizedName = systemName.toLowerCase();
   return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
+};
+
+// Helper function to format funding mechanism names
+const formatMechanismName = (mechanism: string): string => {
+  const mechanismMap: Record<string, string> = {
+    quadratic_funding: "Quadratic Funding",
+    direct_grants: "Direct Grants",
+    donations: "Donations",
+    retroactive_funding: "Retroactive Funding",
+    milestone_based: "Milestone Based",
+  };
+
+  return (
+    mechanismMap[mechanism] ||
+    mechanism
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  );
 };
 
 function SystemCard({ system }: { system: any }) {
@@ -79,16 +104,16 @@ function SystemCard({ system }: { system: any }) {
                 className="h-12 w-12 rounded-lg flex items-center justify-center relative"
                 style={{ backgroundColor: systemColor }}
               >
-                {system.id === "stellar" ? (
-                  <img 
-                    src="/attached_assets/stellar-logo.png" 
-                    alt="Stellar" 
+                {system.id === "scf" ? (
+                  <img
+                    src="/attached_assets/stellar-logo.png"
+                    alt="Stellar"
                     className="h-6 w-6"
                   />
                 ) : system.id === "celopg" ? (
-                  <img 
-                    src="/attached_assets/celo-logo.png" 
-                    alt="Celo" 
+                  <img
+                    src="/attached_assets/celo-logo.png"
+                    alt="Celo"
                     className="h-6 w-6"
                   />
                 ) : (
@@ -96,21 +121,41 @@ function SystemCard({ system }: { system: any }) {
                 )}
               </div>
               <div>
-                <CardTitle className="text-lg group-hover:text-[#800020] transition-colors">
+                <CardTitle className="text-lg group-hover:text-primary transition-colors">
                   {system.name}
                 </CardTitle>
                 <CardDescription className="flex items-center space-x-2">
-                  <Badge
-                    variant="outline"
-                    className="text-xs"
-                    style={{ borderColor: systemColor, color: systemColor }}
-                  >
-                    {system.source === "opengrants" ? "Type 1" : "Type 2"}
-                  </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-block">
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-help"
+                            style={{
+                              borderColor: systemColor,
+                              color: systemColor,
+                            }}
+                          >
+                            {system.source === "opengrants"
+                              ? "Type 1"
+                              : "Type 2"}
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {system.source === "opengrants"
+                            ? "Type 1: Live API Integration"
+                            : "Type 2: DAOIP-5 Static Data"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </CardDescription>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#800020] transition-colors" />
+            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
           </div>
         </CardHeader>
         <CardContent className="pt-0">
@@ -130,14 +175,18 @@ function SystemCard({ system }: { system: any }) {
             <div className="space-y-1">
               <span className="text-gray-500 block">Avg per Project:</span>
               <span className="font-medium block">
-                {system.totalApplications && system.totalApplications > 0 
-                  ? formatCurrency((system.totalFunding || 0) / system.totalApplications)
+                {system.totalApplications && system.totalApplications > 0
+                  ? formatCurrency(
+                      (system.totalFunding || 0) / system.totalApplications,
+                    )
                   : "--"}
               </span>
             </div>
             <div className="space-y-1">
               <span className="text-gray-500 block">Rounds:</span>
-              <span className="font-medium block">{system.totalPools || 0}</span>
+              <span className="font-medium block">
+                {system.totalPools || 0}
+              </span>
             </div>
           </div>
 
@@ -152,7 +201,7 @@ function SystemCard({ system }: { system: any }) {
                       variant="secondary"
                       className="text-xs"
                     >
-                      {mechanism}
+                      {formatMechanismName(mechanism)}
                     </Badge>
                   ))}
               </div>
@@ -164,7 +213,7 @@ function SystemCard({ system }: { system: any }) {
               <span className="text-sm text-gray-600">
                 {system.source === "opengrants" ? "Live API" : "Static Data"}
               </span>
-              <div className="flex items-center space-x-1 text-[#800020] text-sm font-medium group-hover:underline">
+              <div className="flex items-center space-x-1 text-primary text-sm font-medium group-hover:underline">
                 <span>View Details</span>
                 <ExternalLink className="h-3 w-3" />
               </div>
