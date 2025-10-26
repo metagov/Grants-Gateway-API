@@ -1,0 +1,152 @@
+# DigitalOcean App Platform configuration for OpenGrants Gateway API
+# This file enables one-click deployment to DigitalOcean App Platform
+
+name: grants-gateway-api
+region: nyc
+
+# Main API service
+services:
+- name: api
+  source_dir: /
+  github:
+    repo: your-username/Grants-Gateway-API
+    branch: main
+    deploy_on_push: true
+  
+  # Build and run configuration
+  build_command: |
+    # Install pnpm if not available
+    npm install -g pnpm
+    # Install dependencies
+    pnpm install --frozen-lockfile
+    # Validate environment
+    pnpm run validate:env
+    # Push database schema
+    pnpm run db:push
+    # Build application
+    pnpm run build
+  
+  run_command: pnpm start
+  
+  # Runtime configuration
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs  # $5/month - upgrade to professional-xs for production
+  
+  # Network configuration
+  http_port: 8080
+  routes:
+  - path: /
+  
+  # Health monitoring
+  health_check:
+    http_path: /api/health
+    initial_delay_seconds: 60
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+  
+  # Environment variables
+  envs:
+  # Required configuration
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "8080"
+  - key: SESSION_SECRET
+    value: "CHANGE-THIS-TO-A-SECURE-32-CHARACTER-RANDOM-STRING"
+    type: SECRET
+  
+  # Database connection (automatically set by DigitalOcean when database is added)
+  - key: DATABASE_URL
+    value: "${grants-db.DATABASE_URL}"
+  
+  # Performance settings
+  - key: DEFAULT_RATE_LIMIT
+    value: "1000"
+  - key: CACHE_TTL_MINUTES
+    value: "15"
+  - key: BACKGROUND_REFRESH_INTERVAL_HOURS
+    value: "6"
+  
+  # Feature flags
+  - key: ENABLE_HISTORICAL_PRICES
+    value: "true"
+  - key: ENABLE_DATA_VALIDATION
+    value: "true"
+  - key: ENABLE_CORS_PROXY
+    value: "true"
+  
+  # External API configuration
+  - key: OPENGRANTS_API_URL
+    value: "https://grants.daostar.org/api/v1"
+  - key: DAOIP5_API_URL
+    value: "https://daoip5.daostar.org"
+  
+  # Data refresh intervals
+  - key: ECOSYSTEM_STATS_REFRESH_MINUTES
+    value: "5"
+  - key: SYSTEM_DATA_REFRESH_MINUTES
+    value: "15"
+  - key: PRICE_DATA_REFRESH_MINUTES
+    value: "60"
+  
+  # Logging configuration
+  - key: LOG_LEVEL
+    value: "info"
+  - key: DEBUG_API_CALLS
+    value: "false"
+  
+  # Optional API keys (add these in the DigitalOcean console for security)
+  # - key: COINGECKO_API_KEY
+  #   value: "your-coingecko-api-key"
+  #   type: SECRET
+  # - key: KARMA_API_KEY
+  #   value: "your-karma-api-key"
+  #   type: SECRET
+
+# PostgreSQL database
+databases:
+- name: grants-db
+  engine: PG
+  version: "14"
+  size: db-s-1vcpu-1gb  # $15/month - upgrade to db-s-2vcpu-2gb for production
+  num_nodes: 1
+  
+# Optional: Static site for documentation
+# static_sites:
+# - name: docs
+#   source_dir: /docs
+#   github:
+#     repo: your-username/Grants-Gateway-API
+#     branch: main
+#     deploy_on_push: true
+#   build_command: |
+#     # Build documentation if you have a static site generator
+#     echo "Building documentation..."
+#   output_dir: /docs
+#   index_document: index.html
+#   error_document: 404.html
+#   routes:
+#   - path: /docs
+
+# Domain configuration (optional)
+# domains:
+# - domain: api.yourdomain.com
+#   type: PRIMARY
+#   wildcard: false
+#   zone: yourdomain.com
+
+# Alerts configuration (optional)
+# alerts:
+# - rule: CPU_UTILIZATION
+#   disabled: false
+#   operator: GREATER_THAN
+#   value: 80
+#   window: FIVE_MINUTES
+# - rule: MEM_UTILIZATION
+#   disabled: false
+#   operator: GREATER_THAN
+#   value: 80
+#   window: FIVE_MINUTES

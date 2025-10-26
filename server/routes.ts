@@ -16,166 +16,124 @@ import crypto from "crypto";
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
+    origin: process.env.NODE_ENV === 'production'
       ? process.env.FRONTEND_URL || 'https://your-domain.com'
       : true,
     credentials: true
   }));
 
-  // Apply comprehensive request logging to ALL routes
-  app.use(requestLoggingMiddleware);
-
-  // Auth middleware setup
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Add API proxy endpoints to avoid CORS issues
+  app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getOAuthUser(userId);
-      res.json(user);
+      const { endpoint } = req.params;
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const url = `https://grants.daostar.org/api/v1/${endpoint}${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`OpenGrants API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!res.headersSent) {
+        res.json(data);
+      }
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      console.error('OpenGrants proxy error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+      }
     }
   });
 
-  // API user registration endpoint
-  app.post('/api/auth/register', isAuthenticated, async (req: any, res) => {
+  app.get('/api/proxy/daoip5/:system/:file', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const userClaims = req.user.claims;
+      const { system, file } = req.params;
+      const url = `https://daoip5.daostar.org/${system}/${file}`;
 
-      // Validate request body
-      const validationResult = registrationSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationResult.error.issues
-        });
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
       }
 
-      const { orgName, intentOfUse } = validationResult.data;
+      const data = await response.json();
+      if (!res.headersSent) {
+        res.json(data);
+      }
+    } catch (error) {
+      console.error('DAOIP-5 proxy error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
+      }
+    }
+  });
 
-      // Check if user already has API access
-      const existingApiUser = await storage.getApiUserByReplitId(userId);
-      if (existingApiUser) {
-        return res.status(409).json({
-          error: "User already registered",
-          message: "You already have API access. Contact support if you need a new API key."
-        });
+  // Directory listing for DAOIP-5 systems
+  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+    try {
+      const { system } = req.params;
+      const url = `https://daoip5.daostar.org/${system}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`DAOIP-5 API returned ${response.status}`);
       }
 
-      // Create API user
-      const apiUser = await storage.createApiUser({
-        replitUserId: userId,
-        email: userClaims.email || '',
-        name: `${userClaims.first_name || ''} ${userClaims.last_name || ''}`.trim() || 'Unknown',
-        orgName,
-        intentOfUse,
-        status: 'active'
-      });
+      const data = await response.json();
+      if (!res.headersSent) {
+        res.json(data);
+      }
+    } catch (error) {
+      console.error('DAOIP-5 directory proxy error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to fetch directory from DAOIP-5 API' });
+      }
+    }
+  });
 
-      // Generate API key
-      const rawApiKey = crypto.randomBytes(32).toString('hex');
-      const keyHash = crypto.createHash('sha256').update(rawApiKey).digest('hex');
-      const keyPreview = rawApiKey.slice(-4);
 
-      // Set expiration to 3 months from now
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
 
-      // Save API key
-      await storage.createApiKey({
-        userId: apiUser.id,
-        keyHash,
-        keyPreview,
-        name: 'Default API Key',
-        expiresAt,
-        status: 'active'
-      });
+  // Apply middleware to all API routes
+  app.use('/api', authenticateApiKey as any);
+  app.use('/api', rateLimitMiddleware as any);
 
-      res.json({
-        message: "Registration successful",
-        apiKey: rawApiKey,
-        expiresAt: expiresAt.toISOString(),
-        user: {
-          id: apiUser.id,
-          email: apiUser.email,
-          name: apiUser.name,
-          orgName: apiUser.orgName
+  // Initialize adapters dynamically based on configuration
+  let adapters: { [key: string]: BaseAdapter } = {};
+
+  // Load adapters based on systems configuration
+  const initializeAdapters = async () => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const activeSystems = await systemsConfigService.getActiveSystems();
+      
+      console.log(`🔧 Initializing adapters for ${activeSystems.length} active systems`);
+      
+      for (const systemConfig of activeSystems) {
+        if (systemConfig.source === 'opengrants') {
+          // Initialize OpenGrants-based adapters
+          if (systemConfig.id === 'octant') {
+            adapters[systemConfig.id] = new OctantAdapter();
+          } else if (systemConfig.id === 'giveth') {
+            adapters[systemConfig.id] = new GivethAdapter();
+          }
+          console.log(`✅ Initialized ${systemConfig.id} adapter (${systemConfig.source})`);
         }
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({
-        error: "Registration failed",
-        message: "An error occurred during registration"
-      });
-    }
-  });
-
-  // Admin routes - only accessible to admin users
-  app.get('/api/admin/stats', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { adminService } = await import('./services/admin-service');
-      const stats = await adminService.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch admin statistics"
-      });
-    }
-  });
-
-  app.get('/api/admin/users', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { adminService } = await import('./services/admin-service');
-      const users = await adminService.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error('Error fetching admin users:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch users"
-      });
-    }
-  });
-
-  app.get('/api/admin/users/:userId', adminRouteGuard, async (req: any, res) => {
-    try {
-      const { userId } = req.params;
-      const { adminService } = await import('./services/admin-service');
-
-      const userDetail = await adminService.getUserDetail(userId);
-      if (!userDetail) {
-        return res.status(404).json({ 
-          error: "User not found",
-          message: `User with ID ${userId} not found`
-        });
+        // DAOIP-5 systems don't need adapters as they use static data fetching
       }
 
-      res.json(userDetail);
+      console.log(`🎯 Active adapters: ${Object.keys(adapters).join(', ')}`);
     } catch (error) {
-      console.error('Error fetching user detail:', error);
-      res.status(500).json({ 
-        error: "Internal server error",
-        message: "Failed to fetch user details"
-      });
+      console.error('❌ Error initializing adapters:', error);
+      // Fallback to default adapters
+      adapters = {
+        octant: new OctantAdapter(),
+        giveth: new GivethAdapter(),
+      };
     }
-  });
-
-  // Apply middleware only to legacy API routes - REQUIRE API tokens
-  app.use('/api/v1', authenticateApiKey, requireAuth);
-  app.use('/api/v1', rateLimitMiddleware);
-
-  // Initialize adapters for API functionality (only systems with full DAOIP-5 support)
-  const adapters: { [key: string]: BaseAdapter } = {
-    octant: new OctantAdapter(),
-    giveth: new GivethAdapter(),
   };
+
+  // Initialize adapters on startup
+  await initializeAdapters();
 
   // Helper function to get adapter
   function getAdapter(system?: string): BaseAdapter[] {
@@ -226,18 +184,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allSystems.push(...adapterSystems);
       }
 
-      // Apply pagination to systems
-      const totalCount = allSystems.length;
-      const paginatedSystems = allSystems.slice(offset, offset + limit);
-      const paginationMeta = createPaginationMeta(totalCount, limit, offset);
+      // Handle single system vs collection responses
+      if (system && typeof system === 'string' && allSystems.length === 1) {
+        // Single system query - return flattened object
+        const systemData = allSystems[0];
+        res.json(systemData);
+      } else {
+        // Collection query - return paginated data array
+        const totalCount = allSystems.length;
+        const paginatedSystems = allSystems.slice(offset, offset + limit);
+        const paginationMeta = createPaginationMeta(totalCount, limit, offset);
 
-      const response: PaginatedResponse<any> = {
-        "@context": "http://www.daostar.org/schemas",
-        data: paginatedSystems,
-        pagination: paginationMeta
-      };
+        const response: PaginatedResponse<any> = {
+          "@context": "http://www.daostar.org/schemas",
+          data: paginatedSystems,
+          pagination: paginationMeta
+        };
 
-      res.json(response);
+        res.json(response);
+      }
     } catch (error) {
       console.error('Error fetching systems:', error);
       res.status(500).json({
@@ -296,12 +261,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCount += result.totalCount;
       }
 
+      // Get actual entity metadata for DAOIP-5 compliance
+      let entityName = "Multi-System Grant Data";
+      let entityType = "GrantDataAggregator";
+      let extensions: Record<string, any> = {};
+
+      if (selectedAdapters.length === 1) {
+        // Single system - use actual entity metadata
+        const systemData = await selectedAdapters[0].getSystems();
+        if (systemData.length > 0) {
+          entityName = systemData[0].name;
+          entityType = systemData[0].type;
+        }
+      } else {
+        // Multi-system aggregation - mark as extension
+        extensions["io.opengrants.aggregated"] = {
+          systems: ["Multi-System"],  // Simplified for now
+          totalAdapters: selectedAdapters.length
+        };
+      }
+
+      // Ensure all pools have required DAOIP-5 fields
+      const validatedPools = allPools.map(pool => ({
+        type: "GrantPool",
+        id: pool.id || `unknown:pool:${pool.name?.toLowerCase().replace(/\s+/g, '-') || 'unnamed'}`,
+        name: pool.name || "Unnamed Pool",
+        description: pool.description || "No description available",
+        grantFundingMechanism: pool.grantFundingMechanism || "Direct Grants",
+        isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+        // Optional fields
+        ...(pool.closeDate && { closeDate: pool.closeDate }),
+        ...(pool.applicationsURI && { applicationsURI: pool.applicationsURI }),
+        ...(pool.governanceURI && { governanceURI: pool.governanceURI }),
+        ...(pool.attestationIssuersURI && { attestationIssuersURI: pool.attestationIssuersURI }),
+        ...(pool.requiredCredentials && { requiredCredentials: pool.requiredCredentials }),
+        ...(pool.totalGrantPoolSize && { totalGrantPoolSize: pool.totalGrantPoolSize }),
+        ...(pool.email && { email: pool.email }),
+        ...(pool.image && { image: pool.image }),
+        ...(pool.coverImage && { coverImage: pool.coverImage }),
+        ...(pool.extensions && { extensions: pool.extensions })
+      }));
+
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
       
-      const response: PaginatedResponse<any> = {
+      // Add pagination to extensions for API metadata
+      extensions["io.opengrants.pagination"] = paginationMeta;
+      
+      // DAOIP-5 compliant response structure
+      const response = {
         "@context": "http://www.daostar.org/schemas",
-        data: allPools,
-        pagination: paginationMeta
+        name: entityName,
+        type: entityType,
+        grantPools: validatedPools,
+        ...(Object.keys(extensions).length > 0 && { extensions })
       };
 
       res.json(response);
@@ -498,23 +510,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
+      
+      // DEBUG: Log the incoming query parameters
+      console.log(`[QUERY DEBUG] /api/v1/grantApplications called with:`, { system, poolId, projectId, status, limit, offset });
 
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
       
-      // If no poolId is provided, fetch the latest grant pool
+      // If no poolId is provided, fetch the latest closed pool
       if (!poolId) {
-        const latestPools = [];
+        const allPools = [];
         for (const adapter of selectedAdapters) {
-          const pools = await adapter.getPools({ limit: 1, offset: 0 });
-          if (pools.length > 0) {
-            latestPools.push(pools[0]);
-          }
+          const pools = await adapter.getPools({ limit: 20 });
+          allPools.push(...pools);
         }
         
-        // Use the first available pool as the latest
-        if (latestPools.length > 0) {
-          finalPoolId = latestPools[0].id;
+        if (allPools.length > 0) {
+          // Find the latest closed pool specifically (where isOpen is false)
+          const closedPools = allPools.filter(pool => !pool.isOpen);
+          
+          const latestPool = closedPools.length > 0 
+            ? closedPools.reduce((latest, pool) => {
+                if (!latest) return pool;
+                const latestDate = latest.closeDate
+                  ? new Date(latest.closeDate)
+                  : new Date(0);
+                const poolDate = pool.closeDate
+                  ? new Date(pool.closeDate)
+                  : new Date(0);
+                return poolDate > latestDate ? pool : latest;
+              })
+            : allPools.reduce((latest, pool) => {
+                // Fallback to any pool if no closed pools found
+                if (!latest) return pool;
+                const latestDate = latest.closeDate
+                  ? new Date(latest.closeDate)
+                  : new Date(0);
+                const poolDate = pool.closeDate
+                  ? new Date(pool.closeDate)
+                  : new Date(0);
+                return poolDate > latestDate ? pool : latest;
+              }, allPools[0]);
+
+          finalPoolId = latestPool?.id;
         }
       }
 
@@ -535,11 +573,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCount += result.totalCount;
       }
 
+      // Group applications by grant pools to match DAOIP-5 schema
+      const poolsMap = new Map<string, {
+        id: string;
+        name: string;
+        applications: any[];
+      }>();
+
+      // Group applications by their grant pool
+      allApplications.forEach(app => {
+        const poolKey = app.grantPoolId || 'unknown';
+        if (!poolsMap.has(poolKey)) {
+          poolsMap.set(poolKey, {
+            id: poolKey,
+            name: app.grantPoolName || 'Unknown Pool',
+            applications: []
+          });
+        }
+        poolsMap.get(poolKey)!.applications.push(app);
+      });
+
+      // Convert to DAOIP-5 compliant structure
+      const grantPools = Array.from(poolsMap.values()).map(pool => ({
+        type: "GrantPool",
+        id: pool.id,
+        name: pool.name,
+        applications: pool.applications
+      }));
+
+      // Determine system name based on selected adapters
+      const systemStr = typeof system === 'string' ? system : '';
+      const systemName = systemStr ? `${systemStr.charAt(0).toUpperCase()}${systemStr.slice(1)} Grant System` : "Multi-System Grant Data";
+      const systemType = selectedAdapters.length === 1 ? "GrantSystem" : "GrantDataAggregator";
+
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
       
-      const response: PaginatedResponse<any> = {
+      const response = {
         "@context": "http://www.daostar.org/schemas",
-        data: allApplications,
+        name: systemName,
+        type: systemType,
+        grantPools: grantPools,
         pagination: paginationMeta
       };
 
@@ -593,6 +666,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Accurate Analytics Endpoints
+  app.get('/api/v1/analytics/ecosystem-stats', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+      const stats = await accurateDataService.getEcosystemStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching ecosystem stats:', error);
+      res.status(500).json({
+        error: "Failed to fetch ecosystem statistics",
+        message: "Unable to compute accurate ecosystem metrics"
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/system/:systemName', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemName } = req.params;
+      const { source = 'opengrants' } = req.query;
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      const metrics = await accurateDataService.calculateSystemMetrics(
+        systemName,
+        source as 'opengrants' | 'daoip5'
+      );
+
+      res.json(metrics);
+    } catch (error) {
+      console.error(`Error fetching system metrics for ${req.params.systemName}:`, error);
+      res.status(500).json({
+        error: "Failed to fetch system metrics",
+        message: `Unable to compute metrics for system ${req.params.systemName}`
+      });
+    }
+  });
+
+  app.get('/api/v1/analytics/funding-trends', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { accurateDataService } = await import('./services/accurateDataService.js');
+
+      // This would need to be implemented to calculate quarterly trends from real data
+      // For now, return a placeholder structure
+      const trends = [
+        { quarter: '2024-Q1', funding: 0, applications: 0 },
+        { quarter: '2024-Q2', funding: 0, applications: 0 },
+        { quarter: '2024-Q3', funding: 0, applications: 0 },
+        { quarter: '2024-Q4', funding: 0, applications: 0 }
+      ];
+
+      res.json(trends);
+    } catch (error) {
+      console.error('Error fetching funding trends:', error);
+      res.status(500).json({
+        error: "Failed to fetch funding trends",
+        message: "Unable to compute funding trend data"
+      });
+    }
+  });
+
+  // Systems configuration endpoints - READ ONLY
+  app.get('/api/v1/systems/config', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const config = await systemsConfigService.loadConfiguration();
+      
+      // Return the full configuration with only enabled systems
+      const enabledSystems = config.activeSystems.filter(system => system.enabled);
+      
+      res.json({
+        activeSystems: enabledSystems.map(system => ({
+          id: system.id,
+          name: system.name,
+          displayName: system.displayName,
+          source: system.source,
+          type: system.type,
+          priority: system.priority,
+          enabled: system.enabled,
+          metadata: {
+            description: system.metadata.description,
+            website: system.metadata.website,
+            supportedNetworks: system.metadata.supportedNetworks,
+            fundingMechanisms: system.metadata.fundingMechanisms,
+            established: system.metadata.established,
+            compatibility: system.metadata.compatibility
+          }
+        }))
+      });
+    } catch (error) {
+      console.error('Error fetching systems config:', error);
+      res.status(500).json({
+        error: "Failed to load systems configuration",
+        message: "Unable to retrieve systems configuration"
+      });
+    }
+  });
+
+  app.get('/api/v1/systems/config/active', async (req: AuthenticatedRequest, res) => {
+    try {
+      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const activeSystems = await systemsConfigService.getActiveSystems();
+      
+      // Only return essential info for active systems
+      const publicSystemsInfo = activeSystems.map(system => ({
+        id: system.id,
+        name: system.name,
+        displayName: system.displayName,
+        source: system.source,
+        type: system.type,
+        priority: system.priority,
+        metadata: {
+          description: system.metadata.description,
+          website: system.metadata.website,
+          supportedNetworks: system.metadata.supportedNetworks,
+          fundingMechanisms: system.metadata.fundingMechanisms,
+          established: system.metadata.established,
+          compatibility: system.metadata.compatibility
+        }
+      }));
+      
+      res.json({ activeSystems: publicSystemsInfo });
+    } catch (error) {
+      console.error('Error fetching active systems:', error);
+      res.status(500).json({
+        error: "Failed to load active systems",
+        message: "Unable to retrieve active systems configuration"
+      });
+    }
+  });
+
   // API documentation endpoint
   app.get('/api/v1/docs', (req, res) => {
     res.json({
@@ -602,7 +804,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       endpoints: {
         systems: "/api/v1/systems",
         pools: "/api/v1/pools",
-        applications: "/api/v1/applications"
+        applications: "/api/v1/applications",
+        config: {
+          activeSystems: "/api/v1/systems/config/active"
+        },
+        analytics: {
+          ecosystemStats: "/api/v1/analytics/ecosystem-stats",
+          systemMetrics: "/api/v1/analytics/system/:systemName",
+          fundingTrends: "/api/v1/analytics/funding-trends"
+        }
       },
       supportedSystems: Object.keys(adapters),
       documentation: "https://docs.daostar.org/"

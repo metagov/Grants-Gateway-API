@@ -196,7 +196,7 @@ function GrantPoolCard({ pool, applications }: {
 }
 
 export default function SystemProfile() {
-  const [, params] = useRoute("/dashboard/systems/:systemName");
+  const [, params] = useRoute("/systems/:systemName");
   const systemName = params?.systemName || '';
 
   const { data: systemData, isLoading, error } = useQuery({
@@ -236,7 +236,7 @@ export default function SystemProfile() {
     return (
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard/systems">
+          <Link href="/systems">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Systems
@@ -251,7 +251,7 @@ export default function SystemProfile() {
               <p className="text-gray-600 mb-4">
                 Unable to load data for system "{systemName}".
               </p>
-              <Link href="/dashboard/systems">
+              <Link href="/systems">
                 <Button variant="outline">
                   Back to Systems
                 </Button>
@@ -270,7 +270,7 @@ export default function SystemProfile() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link href="/dashboard/systems">
+          <Link href="/systems">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Systems

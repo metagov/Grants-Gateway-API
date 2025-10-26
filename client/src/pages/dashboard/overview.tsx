@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/dashboard-api";
-import { useCrossSystemAnalytics, useFundingTrends } from "@/lib/analytics-hooks";
+import { useCrossSystemAnalytics, useFundingTrends, useAccurateEcosystemStats } from "@/lib/analytics-hooks";
 
 // Stats card component
 function StatsCard({ 
@@ -123,6 +123,9 @@ function FundingTrendsChart({ data }: { data: Array<{ quarter: string; funding: 
 
 // Recent systems section
 function RecentSystems({ systems }: { systems: any[] }) {
+  // Show all enabled systems - remove the hardcoded filter
+  const filteredSystems = systems;
+
   return (
     <Card>
       <CardHeader>
@@ -136,7 +139,7 @@ function RecentSystems({ systems }: { systems: any[] }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {systems.slice(0, 6).map((system, index) => (
+          {filteredSystems.slice(0, 6).map((system, index) => (
             <div key={system.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="h-10 w-10 bg-[#800020] rounded-lg flex items-center justify-center">
@@ -159,38 +162,50 @@ function RecentSystems({ systems }: { systems: any[] }) {
 }
 
 export default function DashboardOverview() {
-  // Use optimized analytics hooks for real data
+  // Use accurate ecosystem stats as primary data source
+  const { stats: accurateStats, isLoading: accurateLoading } = useAccurateEcosystemStats();
+  // Keep analytics as fallback
   const { analytics, derivedData, isLoading: analyticsLoading } = useCrossSystemAnalytics();
   const { trends, isLoading: trendsLoading } = useFundingTrends();
   
-  // Memoize computed values with accurate calculations
+  // Use accurate stats if available, fallback to computed values
   const stats = useMemo(() => {
+    // Prefer accurate stats from the new API
+    if (accurateStats) {
+      console.log('✅ Using accurate ecosystem stats from API');
+      return {
+        totalFunding: accurateStats.totalFunding || 0,
+        totalGrantRounds: accurateStats.totalPools || 0, // Backend provides totalPools
+        totalSystems: accurateStats.totalSystems || 0,
+        totalProjects: accurateStats.totalApplications || 0, // Projects are applications
+        totalApplications: accurateStats.totalApplications || 0
+      };
+    }
+
+    // Fallback to computed values from analytics
     if (!analytics) return null;
-    
-    // Calculate actual totals from system data
-    const actualTotalFunding = analytics.systems.reduce((sum, system) => 
+
+    console.log('⚠️ Using fallback computed stats');
+    const actualTotalFunding = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalFunding || 0), 0
     );
-    
-    const actualTotalApplications = analytics.systems.reduce((sum, system) => 
+
+    const actualTotalApplications = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalApplications || 0), 0
     );
-    
-    const actualTotalPools = analytics.systems.reduce((sum, system) => 
+
+    const actualTotalPools = analytics.systems.reduce((sum, system) =>
       sum + (system.metrics.totalPools || 0), 0
     );
-    
-    // Count actual unique projects (using applications as proxy)
-    const actualProjects = actualTotalApplications; // Each application represents a project
-    
+
     return {
       totalFunding: actualTotalFunding,
       totalGrantRounds: actualTotalPools,
       totalSystems: analytics.systems.length,
-      totalProjects: actualProjects,
+      totalProjects: actualTotalApplications, // Each application represents a project
       totalApplications: actualTotalApplications
     };
-  }, [analytics]);
+  }, [accurateStats, analytics]);
   
   const trendsData = useMemo(() => {
     if (!trends?.trends) return [];
@@ -209,8 +224,8 @@ export default function DashboardOverview() {
   }, [analytics]);
   
   // Removed ecosystem health score as requested
-  
-  const statsLoading = analyticsLoading;
+
+  const statsLoading = accurateLoading || analyticsLoading;
   const systemsLoading = analyticsLoading;
 
   return (
@@ -226,45 +241,35 @@ export default function DashboardOverview() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Funding"
+          title="Total Ecosystem Funding"
           value={stats ? formatCurrency(stats.totalFunding) : "Loading..."}
-          description="Distributed across all systems"
+          description="Across all systems"
           icon={DollarSign}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Total Applications"
+          value={stats?.totalApplications.toLocaleString() || 0}
+          description="Grant applications processed"
+          icon={Users}
+          loading={statsLoading}
+        />
+        <StatsCard
+          title="Active Systems"
+          value={stats?.totalSystems || 0}
+          description="Currently operating"
+          icon={Building2}
           loading={statsLoading}
         />
         <StatsCard
           title="Grant Rounds"
           value={stats?.totalGrantRounds || 0}
-          description="Active and completed rounds"
+          description="Funding rounds available"
           icon={Calendar}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Grant Systems"
-          value={stats?.totalSystems || 0}
-          description="Integrated platforms"
-          icon={Building2}
-          loading={statsLoading}
-        />
-        <StatsCard
-          title="Projects"
-          value={stats?.totalProjects.toLocaleString() || 0}
-          description="Total grant applications"
-          icon={Users}
           loading={statsLoading}
         />
       </div>
 
-      {/* Additional Stats Row - Removed approval rate and ecosystem health */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <StatsCard
-          title="Total Applications"
-          value={stats?.totalApplications.toLocaleString() || 0}
-          description="Applications submitted across all systems"
-          icon={FileText}
-          loading={statsLoading}
-        />
-      </div>
 
       {/* Charts and Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -311,7 +316,7 @@ export default function DashboardOverview() {
             ) : topSystems.length > 0 ? (
               <div className="space-y-3">
                 {topSystems.map((system, index) => (
-                  <Link key={system.systemName} href={`/dashboard/systems/${system.systemName.toLowerCase()}`}>
+                  <Link key={system.systemName} href={`/systems/${system.systemName.toLowerCase()}`}>
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group">
                       <div className="flex items-center space-x-3">
                         <Badge variant="outline" className="text-xs min-w-[24px] text-center">#{index + 1}</Badge>
@@ -356,7 +361,7 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <Link href="/dashboard/systems">
+              <Link href="/systems">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <Building2 className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">
@@ -366,7 +371,7 @@ export default function DashboardOverview() {
                   <ArrowRight className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
               </Link>
-              <Link href="/dashboard/search">
+              <Link href="/search">
                 <Button variant="ghost" className="w-full justify-start h-auto p-4">
                   <FileText className="h-6 w-6 text-[#800020] mr-3" />
                   <div className="text-left">

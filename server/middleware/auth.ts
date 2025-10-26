@@ -272,7 +272,7 @@ export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
         });
       } catch (error) {
         console.error('Request logging failed:', {
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           endpoint: req.originalUrl || req.path,
           method: req.method,
           status: res.statusCode

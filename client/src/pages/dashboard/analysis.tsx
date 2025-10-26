@@ -256,7 +256,7 @@ export default function CrossSystemAnalysis() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Avg Approval Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.averageApprovalRate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-gray-900">Coming soon</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-[#800020]" />
               </div>

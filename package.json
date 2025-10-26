@@ -8,7 +8,18 @@
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "install:clean": "rm -rf node_modules pnpm-lock.yaml && pnpm install",
+    "test:api": "curl http://localhost:5000/api/health",
+    "test:accurate": "curl http://localhost:5000/api/v1/analytics/ecosystem-stats",
+    "render-build": "pnpm install --frozen-lockfile && pnpm run validate:env && pnpm run db:push && pnpm run build",
+    "render-start": "pnpm run validate:env && NODE_ENV=production node dist/index.js",
+    "docker:build": "docker build -t grants-gateway-api .",
+    "docker:run": "docker run -p 10000:10000 --env-file .env grants-gateway-api",
+    "validate:env": "node scripts/validate-env.js",
+    "deploy:render": "./deploy-to-render.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -62,10 +73,13 @@
     "lucide-react": "^0.453.0",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",
+    "nanoid": "^5.0.0",
     "next-themes": "^0.4.6",
     "openid-client": "^6.7.1",
+    "node-fetch": "^3.3.2",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "postgresql": "^0.0.1",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -91,6 +105,7 @@
     "@types/express": "4.17.21",
     "@types/express-session": "^1.18.0",
     "@types/node": "20.16.11",
+    "@types/node-fetch": "^2.6.11",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
     "@types/react": "^18.3.11",
@@ -108,5 +123,9 @@
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }

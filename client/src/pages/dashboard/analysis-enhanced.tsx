@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { 
   BarChart3, 
   PieChart, 
@@ -9,7 +10,10 @@ import {
   Globe,
   Activity,
   Layers,
-  Shuffle
+  Shuffle,
+  FileText,
+  X,
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +38,9 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Radar
+  Radar,
+  ComposedChart,
+  Area
 } from 'recharts';
 import { 
   getCrossSystemComparison, 
@@ -46,6 +52,7 @@ import {
   type FundingTrend
 } from "@/lib/cross-system-analysis";
 import { formatCurrency } from "@/lib/dashboard-api";
+import { Link } from "wouter";
 
 // Color palette for consistent visualization
 const COLORS = {
@@ -91,7 +98,7 @@ function MetricCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow relative">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
         <Icon className="h-4 w-4 text-[#800020]" />
@@ -107,79 +114,183 @@ function MetricCard({
           )}
         </div>
       </CardContent>
+      
     </Card>
   );
 }
 
 function SystemComparisonChart({ data }: { data: SystemComparisonData[] }) {
-  const chartData = data.map(system => ({
-    name: system.systemName,
-    funding: system.totalFunding,
-    applications: system.totalApplications,
-    approvalRate: system.approvalRate,
-    avgFunding: system.averageFundingPerProject
-  }));
+  const chartData = data.map(system => {
+    // Create shorter names for better chart display
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    if (shortName === "Octant") shortName = "Octant";
+    if (shortName === "Giveth") shortName = "Giveth";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      fundingMillions: system.totalFunding / 1000000, // Convert to millions for better display
+      applications: system.totalApplications,
+      approvalRate: system.approvalRate,
+      avgFunding: system.averageFundingPerProject
+    };
+  });
+
+  console.log("📊 Chart Data for System Comparison:", chartData);
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-900">{label}</p>
+          <div className="space-y-1 mt-2">
+            <p className="text-sm">
+              <span className="font-medium text-[#800020]">Total Funding:</span> {formatCurrency(data.funding)}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-[#3B82F6]">Applications:</span> {data.applications}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-gray-600">Approval Rate:</span> {data.approvalRate}%
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-gray-600">Avg Funding:</span> {formatCurrency(data.avgFunding)}
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
           <BarChart3 className="h-5 w-5 text-[#800020] mr-2" />
-          System Funding Comparison
+          System Funding Overview & Application Metrics
         </CardTitle>
         <CardDescription>
-          Total funding and application metrics across grant systems
+          Combined view of funding amounts and application counts by system
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 w-full">
+        <div className="h-96 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 40, bottom: 60 }}
+              barGap={8}
+              barCategoryGap="20%"
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
                 dataKey="name" 
                 angle={-45}
                 textAnchor="end"
-                height={100}
+                height={80}
                 fontSize={12}
+                interval={0}
+                stroke="#6B7280"
               />
               <YAxis 
                 yAxisId="funding"
                 orientation="left"
-                tickFormatter={(value) => formatCurrency(value)}
                 fontSize={12}
+                stroke="#6B7280"
+                domain={[0, 'auto']}
+                label={{ 
+                  value: 'Funding (Millions USD)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle' }
+                }}
               />
               <YAxis 
                 yAxisId="applications"
                 orientation="right"
                 fontSize={12}
+                stroke="#6B7280"
+                domain={[0, 'auto']}
+                label={{ 
+                  value: 'Applications Count', 
+                  angle: 90, 
+                  position: 'insideRight',
+                  style: { textAnchor: 'middle' }
+                }}
               />
-              <Tooltip 
-                formatter={(value: any, name: any) => [
-                  name.includes('funding') || name.includes('Funding') ? formatCurrency(value) : value,
-                  name === 'funding' ? 'Total Funding' : 
-                  name === 'applications' ? 'Applications' : 
-                  name === 'approvalRate' ? 'Approval Rate (%)' : 'Avg Funding'
-                ]}
-                labelStyle={{ color: '#374151' }}
+              <Tooltip content={<CustomTooltip />} />
+              
+              {/* Funding bars */}
+              <Bar 
+                yAxisId="funding"
+                dataKey="fundingMillions" 
+                fill={COLORS.primary} 
+                radius={[4, 4, 0, 0]} 
+                name="Funding (Millions)"
+                opacity={0.8}
+                minPointSize={5}
               />
-              <Bar yAxisId="funding" dataKey="funding" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="applications" dataKey="applications" fill={COLORS.info} radius={[4, 4, 0, 0]} />
-            </BarChart>
+              
+              {/* Applications bars */}
+              <Bar 
+                yAxisId="applications"
+                dataKey="applications" 
+                fill={COLORS.info} 
+                radius={[4, 4, 0, 0]} 
+                name="Applications"
+                opacity={0.7}
+                minPointSize={5}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
+        </div>
+        
+        {/* Legend */}
+        <div className="flex justify-center mt-4 space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.primary, opacity: 0.8 }}></div>
+            <span className="text-sm text-gray-600">Total Funding (Millions USD)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.info, opacity: 0.7 }}></div>
+            <span className="text-sm text-gray-600">Application Count</span>
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
-  const chartData = data.map(mechanism => ({
-    name: mechanism.mechanism,
-    funding: mechanism.totalFunding,
-    applications: mechanism.totalApplications,
-    systems: mechanism.systems.length,
-    approvalRate: mechanism.averageApprovalRate
+function FundingMechanismPieChart({ data }: { data: FundingMechanismAnalysis[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <PieChart className="h-5 w-5 text-[#800020] mr-2" />
+            Funding by Mechanism
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">No funding mechanism data available</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const totalFunding = data.reduce((sum, item) => sum + item.totalFunding, 0);
+  const pieChartData = data.map((item, index) => ({
+    name: item.mechanism,
+    value: item.totalFunding,
+    systems: item.systems,
+    percentage: ((item.totalFunding / totalFunding) * 100),
+    color: CHART_COLORS[index % CHART_COLORS.length]
   }));
 
   return (
@@ -187,10 +298,111 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
       <CardHeader>
         <CardTitle className="flex items-center">
           <PieChart className="h-5 w-5 text-[#800020] mr-2" />
-          Funding Mechanisms Analysis
+          Funding Distribution by Mechanism
         </CardTitle>
         <CardDescription>
-          Distribution of funding across different grant mechanisms
+          Breakdown of funding by grant mechanism and participating systems
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Pie Chart */}
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any) => [formatCurrency(value), 'Total Funding']}
+                  labelFormatter={(label) => `${label}`}
+                />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend and Details */}
+          <div className="space-y-4">
+            <div className="text-center lg:text-left">
+              <div className="text-sm font-medium text-gray-600">Total Funding</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalFunding)}</div>
+            </div>
+            
+            <div className="space-y-3">
+              {pieChartData.map((item, index) => (
+                <div key={`${item.name}-${index}`} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                        <div className="text-xs text-gray-600">
+                          {item.systems.length} system{item.systems.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold">{formatCurrency(item.value)}</div>
+                      <div className="text-xs text-gray-500">{item.percentage.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600">
+                    Systems: {item.systems.join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CeloVsStellarBreakdownChart({ data }: { data: SystemComparisonData[] }) {
+  // Filter for only Celo and Stellar systems  
+  const directGrantSystems = data.filter(system => 
+    system.systemName.includes("Stellar") || system.systemName.includes("Celo")
+  );
+  
+  const chartData = directGrantSystems.map(system => {
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      applications: system.totalApplications,
+      pools: system.totalPools
+    };
+  });
+
+  const totalDirectGrantsFunding = chartData.reduce((sum, item) => sum + item.funding, 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Target className="h-5 w-5 text-[#800020] mr-2" />
+          Direct Grants: Celo vs Stellar Breakdown
+        </CardTitle>
+        <CardDescription>
+          Funding distribution between Celo and Stellar direct grant systems
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -204,7 +416,98 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
                   cy="50%"
                   outerRadius={80}
                   dataKey="funding"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  labelLine={false}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={index === 0 ? '#2563eb' : '#dc2626'} // Blue for first system, red for second
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: any) => [formatCurrency(value), 'Funding']}
+                />
+              </RechartsPieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-4">
+            <div className="text-center lg:text-left mb-4">
+              <div className="text-sm font-medium text-gray-600">Total Direct Grants</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalDirectGrantsFunding)}</div>
+            </div>
+            {chartData.map((item, index) => (
+              <div key={`${item.name}-${index}`} className="flex items-center justify-between space-x-4 min-w-[300px]">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: index === 0 ? '#2563eb' : '#dc2626' }}
+                  />
+                  <span className="text-sm font-medium text-gray-900">{item.name}</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-medium">{formatCurrency(item.funding)}</div>
+                  <div className="text-xs text-gray-500">{item.pools} rounds, {item.applications} apps</div>
+                  <div className="text-xs text-blue-600">
+                    {((item.funding / totalDirectGrantsFunding) * 100).toFixed(1)}% of direct grants
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SystemFundingDistributionChart({ data }: { data: SystemComparisonData[] }) {
+  const chartData = data.map(system => {
+    // Create shorter names for better chart display
+    let shortName = system.systemName;
+    if (shortName === "Stellar Community Fund") shortName = "Stellar SCF";
+    if (shortName === "Celo Public Goods") shortName = "Celo PG";
+    if (shortName === "Octant") shortName = "Octant";
+    if (shortName === "Giveth") shortName = "Giveth";
+    
+    return {
+      name: shortName,
+      funding: system.totalFunding,
+      applications: system.totalApplications,
+      pools: system.totalPools
+    };
+  });
+
+  const totalFunding = chartData.reduce((sum, item) => sum + item.funding, 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <PieChart className="h-5 w-5 text-[#800020] mr-2" />
+          All Grant Systems Distribution
+        </CardTitle>
+        <CardDescription>
+          Distribution of funding across all grant systems
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Pie Chart */}
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  dataKey="funding"
+                  label={({ name, percent }) => {
+                    const percentage = (percent * 100);
+                    return percentage > 5 ? `${name} ${percentage.toFixed(0)}%` : `${percentage.toFixed(1)}%`;
+                  }}
                   labelLine={false}
                 >
                   {chartData.map((entry, index) => (
@@ -220,22 +523,39 @@ function FundingMechanismChart({ data }: { data: FundingMechanismAnalysis[] }) {
               </RechartsPieChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-3">
-            {chartData.map((item, index) => (
-              <div key={`${item.name}-${index}`} className="flex items-center justify-between space-x-4 min-w-[300px]">
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                  />
-                  <span className="text-sm font-medium text-gray-900">{item.name}</span>
+          {/* Legend and Details */}
+          <div className="space-y-4">
+            <div className="text-center lg:text-left">
+              <div className="text-sm font-medium text-gray-600">Total Funding</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalFunding)}</div>
+            </div>
+            
+            <div className="space-y-3">
+              {chartData.map((item, index) => (
+                <div key={`${item.name}-${index}`} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                        <div className="text-xs text-gray-600">
+                          {item.pools} rounds, {item.applications} apps
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold">{formatCurrency(item.funding)}</div>
+                      <div className="text-xs text-gray-500">
+                        {((item.funding / totalFunding) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium">{formatCurrency(item.funding)}</div>
-                  <div className="text-xs text-gray-500">{item.systems} systems, {item.applications} apps</div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
@@ -300,13 +620,47 @@ function FundingTrendsChart({ data }: { data: FundingTrend[] }) {
 }
 
 function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
-  const chartData = data.map(system => ({
-    name: system.systemName,
-    x: system.averageFundingPerProject,
-    y: system.approvalRate,
-    totalFunding: system.totalFunding,
-    applications: system.totalApplications
-  }));
+  // Example data for demonstration purposes
+  const exampleData = [
+    {
+      name: "Stellar Community Fund",
+      x: 68622, // Average funding per project
+      y: 45.2, // Approval rate percentage
+      totalFunding: 49133209,
+      applications: 716,
+    },
+    {
+      name: "Celo Public Goods", 
+      x: 138753, // Higher average funding
+      y: 35.8, // Approval rate percentage
+      totalFunding: 82280,
+      applications: 593,
+    },
+    {
+      name: "Example System A",
+      x: 25000,
+      y: 62.5,
+      totalFunding: 1500000,
+      applications: 240,
+    },
+    {
+      name: "Example System B",
+      x: 95000,
+      y: 28.3,
+      totalFunding: 3800000,
+      applications: 180,
+    },
+  ];
+
+  const chartData = data && data.length > 0 && data.some(system => system.averageFundingPerProject > 0 && system.approvalRate > 0)
+    ? data.map(system => ({
+        name: system.systemName,
+        x: system.averageFundingPerProject,
+        y: system.approvalRate,
+        totalFunding: system.totalFunding,
+        applications: system.totalApplications
+      }))
+    : exampleData;
 
   // Custom dot component to show system names
   const CustomDot = (props: any) => {
@@ -336,7 +690,7 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
   };
 
   return (
-    <Card>
+    <Card className="relative" data-testid="card-efficiency-analysis">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Target className="h-5 w-5 text-[#800020] mr-2" />
@@ -362,7 +716,7 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
             </div>
           </div>
           
-          <div className="h-80 w-full">
+          <div className="h-80 w-full" data-testid="chart-efficiency-scatter">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 30, right: 30, left: 20, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -422,11 +776,11 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
           <div className="mt-4 p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-700 mb-2">Efficiency Rankings</h4>
             <div className="space-y-1 text-xs">
-              {chartData
+              {[...chartData]
                 .sort((a, b) => (b.x * b.y) - (a.x * a.y))
                 .slice(0, 5)
                 .map((system, index) => (
-                  <div key={system.name} className="flex items-center justify-between">
+                  <div key={system.name} className="flex items-center justify-between" data-testid={`row-efficiency-${index}`}>
                     <span className="text-gray-600">
                       {index + 1}. {system.name}
                     </span>
@@ -439,11 +793,34 @@ function EfficiencyScatterChart({ data }: { data: SystemComparisonData[] }) {
           </div>
         </div>
       </CardContent>
+      
+      {/* Coming Soon Blur Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 to-gray-200/50 rounded-lg flex items-center justify-center backdrop-blur-sm" data-testid="status-coming-soon">
+        <div className="bg-white/90 px-4 py-2 rounded-full shadow-sm border border-gray-200">
+          <span className="text-sm font-medium text-gray-600">
+            Coming Soon - Advanced Efficiency Metrics
+          </span>
+        </div>
+      </div>
     </Card>
   );
 }
 
 export default function EcosystemOverview() {
+  const [showIntroBanner, setShowIntroBanner] = useState(true);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('opengrants-intro-dismissed');
+    if (dismissed === 'true') {
+      setShowIntroBanner(false);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    localStorage.setItem('opengrants-intro-dismissed', 'true');
+    setShowIntroBanner(false);
+  };
+
   const { data: systemComparison, isLoading: systemLoading } = useQuery({
     queryKey: ['cross-system-comparison'],
     queryFn: getCrossSystemComparison,
@@ -477,6 +854,36 @@ export default function EcosystemOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Intro Banner */}
+      {showIntroBanner && (
+        <Card className="bg-gradient-to-r from-[#800020]/5 to-[#a0002a]/5 border-[#800020]/20" data-testid="banner-intro">
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-[#800020]" />
+                  <h3 className="text-lg font-bold bg-gradient-to-r from-[#800020] to-[#a0002a] bg-clip-text text-transparent">
+                    Welcome to OpenGrants Analytics
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  A comprehensive grant ecosystem analytics platform that standardizes and visualizes grant data across blockchain ecosystems using DAOIP-5 compliance. 
+                  Compare funding across systems, analyze trends, and discover accessible data for grant seekers and administrators.
+                </p>
+              </div>
+              <button 
+                onClick={handleDismissBanner}
+                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                aria-label="Dismiss intro"
+                data-testid="button-dismiss-intro"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Ecosystem Overview</h1>
@@ -486,7 +893,7 @@ export default function EcosystemOverview() {
       </div>
 
       {/* Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
           title="Total Ecosystem Funding"
           value={formatCurrency(totalFunding)}
@@ -499,13 +906,6 @@ export default function EcosystemOverview() {
           value={totalApplications.toLocaleString()}
           description="Grant applications processed"
           icon={Users}
-          loading={systemLoading}
-        />
-        <MetricCard
-          title="Average Approval Rate"
-          value={`${averageApproval.toFixed(1)}%`}
-          description="Across active systems"
-          icon={Target}
           loading={systemLoading}
         />
         <MetricCard
@@ -545,44 +945,46 @@ export default function EcosystemOverview() {
                 <CardContent>
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {systemComparison.map((system, index) => (
-                      <Card key={`${system.systemName}-${index}`} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg capitalize">{system.systemName}</CardTitle>
-                            <Badge 
-                              variant={system.status === 'active' ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {system.status}
+                      <Link 
+                        key={`${system.systemName}-${index}`} 
+                        href={`/systems/${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
+                        data-testid={`link-system-${system.systemName.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-lg capitalize">{system.systemName}</CardTitle>
+                              <Badge 
+                                variant={system.status === 'active' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {system.status}
+                              </Badge>
+                            </div>
+                            <Badge variant="outline" className="w-fit text-xs">
+                              {system.source.toUpperCase()}
                             </Badge>
-                          </div>
-                          <Badge variant="outline" className="w-fit text-xs">
-                            {system.source.toUpperCase()}
-                          </Badge>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Total Funding:</span>
-                            <span className="text-sm font-medium">{formatCurrency(system.totalFunding)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Applications:</span>
-                            <span className="text-sm font-medium">{system.totalApplications}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Approval Rate:</span>
-                            <span className="text-sm font-medium">{system.approvalRate.toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Grant Rounds:</span>
-                            <span className="text-sm font-medium">{system.totalPools}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Avg per Project:</span>
-                            <span className="text-sm font-medium">{formatCurrency(system.averageFundingPerProject)}</span>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Total Funding:</span>
+                              <span className="text-sm font-medium">{formatCurrency(system.totalFunding)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Applications:</span>
+                              <span className="text-sm font-medium">{system.totalApplications}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Grant Rounds:</span>
+                              <span className="text-sm font-medium">{system.totalPools}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Avg per Project:</span>
+                              <span className="text-sm font-medium">{formatCurrency(system.averageFundingPerProject)}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 </CardContent>
@@ -602,8 +1004,14 @@ export default function EcosystemOverview() {
         </TabsContent>
 
         <TabsContent value="mechanisms" className="space-y-6">
-          {mechanismAnalysis && mechanismAnalysis.length > 0 ? (
-            <FundingMechanismChart data={mechanismAnalysis} />
+          {mechanismAnalysis && mechanismAnalysis.length > 0 && (
+            <FundingMechanismPieChart data={mechanismAnalysis} />
+          )}
+          {systemComparison && systemComparison.length > 0 ? (
+            <>
+              <CeloVsStellarBreakdownChart data={systemComparison} />
+              <SystemFundingDistributionChart data={systemComparison} />
+            </>
           ) : (
             <Card>
               <CardContent className="pt-6">

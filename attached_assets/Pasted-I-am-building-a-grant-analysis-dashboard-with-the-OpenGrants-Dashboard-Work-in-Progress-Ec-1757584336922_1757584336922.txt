@@ -1,0 +1,110 @@
+I am building a grant analysis dashboard with the # OpenGrants Dashboard (Work in Progress)
+
+## Ecosystem Overview (Page)
+
+- Total Ecosytem Funding
+- Total Applications Awarded
+- Active Grant systems
+- Average Approval rate (Experimental Stat)
+
+### Graphs
+
+**1. Funding Pattern**
+- Total funding distributed among the number of grant applications by different grant programs
+
+Example Preview:
+
+![image](https://hackmd.io/_uploads/Hkx59C1jxx.png)
+
+- Total funding distributed by quarterly trend
+
+Example Preview:
+![image](https://hackmd.io/_uploads/By_b2Rkjgg.png)
+
+- Distribution of funds categorized by funding mechanisms
+
+Example preview:
+![image](https://hackmd.io/_uploads/H1De6Akoex.png)
+
+
+
+## Grant System Profiles (Page)
+### Common for all profiles
+
+- Name 
+- Description
+- Active Since
+- Total Funds distributed
+- Total Applications Awarded
+- Average Approval rate (Experimental Stat)
+- Projects funded by round and time period
+
+
+### Giveth (Grant Manager)
+
+- Total number of Unique Donors 
+- Total Donations Count
+- Total Amount Donated 
+    - To Verfied
+    - To Endaoment
+- Donations per category
+- Recurring Donations Count
+- Active Projects Count 
+- Donatations breakdown tokenwise
+
+Amount normalised to USD, we can also support ETH
+
+
+### Stellar
+
+- Quarterly Projects Awarded
+- Quarterly Funding Distribution in USD, XLM 
+- Awarded Submissions by round
+- Awarded projects by category
+
+
+### Celo Public Goods 
+
+- Projects funded by geographic location
+- Projects funded by Category
+- Projects funded by round
+
+    #### Grant Data Pulled from Gitcoin
+    #### Grant Data pulled from Prezenti
+
+### Gitcoin
+
+#### Allo Protocol Histrocal data visualized 
+
+#### Project level stats:
+* Voters
+* Funded
+* Matching funding
+
+#### Inside a round:
+* Total funding
+* Total applications
+* Number of votes in a timeseries format
+* Breakdown of tokens used
+* Matching amounts
+
+**Asks:** 
+* Rank on leaderboard
+* Leaderboard of projects ranked by amount raised, matching amount, num voters
+* Leaderboard of donors
+* Economic graphs
+* Mechanism by mechanism breakdown of the above.
+* Round by round breakdown of the above.
+* Whole program roundup of the above.
+
+
+
+
+
+I have data available from various sources, 
+1. via API
+2. JSON files stored in Github
+3. Bigquery datalake,
+
+How can I efficiently and accurately compute the Stats and show it in the frontend, the data should be highly accurate and we should be able to show it clearly
+

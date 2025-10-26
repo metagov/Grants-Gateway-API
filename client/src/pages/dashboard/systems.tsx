@@ -1,97 +1,209 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { 
-  Building2, 
-  ExternalLink, 
-  TrendingUp, 
-  Users, 
+import {
+  Building2,
+  ExternalLink,
+  TrendingUp,
+  Users,
   DollarSign,
   Calendar,
   ArrowRight,
+<<<<<<< HEAD
+=======
   AlertTriangle,
   RefreshCw
+>>>>>>> main
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { dashboardApi, formatCurrency, getSystemColor } from "@/lib/dashboard-api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  dashboardApi,
+  formatCurrency,
+  getSystemColor,
+} from "@/lib/dashboard-api";
+
+// Helper function to get system ID from display name
+const getSystemId = (systemName: string): string => {
+  const nameToIdMap: Record<string, string> = {
+    octant: "octant",
+    giveth: "giveth",
+    "stellar community fund": "Stellar Community Fund",
+    "optimism retropgf": "optimism",
+    "arbitrum foundation": "arbitrumfoundation",
+    celopg: "celopg", // Updated to correct system ID
+    "celo public goods": "celopg", // Alternative name mapping
+    "celo-public-goods": "celopg", // URL-friendly mapping
+    "clr fund": "clrfund",
+    "dao drops": "dao-drops-dorgtech",
+    "octant (golem)": "octant-golemfoundation",
+  };
+
+  const normalizedName = systemName.toLowerCase();
+  return nameToIdMap[normalizedName] || normalizedName.replace(/\s+/g, "-");
+};
+
+// Helper function to format funding mechanism names
+const formatMechanismName = (mechanism: string): string => {
+  const mechanismMap: Record<string, string> = {
+    quadratic_funding: "Quadratic Funding",
+    direct_grants: "Direct Grants",
+    donations: "Donations",
+    retroactive_funding: "Retroactive Funding",
+    milestone_based: "Milestone Based",
+  };
+
+  return (
+    mechanismMap[mechanism] ||
+    mechanism
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ")
+  );
+};
 
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
+<<<<<<< HEAD
+=======
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
+>>>>>>> main
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
-      {system.addedDate && new Date(system.addedDate).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
-        <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">NEW</Badge>
+      {system.addedDate &&
+        new Date(system.addedDate).getTime() >
+          Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+          <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs">
+            NEW
+          </Badge>
+        )}
+      {system.status === "work_in_progress" && (
+        <Badge className="absolute -top-2 -left-2 bg-yellow-500 text-white text-xs">
+          WORK IN PROGRESS
+        </Badge>
       )}
-      <Link href={`/dashboard/systems/${system.name.toLowerCase()}`}>
+      <Link href={`/systems/${getSystemId(system.name)}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div 
+              <div
                 className="h-12 w-12 rounded-lg flex items-center justify-center relative"
                 style={{ backgroundColor: systemColor }}
               >
-                <Building2 className="h-6 w-6 text-white" />
-                {system.compatibility && (
-                  <div className={`absolute -bottom-1 -right-1 text-xs font-bold ${compatibilityColor} bg-white rounded-full px-1 border`}>
-                    {system.compatibility}%
-                  </div>
+                {system.id === "scf" ? (
+                  <img
+                    src="/attached_assets/stellar-logo.png"
+                    alt="Stellar"
+                    className="h-6 w-6"
+                  />
+                ) : system.id === "celopg" ? (
+                  <img
+                    src="/attached_assets/celo-logo.png"
+                    alt="Celo"
+                    className="h-6 w-6"
+                  />
+                ) : (
+                  <Building2 className="h-6 w-6 text-white" />
                 )}
               </div>
               <div>
-                <CardTitle className="text-lg group-hover:text-[#800020] transition-colors">
+                <CardTitle className="text-lg group-hover:text-primary transition-colors">
                   {system.name}
                 </CardTitle>
                 <CardDescription className="flex items-center space-x-2">
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs"
-                    style={{ borderColor: systemColor, color: systemColor }}
-                  >
-                    {system.source === 'opengrants' ? 'Type 1' : 'Type 2'}
-                  </Badge>
-                  {system.compatibility && (
-                    <span className="text-xs text-gray-500">
-                      DAOIP-5: {system.compatibility}%
-                    </span>
-                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-block">
+                          <Badge
+                            variant="outline"
+                            className="text-xs cursor-help"
+                            style={{
+                              borderColor: systemColor,
+                              color: systemColor,
+                            }}
+                          >
+                            {system.source === "opengrants"
+                              ? "Type 1"
+                              : "Type 2"}
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {system.source === "opengrants"
+                            ? "Type 1: Live API Integration"
+                            : "Type 2: DAOIP-5 Static Data"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </CardDescription>
               </div>
             </div>
-            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#800020] transition-colors" />
+            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-gray-500">Funding:</span>
-              <span className="ml-1 font-medium">{formatCurrency(system.totalFunding || 0)}</span>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Funding:</span>
+              <span className="font-medium block">
+                {formatCurrency(system.totalFunding || 0)}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Applications:</span>
-              <span className="ml-1 font-medium">{system.totalApplications || 0}</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Applications:</span>
+              <span className="font-medium block">
+                {system.totalApplications || 0}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Approval:</span>
-              <span className="ml-1 font-medium">{(system.approvalRate || 0).toFixed(1)}%</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Avg per Project:</span>
+              <span className="font-medium block">
+                {system.totalApplications && system.totalApplications > 0
+                  ? formatCurrency(
+                      (system.totalFunding || 0) / system.totalApplications,
+                    )
+                  : "--"}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Rounds:</span>
-              <span className="ml-1 font-medium">{system.totalPools || 0}</span>
+            <div className="space-y-1">
+              <span className="text-gray-500 block">Rounds:</span>
+              <span className="font-medium block">
+                {system.totalPools || 0}
+              </span>
             </div>
           </div>
 
           {system.fundingMechanisms && system.fundingMechanisms.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-1">
-                {system.fundingMechanisms.slice(0, 2).map((mechanism: string) => (
-                  <Badge key={mechanism} variant="secondary" className="text-xs">
-                    {mechanism}
-                  </Badge>
-                ))}
+                {system.fundingMechanisms
+                  .slice(0, 2)
+                  .map((mechanism: string) => (
+                    <Badge
+                      key={mechanism}
+                      variant="secondary"
+                      className="text-xs"
+                    >
+                      {formatMechanismName(mechanism)}
+                    </Badge>
+                  ))}
               </div>
             </div>
           )}
@@ -99,9 +211,9 @@ function SystemCard({ system }: { system: any }) {
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                {system.source === 'opengrants' ? 'Live API' : 'Static Data'}
+                {system.source === "opengrants" ? "Live API" : "Static Data"}
               </span>
-              <div className="flex items-center space-x-1 text-[#800020] text-sm font-medium group-hover:underline">
+              <div className="flex items-center space-x-1 text-primary text-sm font-medium group-hover:underline">
                 <span>View Details</span>
                 <ExternalLink className="h-3 w-3" />
               </div>
@@ -141,28 +253,58 @@ function SystemSkeleton() {
 }
 
 export default function GrantSystems() {
-  const { data: systems, isLoading, error } = useQuery({
-    queryKey: ['dashboard-all-systems'],
+  const {
+    data: systems,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dashboard-all-systems"],
     queryFn: dashboardApi.getAllSystems,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 15 * 60 * 1000, // 15 minutes - cached stats
+    gcTime: 30 * 60 * 1000, // 30 minutes in cache
+    refetchInterval: 15 * 60 * 1000, // Auto-refresh every 15 minutes
   });
 
-  const apiSystems = systems?.filter(s => s.source === 'opengrants') || [];
-  const staticSystems = systems?.filter(s => s.source === 'daoip5') || [];
+  const apiSystems =
+    systems?.filter(
+      (s) =>
+        s.source === "opengrants" &&
+        !["giveth", "octant"].includes(s.name.toLowerCase()),
+    ) || [];
+  const staticSystems = systems?.filter((s) => s.source === "daoip5") || [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Grant Systems</h1>
-        <p className="text-gray-600">
-          Automatically discovered and integrated grant systems with DAOIP-5 standardization
-        </p>
-        <div className="flex items-center space-x-2 text-sm text-green-600">
-          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>Auto-discovery active - new systems are added automatically</span>
-        </div>
       </div>
+<<<<<<< HEAD
+      {/* API Integrated Systems */}
+      {apiSystems.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-3 bg-green-500 rounded-full"></div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Type 1: Live API Integrations
+            </h2>
+            <Badge variant="secondary" className="text-xs">
+              Real-time data
+            </Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {apiSystems.map((system) => (
+              <SystemCard key={system.name} system={system} />
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Static Data Systems */}
+      {staticSystems.length > 0 && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {staticSystems.map((system) => (
+=======
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -208,16 +350,18 @@ export default function GrantSystems() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {systems.map((system) => (
+>>>>>>> main
               <SystemCard key={system.name} system={system} />
             ))}
           </div>
         </div>
       )}
-
       {/* Loading State */}
       {isLoading && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Loading Systems...</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Loading Systems...
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <SystemSkeleton key={i} />
@@ -225,27 +369,117 @@ export default function GrantSystems() {
           </div>
         </div>
       )}
-
       {/* Error State */}
       {error && (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
+<<<<<<< HEAD
+              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Unable to load systems
+              </h3>
+=======
               <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Error</h3>
+>>>>>>> main
               <p className="text-gray-600 mb-4">
                 Unable to connect to the grant systems API. The OpenGrants API server may be unavailable.
               </p>
+<<<<<<< HEAD
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+              >
+                Try Again
+=======
               <Button onClick={() => window.location.reload()} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
+>>>>>>> main
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
+<<<<<<< HEAD
+      {/* DAOIP-5 Value Proposition */}{" "}
+      {/*
+      <Card className="bg-gradient-to-r from-[#800020]/5 to-green-500/5 border-[#800020]/20">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Building2 className="h-5 w-5 text-[#800020] mr-2" />
+            DAOIP-5 Standardization Impact
+          </CardTitle>
+          <CardDescription>
+            How standardization enables automatic integration and comparison
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                Auto-Discovery
+              </h4>
+              <p className="text-sm text-gray-600">
+                New grant systems are automatically detected and added to the dashboard 
+                without manual configuration, thanks to DAOIP-5 compliance.
+              </p>
+              <div className="text-xs text-green-600 font-medium">
+                {systems?.filter(s => s.addedDate && new Date(s.addedDate).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000).length || 0} new systems this month
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-blue-500 rounded-full mr-2"></div>
+                Unified Analysis
+              </h4>
+              <p className="text-sm text-gray-600">
+                DAOIP-5 standardization enables meaningful comparison across diverse 
+                ecosystems with different funding mechanisms.
+              </p>
+              <div className="text-xs text-blue-600 font-medium">
+                {systems?.length || 0} systems comparable
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 flex items-center">
+                <div className="h-2 w-2 bg-purple-500 rounded-full mr-2"></div>
+                Compatibility Scoring
+              </h4>
+              <p className="text-sm text-gray-600">
+                Each system's DAOIP-5 compatibility is automatically assessed, 
+                ensuring data quality and integration reliability.
+              </p>
+              <div className="text-xs text-purple-600 font-medium">
+                Avg: {systems && systems.length > 0 ? Math.round(systems.reduce((sum, s) => sum + (s.compatibility || 0), 0) / systems.length) : 0}% compatible
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-start space-x-3">
+              <div className="h-8 w-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                ✓
+              </div>
+              <div>
+                <h5 className="font-medium text-gray-900">Proven Value</h5>
+                <p className="text-sm text-gray-600 mt-1">
+                  By standardizing grant data with DAOIP-5, we can automatically integrate 
+                  new ecosystems and enable cross-system analysis that was previously impossible. 
+                  This dashboard proves that diverse grant ecosystems become comparable and 
+                  analyzable when following a common standard.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>  */}
+=======
 
       
+>>>>>>> main
     </div>
   );
 }

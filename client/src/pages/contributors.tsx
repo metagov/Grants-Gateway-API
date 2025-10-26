@@ -26,7 +26,7 @@ export default function ContributorsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-4">Contributors & Supporters</h1>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-gray-600">
           Organizations and platforms powering the OpenGrants Gateway ecosystem.
         </p>
       </div>
@@ -40,7 +40,7 @@ export default function ContributorsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+          <p className="text-lg leading-relaxed text-gray-700">
             The OpenGrants Gateway API democratizes access to grant funding data across the Ethereum ecosystem. 
             By standardizing grant information through the DAOIP-5 specification, we enable developers, researchers, 
             and organizations to build innovative tools that strengthen public goods funding and enhance transparency 
@@ -54,30 +54,30 @@ export default function ContributorsPage() {
         <h2 className="text-xl sm:text-2xl font-bold mb-6">Active Integrations</h2>
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Octant */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200 dark:hover:border-green-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={octantLogo} alt="Octant" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Octant</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Ethereum public goods funding platform with quadratic funding mechanisms
             </p>
-            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
               <Circle className="h-3 w-3 mr-1 fill-green-500" />
               Type 1 Integration
             </Badge>
           </div>
 
           {/* Giveth */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200 dark:hover:border-green-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-green-200">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={givethLogo} alt="Giveth" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Giveth</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Donation platform for public goods and social impact projects
             </p>
-            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
               <Circle className="h-3 w-3 mr-1 fill-green-500" />
               Type 1 Integration
             </Badge>
@@ -90,30 +90,30 @@ export default function ContributorsPage() {
         <h2 className="text-2xl font-bold mb-6">Type 3 & Infrastructure Integrations</h2>
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Questbook */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-purple-200 dark:hover:border-purple-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-purple-200">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={questbookLogo} alt="Questbook" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Questbook</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Native DAOIP-5 endpoint for decentralized grants orchestration
             </p>
-            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800">
+            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 bg-purple-900/20 text-purple-300 border-purple-800">
               <Circle className="h-3 w-3 mr-1 fill-purple-500" />
               Type 3 Integration
             </Badge>
           </div>
 
           {/* KarmaGAP */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-amber-200 dark:hover:border-amber-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-amber-200 hover:border-amber-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={karmaGapLogo} alt="KARMA GAP" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">KARMA GAP</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Cross-platform project identification through unique UIDs
             </p>
-            <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+            <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 bg-amber-900/20 text-amber-300 border-amber-800">
               <Circle className="h-3 w-3 mr-1 fill-amber-500" />
               Project Identity Provider
             </Badge>
@@ -124,65 +124,65 @@ export default function ContributorsPage() {
       {/* Type 2: Data Integration Systems */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Type 2: Data Integration Systems</h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
+        <p className="text-gray-600 text-gray-300 mb-6">
           These platforms share grant data in CSV/JSON format, available as static files after data traslation according to  DAOIP-5 at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
         </p>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Stellar */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 hover:border-blue-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={stellarLogo} alt="Stellar" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Stellar</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Cross-border payments and financial inclusion platform
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
               <Circle className="h-3 w-3 mr-1 fill-blue-500" />
               Type 2 Data
             </Badge>
           </div>
 
           {/* Celo */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 hover:border-blue-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
-              <img src={celoLogo} alt="Celo" className="w-12 h-12" />
+              <img src={celoLogo} alt="CeloPG" className="w-12 h-12" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Celo</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <h3 className="text-lg font-semibold mb-2">CeloPG</h3>
+            <p className="text-sm text-gray-600 mb-3">
               Mobile-first blockchain platform focused on financial inclusion
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
               <Circle className="h-3 w-3 mr-1 fill-blue-500" />
               Type 2 Data
             </Badge>
           </div>
 
           {/* Optimism */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 hover:border-blue-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={optimismLogo} alt="Optimism" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Optimism</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Ethereum L2 with retroactive public goods funding
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
               <Circle className="h-3 w-3 mr-1 fill-blue-500" />
               Type 2 Data
             </Badge>
           </div>
 
           {/* Arbitrum */}
-          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-800">
+          <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-blue-200 hover:border-blue-800">
             <div className="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center border shadow-sm">
               <img src={arbitrumLogo} alt="Arbitrum" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Arbitrum</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Ethereum L2 optimistic rollup with ecosystem grants
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
               <Circle className="h-3 w-3 mr-1 fill-blue-500" />
               Type 2 Data  
             </Badge>
@@ -200,10 +200,10 @@ export default function ContributorsPage() {
               <img src={osoLogo} alt="Open Source Observer" className="w-12 h-12" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Enhanced OSO Integration</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Advanced data lake integration for deeper project impact insights and developer activity tracking
             </p>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300">
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 bg-gray-900/20 text-gray-300">
               <Clock className="h-3 w-3 mr-1" />
               Future Enhancement
             </Badge>
@@ -221,7 +221,7 @@ export default function ContributorsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <p className="text-gray-700 dark:text-gray-300">
+            <p className="text-gray-700 text-gray-300">
               OpenGrants Gateway is an open-source project that thrives on community contributions. 
               Whether you're a grant platform looking to integrate, a developer wanting to contribute code, 
               or an organization interested in supporting public goods infrastructure - there are many ways to get involved.
@@ -230,7 +230,7 @@ export default function ContributorsPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="font-semibold">For Grant Platforms</h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <ul className="text-sm text-gray-600 text-gray-300 space-y-1">
                   <li>• Integrate your platform with DAOIP-5 standard</li>
                   <li>• Increase discoverability of your grants</li>
                   <li>• Connect with the broader public goods ecosystem</li>
@@ -239,7 +239,7 @@ export default function ContributorsPage() {
               
               <div className="space-y-3">
                 <h4 className="font-semibold">For Developers</h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <ul className="text-sm text-gray-600 text-gray-300 space-y-1">
                   <li>• Build applications using standardized grant data</li>
                   <li>• Contribute to adapter development</li>
                   <li>• Help improve API documentation and tooling</li>

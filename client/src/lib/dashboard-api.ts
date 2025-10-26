@@ -48,150 +48,757 @@ export interface GrantApplication {
 export interface EcosystemStats {
   totalFunding: number;
   totalGrantRounds: number;
+  totalPools?: number;
   totalSystems: number;
   totalProjects: number;
   totalApplications: number;
   averageApprovalRate: number;
 }
 
-// OpenGrants API (for Octant, Giveth)
+// Accurate API client that uses server proxy to avoid CORS
+export const accurateApi = {
+  baseUrl: '/api/v1',
+
+  async getEcosystemStats(): Promise<EcosystemStats> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/ecosystem-stats`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching accurate ecosystem stats:', error);
+      throw error;
+    }
+  },
+
+  async getSystemMetrics(systemName: string, source: 'opengrants' | 'daoip5' = 'opengrants'): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/system/${systemName}?source=${source}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching metrics for ${systemName}:`, error);
+      throw error;
+    }
+  },
+
+  async getFundingTrends(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/funding-trends`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching funding trends:', error);
+      throw error;
+    }
+  }
+};
+
+// Legacy OpenGrants API (for backward compatibility)
 export const openGrantsApi = {
   baseUrl: 'https://grants.daostar.org/api/v1',
 
   async getSystems(): Promise<any[]> {
+    // Use server proxy to avoid CORS errors
     try {
-      const response = await fetch(`${this.baseUrl}/grantSystems`, {
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await fetch('/api/proxy/opengrants/grantSystems');
       if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const result = await response.json();
-      return result.data || result; // Handle both paginated and direct response
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field
+      const systems = responseData.data || responseData.grantSystems || responseData.systems || [];
+      console.log(`Fetched ${systems.length} systems from OpenGrants API`);
+      return systems;
     } catch (error) {
-      console.error('Failed to fetch systems from OpenGrants API:', error);
-      throw new Error('Unable to fetch grant systems. Please try again later.');
+      console.error('Error fetching systems via proxy:', error);
+      // Never return fallback data - return empty array on error
+      return [];
     }
   },
 
   async getPools(system?: string): Promise<any[]> {
     try {
-      const url = system ? `${this.baseUrl}/grantPools?system=${system}` : `${this.baseUrl}/grantPools`;
-      const response = await fetch(url, {
-        headers: { 'Accept': 'application/json' }
-      });
+      const url = system ? `/api/proxy/opengrants/grantPools?system=${system}` : '/api/proxy/opengrants/grantPools';
+      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const result = await response.json();
-      return result.data || result; // Handle both paginated and direct response
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantPools'
+      const pools = responseData.data || responseData.grantPools || [];
+      console.log(`Fetched ${pools.length} pools for ${system || 'all systems'}`);
+      return pools;
     } catch (error) {
-      console.error(`Failed to fetch pools for system ${system}:`, error);
-      throw new Error(`Unable to fetch grant pools for ${system || 'systems'}. Please try again later.`);
+      console.error('Error fetching pools via proxy:', error);
+      // Never return sample data - return empty array on error
+      return [];
     }
+  },
+  
+  getSamplePools(system?: string): any[] {
+    // No sample data - always return empty if real data fails
+    return [];
   },
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
     try {
-      let url = `${this.baseUrl}/grantApplications`;
+      let url = '/api/proxy/opengrants/grantApplications';
       const params = new URLSearchParams();
       if (system) params.append('system', system);
       if (poolId) params.append('poolId', poolId);
       if (params.toString()) url += `?${params.toString()}`;
-      
-      const response = await fetch(url, {
-        headers: { 'Accept': 'application/json' }
-      });
+
+      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const result = await response.json();
-      return result.data || result; // Handle both paginated and direct response
+      const responseData = await response.json();
+      // OpenGrants API returns data in 'data' field, not 'grantApplications'
+      const applications = responseData.data || responseData.grantApplications || [];
+      console.log(`Fetched ${applications.length} applications for ${system || 'all systems'}`);
+      return applications;
     } catch (error) {
-      console.error(`Failed to fetch applications for system ${system}:`, error);
-      throw new Error(`Unable to fetch grant applications for ${system || 'systems'}. Please try again later.`);
+      console.error(`Error fetching applications for ${system} via proxy:`, error);
+      // Never return sample data - return empty array on error
+      return [];
     }
+  },
+  
+  getSampleApplications(system?: string): any[] {
+    // No sample data - always return empty if real data fails
+    return [];
   }
 };
 
 // DAOIP5 Static API (for Stellar, Optimism, Arbitrum, etc.)
 // Using server-side proxy to handle CORS issues
 export const daoip5Api = {
-  baseUrl: '/api/proxy/daoip5',
+  baseUrl: 'https://daoip5.daostar.org',
+  cache: new Map<string, any>(),
+  
+  // Clear all cached data
+  clearCache() {
+    console.log('🗑️ Clearing DAOIP-5 cache');
+    this.cache.clear();
+  },
+
+  // Retry failed file fetch with exponential backoff
+  async retryFailedFile(system: string, fileName: string, maxRetries: number, baseDelay: number): Promise<any[]> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Retry attempt ${attempt}/${maxRetries} for ${fileName}`);
+        const response = await fetch(`/api/proxy/daoip5/${system}/${fileName}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ Retry successful for ${fileName} on attempt ${attempt}`);
+          
+          // Parse the applications from this file
+          const applications: any[] = [];
+          const grantPools = data.grantPools || [];
+          
+          for (const pool of grantPools) {
+            const poolApplications = (pool.applications || []).map((app: any) => {
+              // Apply same funding calculation logic
+              let fundsInUSD = 0;
+              if (app.fundsApprovedInUSD) {
+                fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+              } else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                for (const fund of app.fundsApproved) {
+                  if (fund.amount) {
+                    if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                      const xlmToUsd = 0.13;
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                    } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                      const celoToUsd = 0.65; // Approximate CELO to USD rate
+                      fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                    } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                      // cUSD is pegged to USD
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    } else {
+                      fundsInUSD += parseFloat(fund.amount) || 0;
+                    }
+                  }
+                }
+              }
+              
+              return {
+                id: app.id,
+                projectName: app.projectName || 'Unknown Project',
+                projectDescription: app.description,
+                system,
+                grantPoolId: app.grantPoolId,
+                status: system === 'scf' ? 'awarded' : (app.status || 'unknown'),
+                fundsApprovedInUSD: fundsInUSD,
+                createdAt: app.createdAt || new Date().toISOString(),
+                category: app.extensions?.['org.stellar.communityfund.category'] || '',
+                awardType: app.extensions?.['org.stellar.communityfund.awardType'] || '',
+                extensions: app.extensions || {}
+              };
+            });
+            
+            applications.push(...poolApplications);
+          }
+          
+          return applications;
+        }
+        
+        // If still failing, wait before next retry
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`⏳ Waiting ${delay}ms before retry ${attempt + 1}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (retryError) {
+        console.warn(`❌ Retry attempt ${attempt} failed for ${fileName}:`, retryError);
+        
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+    
+    console.error(`💥 All retry attempts failed for ${fileName}`);
+    return []; // Return empty array if all retries fail
+  },
 
   async getSystems(): Promise<string[]> {
+    return ['scf', 'optimism', 'arbitrumfoundation', 'celopg', 'clrfund', 'dao-drops-dorgtech'];
+  },
+
+  async fetchDaoip5Data(system: string): Promise<{ pools: any[], applications: any[] }> {
+    const cacheKey = `daoip5-${system}`;
+    const cached = this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     try {
-      const response = await fetch(this.baseUrl, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
+      // Map system ID to actual DAOIP-5 data path
+      const dataPathMap: Record<string, string> = {
+        'scf': 'stellar',
+        'celopg': 'celopg',
+        'optimism': 'optimism',
+        'arbitrumfoundation': 'arbitrumfoundation',
+        'clrfund': 'clrfund',
+        'dao-drops-dorgtech': 'dao-drops-dorgtech'
+      };
+      
+      const dataPath = dataPathMap[system] || system;
+      
+      // Step 1: Get list of files in the system directory
+      const systemFilesResponse = await fetch(`/api/proxy/daoip5/${dataPath}`);
+      if (!systemFilesResponse.ok) {
+        throw new Error(`Failed to fetch system files for ${system}`);
       }
-      return await response.json();
+      const systemFiles = await systemFilesResponse.json();
+
+      // Step 2: Fetch grants_pool.json for pool metadata
+      const poolsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/grants_pool.json`);
+      if (!poolsResponse.ok) {
+        throw new Error(`Failed to fetch grants_pool.json for ${system}`);
+      }
+      const poolsData = await poolsResponse.json();
+
+      const pools = (poolsData.grantPools || []).map((pool: any) => {
+        // Extract dates from Celo extensions if available
+        let closeDate = pool.closeDate;
+        if (pool.extensions && system === 'celopg') {
+          // Prioritize end dates from Celo extensions
+          closeDate = pool.extensions['celopg.donationsEndTime'] || 
+                     pool.extensions['celopg.applicationsEndTime'] || 
+                     pool.extensions['celopg.timestamp'] ||
+                     closeDate;
+        }
+        
+        // Calculate funding amount - prefer pool-level data, fall back to application sum later
+        let totalFunding = this.extractFundingAmount(pool.totalGrantPoolSize);
+        if (totalFunding === '0' || !totalFunding) {
+          // Pool doesn't have funding info, we'll calculate from applications later
+          totalFunding = '0';
+        }
+
+        return {
+          id: pool.id,
+          name: pool.name || pool.id.split(':').pop(), // Extract name from ID if not provided
+          system,
+          totalGrantPoolSizeUSD: totalFunding,
+          totalApplications: 0, // Will be calculated from applications
+          grantFundingMechanism: pool.grantFundingMechanism || 'Direct Grant',
+          isOpen: pool.isOpen !== undefined ? pool.isOpen : false,
+          closeDate: closeDate,
+          description: pool.description,
+          extensions: pool.extensions // Pass through extensions for frontend use
+        };
+      });
+
+      const applications: any[] = [];
+
+      // Step 3: Fetch application files (broader pattern matching for Celo compatibility)
+      const applicationFiles = systemFiles.filter((file: string) => {
+        return (
+          (file.includes('applications_uri') && file.endsWith('.json')) ||
+          (file === 'applications.json') ||
+          (file.includes('_applications.json') && file.endsWith('.json'))
+        );
+      });
+
+      for (const appFile of applicationFiles) {
+        try {
+          const appsResponse = await fetch(`/api/proxy/daoip5/${dataPath}/${appFile}`);
+          if (appsResponse.ok) {
+            const appsData = await appsResponse.json();
+            // Handle nested structure where applications are inside grantPools array
+            const grantPools = appsData.grantPools || [];
+            
+            for (const pool of grantPools) {
+              const poolApplications = (pool.applications || []).map((app: any) => {
+                // Calculate USD value from fundsApproved field
+                let fundsInUSD = 0;
+                
+                // First check if fundsApprovedInUSD is directly provided
+                if (app.fundsApprovedInUSD) {
+                  fundsInUSD = parseFloat(app.fundsApprovedInUSD) || 0;
+                }
+                // Otherwise calculate from fundsApproved array
+                else if (app.fundsApproved && Array.isArray(app.fundsApproved)) {
+                  for (const fund of app.fundsApproved) {
+                    if (fund.amount) {
+                      if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      } else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+                        const xlmToUsd = 0.13;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+                      } else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+                        const ethToUsd = 2500;
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+                      } else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+                        const celoToUsd = 0.65; // Approximate CELO to USD rate
+                        fundsInUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+                      } else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+                        // cUSD is pegged to USD
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      } else {
+                        fundsInUSD += parseFloat(fund.amount) || 0;
+                      }
+                    }
+                  }
+                }
+                
+                // For Stellar, all applications are "Awarded" since we only get awarded ones
+                const status = system === 'scf' ? 'awarded' : (app.status || 'unknown');
+                
+                // Extract additional metadata from extensions
+                const extensions = app.extensions || {};
+                const category = extensions['org.stellar.communityfund.category'] || '';
+                const awardType = extensions['org.stellar.communityfund.awardType'] || '';
+                const teamMembers = extensions['stellar.teamMembers'] || '';
+                const website = extensions['stellar.urls']?.website || '';
+                const successCriteria = extensions['stellar.successCriteria'] || '';
+                
+                // Smart date handling for Celo: use donation timestamps if createdAt is placeholder
+                let bestCreatedAt = app.createdAt;
+                if (system === 'celopg' && (
+                  !app.createdAt || 
+                  app.createdAt === "2024-01-01T00:00:00Z" || 
+                  app.createdAt.startsWith("2024-01-01")
+                )) {
+                  // Use the earliest donation timestamp as creation proxy
+                  const donations = extensions['celopg.donations'] || [];
+                  if (donations.length > 0) {
+                    const sortedDonations = donations.sort((a: any, b: any) => 
+                      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                    );
+                    bestCreatedAt = sortedDonations[0].timestamp;
+                  } else {
+                    // Fallback to a reasonable date for the round
+                    bestCreatedAt = new Date(2024, 9, 1).toISOString(); // Oct 1, 2024
+                  }
+                }
+
+                return {
+                  id: app.id,
+                  projectName: app.projectName || 'Unknown Project',
+                  projectDescription: app.description,
+                  system,
+                  grantPoolId: app.grantPoolId,
+                  status,
+                  fundsApprovedInUSD: fundsInUSD,
+                  createdAt: bestCreatedAt || new Date().toISOString(),
+                  // Additional metadata from extensions
+                  category,
+                  awardType,
+                  teamMembers,
+                  website,
+                  successCriteria,
+                  extensions // Keep all extensions for detailed view
+                };
+              });
+              
+              applications.push(...poolApplications);
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch applications from ${appFile}:`, error);
+          // For 500 errors, try retry logic with exponential backoff
+          if (error instanceof Error && error.message.includes('500')) {
+            console.log(`🔄 Attempting retry for ${appFile} due to 500 error`);
+            const retryApplications = await this.retryFailedFile(system, appFile, 2, 1000); // 2 retries, starting with 1s delay
+            if (retryApplications.length > 0) {
+              console.log(`✅ Successfully recovered ${retryApplications.length} applications from ${appFile} via retry`);
+              applications.push(...retryApplications);
+            } else {
+              console.error(`❌ Could not recover data from ${appFile} after retries - missing ${appFile.includes('35') ? 'SCF Round 35' : appFile} applications`);
+            }
+          }
+        }
+      }
+
+      // Update pool application counts and calculate funding from applications for pools with missing funding
+      const poolAppCounts = new Map<string, number>();
+      const poolFundingFromApps = new Map<string, number>();
+      
+      applications.forEach(app => {
+        poolAppCounts.set(app.grantPoolId, (poolAppCounts.get(app.grantPoolId) || 0) + 1);
+        // Accumulate funding for pools that need it calculated from applications
+        const currentFunding = poolFundingFromApps.get(app.grantPoolId) || 0;
+        poolFundingFromApps.set(app.grantPoolId, currentFunding + (app.fundsApprovedInUSD || 0));
+      });
+      
+      pools.forEach((pool: any) => {
+        pool.totalApplications = poolAppCounts.get(pool.id) || 0;
+        
+        // If pool has no funding data (0 or null), calculate from applications
+        if (pool.totalGrantPoolSizeUSD === '0' || !pool.totalGrantPoolSizeUSD) {
+          const fundingFromApps = poolFundingFromApps.get(pool.id) || 0;
+          if (fundingFromApps > 0) {
+            pool.totalGrantPoolSizeUSD = String(fundingFromApps);
+            console.log(`💰 Updated ${pool.name} funding from applications: $${fundingFromApps}`);
+          }
+        }
+      });
+
+      const result = { pools, applications };
+      // Cache the results for 5 minutes
+      this.cache.set(cacheKey, result);
+      setTimeout(() => this.cache.delete(cacheKey), 5 * 60 * 1000);
+
+      return result;
     } catch (error) {
-      console.error('Failed to fetch DAOIP5 systems:', error);
-      throw new Error('Unable to fetch DAOIP5 systems. Please try again later.');
+      console.error(`Error fetching DAOIP-5 data for ${system}:`, error instanceof Error ? error.message : String(error));
+      // Log full error for debugging
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
+      // Fallback to empty data instead of throwing
+      return { pools: [], applications: [] };
     }
   },
 
-  async getSystemPools(system: string): Promise<string[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/${system}`, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
+  extractFundingAmount(totalGrantPoolSize: any): string {
+    if (!totalGrantPoolSize) return '0';
+    
+    // Handle array of funding objects (DAOIP-5 format)
+    if (Array.isArray(totalGrantPoolSize) && totalGrantPoolSize.length > 0) {
+      let totalUSD = 0;
+      for (const fund of totalGrantPoolSize) {
+        if (fund.amount) {
+          // For USD, use directly
+          if (fund.denomination === 'USD' || fund.denomination?.toLowerCase() === 'usd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+          // For XLM (Stellar), use conversion rate
+          else if (fund.denomination === 'XLM' || fund.denomination?.toLowerCase() === 'xlm') {
+            const xlmToUsd = 0.13; // Approximate XLM to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * xlmToUsd;
+          }
+          // For ETH, use conversion rate
+          else if (fund.denomination === 'ETH' || fund.denomination?.toLowerCase() === 'eth') {
+            const ethToUsd = 2500; // Approximate ETH to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * ethToUsd;
+          }
+          // For CELO, use conversion rate
+          else if (fund.denomination === 'CELO' || fund.denomination?.toLowerCase() === 'celo') {
+            const celoToUsd = 0.65; // Approximate CELO to USD rate
+            totalUSD += (parseFloat(fund.amount) || 0) * celoToUsd;
+          }
+          // For cUSD (Celo USD), use 1:1 rate
+          else if (fund.denomination === 'cUSD' || fund.denomination?.toLowerCase() === 'cusd') {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+          // For other denominations, try to use amount as-is
+          else {
+            totalUSD += parseFloat(fund.amount) || 0;
+          }
+        }
       }
-      return await response.json();
+      return String(totalUSD);
+    }
+    
+    // Handle single funding object
+    if (typeof totalGrantPoolSize === 'object' && totalGrantPoolSize.amount) {
+      if (totalGrantPoolSize.denomination === 'USD' || totalGrantPoolSize.denomination?.toLowerCase() === 'usd') {
+        return String(totalGrantPoolSize.amount || 0);
+      }
+      if (totalGrantPoolSize.denomination === 'XLM' || totalGrantPoolSize.denomination?.toLowerCase() === 'xlm') {
+        const xlmToUsd = 0.13;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * xlmToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'ETH' || totalGrantPoolSize.denomination?.toLowerCase() === 'eth') {
+        const ethToUsd = 2500;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * ethToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'CELO' || totalGrantPoolSize.denomination?.toLowerCase() === 'celo') {
+        const celoToUsd = 0.65;
+        return String((parseFloat(totalGrantPoolSize.amount) || 0) * celoToUsd);
+      }
+      if (totalGrantPoolSize.denomination === 'cUSD' || totalGrantPoolSize.denomination?.toLowerCase() === 'cusd') {
+        return String(parseFloat(totalGrantPoolSize.amount) || 0);
+      }
+      return String(totalGrantPoolSize.amount || 0);
+    }
+    
+    return String(totalGrantPoolSize || 0);
+  },
+
+  async getSystemPools(system: string): Promise<any[]> {
+    try {
+      const { pools } = await this.fetchDaoip5Data(system);
+      return pools;
     } catch (error) {
-      console.error(`Failed to fetch pools for ${system}:`, error);
-      throw new Error(`Unable to fetch pools for ${system}. Please try again later.`);
+      console.error(`Error fetching pools for ${system}:`, error);
+      return [];
     }
   },
 
-  async getPoolData(system: string, filename: string): Promise<any> {
+  async getSystemApplications(system: string): Promise<any[]> {
     try {
-      // Remove .json extension if present, the proxy handles it
-      const cleanFilename = filename.replace('.json', '');
-      const response = await fetch(`${this.baseUrl}/${system}/${cleanFilename}`, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
-      }
-      return await response.json();
+      const { applications } = await this.fetchDaoip5Data(system);
+      return applications;
     } catch (error) {
-      console.error(`Failed to fetch pool data for ${system}/${filename}:`, error);
-      throw new Error(`Unable to fetch pool data for ${system}. Please try again later.`);
+      console.error(`Error fetching applications for ${system}:`, error);
+      return [];
     }
   },
 
   async searchApplications(projectName?: string): Promise<any> {
-    try {
-      // Note: Search endpoint not yet implemented in proxy
-      const url = projectName ? `/search/${encodeURIComponent(projectName)}` : '/search/';
-      const response = await fetch(url, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to search applications:', error);
-      throw new Error('Unable to search applications. Please try again later.');
-    }
+    // For now, return empty results as this would require searching across all systems
+    return { results: [] };
   }
+};
+
+// Systematic fetching function that fetches pools first, then applications per pool
+async function fetchSystemDataSystematically(systemId: string, source: string): Promise<{
+  pools: any[];
+  applications: any[];
+  totalFunding: number;
+}> {
+  console.log(`Starting systematic fetch for ${systemId} (${source})`);
+  
+  const poolsById = new Map<string, any>();
+  const appsByPoolId = new Map<string, any[]>();
+  let totalFunding = 0;
+  
+  try {
+    // Step 1: Fetch all pools first
+    if (source === 'opengrants') {
+      const [pools, applications] = await Promise.all([
+        openGrantsApi.getPools(systemId),
+        openGrantsApi.getApplications(systemId)
+      ]);
+      
+      console.log(`Fetched ${pools.length} pools and ${applications.length} applications for ${systemId}`);
+      
+      // Build pool map
+      pools.forEach(pool => {
+        poolsById.set(pool.id, {
+          ...pool,
+          totalApplications: 0,
+          totalFunding: 0
+        });
+      });
+      
+      // Group applications by pool
+      applications.forEach((app: any) => {
+        const poolId = app.grantPoolId || app.poolId || 'unknown';
+        
+        if (!appsByPoolId.has(poolId)) {
+          appsByPoolId.set(poolId, []);
+        }
+        
+        const normalizedApp = {
+          ...app,
+          grantPoolId: poolId,
+          fundsApprovedInUSD: typeof app.fundsApprovedInUSD === 'number' 
+            ? app.fundsApprovedInUSD 
+            : parseFloat(app.fundsApprovedInUSD || '0')
+        };
+        
+        appsByPoolId.get(poolId)!.push(normalizedApp);
+        
+        // Update pool stats
+        const pool = poolsById.get(poolId);
+        if (pool) {
+          pool.totalApplications = (pool.totalApplications || 0) + 1;
+          pool.totalFunding = (pool.totalFunding || 0) + normalizedApp.fundsApprovedInUSD;
+        }
+      });
+    } else if (source === 'daoip5') {
+      // For DAOIP-5: fetch pools and applications together
+      const { pools, applications } = await daoip5Api.fetchDaoip5Data(systemId);
+      console.log(`DAOIP-5 fetch for ${systemId}: ${pools.length} pools, ${applications.length} applications`);
+      
+      // Build maps
+      pools.forEach(pool => {
+        poolsById.set(pool.id, {
+          ...pool,
+          totalApplications: 0,
+          totalFunding: 0
+        });
+      });
+      
+      // Group applications by pool
+      applications.forEach(app => {
+        const poolId = app.grantPoolId || 'unknown';
+        if (!appsByPoolId.has(poolId)) {
+          appsByPoolId.set(poolId, []);
+        }
+        appsByPoolId.get(poolId)!.push(app);
+        
+        // Update pool stats
+        const pool = poolsById.get(poolId);
+        if (pool) {
+          pool.totalApplications = (pool.totalApplications || 0) + 1;
+          pool.totalFunding = (pool.totalFunding || 0) + (app.fundsApprovedInUSD || 0);
+        }
+      });
+    }
+    
+    // Calculate total funding
+    const allApplications = Array.from(appsByPoolId.values()).flat();
+    totalFunding = allApplications.reduce((sum, app) => 
+      sum + (typeof app.fundsApprovedInUSD === 'number' ? 
+        app.fundsApprovedInUSD : parseFloat(app.fundsApprovedInUSD || '0')), 0);
+    
+    console.log(`System ${systemId} totals: ${poolsById.size} pools, ${allApplications.length} applications, $${totalFunding.toFixed(2)} funding`);
+    
+    return {
+      pools: Array.from(poolsById.values()),
+      applications: allApplications,
+      totalFunding
+    };
+  } catch (error) {
+    console.error(`Error in systematic fetch for ${systemId}:`, error);
+    return { pools: [], applications: [], totalFunding: 0 };
+  }
+}
+
+// Global cache invalidation function
+export const invalidateAllCaches = async () => {
+  console.log('🔄 Invalidating all caches and forcing data refresh');
+  
+  // Clear DAOIP-5 cache
+  daoip5Api.clearCache();
+  
+  // Clear analytics data service cache
+  const { analyticsDataService } = await import('./analytics-data-service');
+  analyticsDataService.clearCache();
+  
+  // Clear React Query cache
+  queryClient.clear();
+  
+  console.log('✅ All caches cleared successfully');
 };
 
 // Combined data fetching with caching
 export const dashboardApi = {
-  // Get all grant systems from both APIs with comprehensive data
+  // Get all grant systems using centralized configuration
   async getAllSystems(): Promise<GrantSystem[]> {
     const cacheKey = 'dashboard-all-systems';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as GrantSystem[];
 
+    try {
+      // Fetch systems configuration from server
+      const configResponse = await fetch('/api/v1/systems/config');
+      if (!configResponse.ok) {
+        throw new Error('Failed to fetch systems configuration');
+      }
+      
+      const systemsConfig = await configResponse.json();
+      const activeSystems = (systemsConfig.activeSystems || []).filter((system: any) => system.enabled);
+
+      console.log(`📊 Loading ${activeSystems.length} configured active systems`);
+
+      // Get comprehensive stats for each configured system
+      const systemsWithStats = await Promise.allSettled(
+        activeSystems.map(async (systemConfig: any) => {
+          try {
+            // Use the systematic fetching approach with config data
+            const { pools, applications, totalFunding } = await fetchSystemDataSystematically(
+              systemConfig.id, 
+              systemConfig.source
+            );
+            
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate: undefined, // Coming soon
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          } catch (error) {
+            console.error(`Error fetching data for ${systemConfig.name}:`, error);
+            return {
+              name: systemConfig.displayName || systemConfig.name,
+              type: systemConfig.type,
+              source: systemConfig.source,
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: undefined,
+              compatibility: systemConfig.metadata.compatibility,
+              fundingMechanisms: systemConfig.metadata.fundingMechanisms,
+              description: systemConfig.metadata.description,
+              addedDate: systemConfig.metadata.established
+            };
+          }
+        })
+      );
+
+      const validSystems = systemsWithStats
+        .filter(result => result.status === 'fulfilled')
+        .map(result => (result as PromiseFulfilledResult<any>).value);
+
+      console.log(`✅ Successfully loaded ${validSystems.length} systems from configuration`);
+
+      queryClient.setQueryData([cacheKey], validSystems);
+      return validSystems;
+    } catch (error) {
+      console.error('Error fetching configured systems:', error);
+      
+      // Fallback to existing logic if configuration service fails
+      console.warn('⚠️ Falling back to legacy system discovery');
+      return this.getAllSystemsLegacy();
+    }
+  },
+
+  // Legacy method as fallback
+  async getAllSystemsLegacy(): Promise<GrantSystem[]> {
     // Auto-discover new sources dynamically
     await dataSourceRegistry.autoDiscover();
 
@@ -199,110 +806,47 @@ export const dashboardApi = {
       // Get all registered data sources from the registry
       const allSources = dataSourceRegistry.getActiveSources();
       
-      // Separate by source type for appropriate API handling
-      const openGrantsSources = allSources.filter(s => s.source === 'opengrants');
-      const daoip5Sources = allSources.filter(s => s.source === 'daoip5');
-      const customSources = allSources.filter(s => s.source === 'custom');
+      // Focus on only the 3 requested systems: Giveth, Octant, and Stellar
+      const requestedSources = allSources.filter(s => 
+        s.id === 'octant' || s.id === 'giveth' || s.id === 'scf'
+      );
 
       // Get comprehensive stats for each registered system dynamically
       const systemsWithStats = await Promise.allSettled([
-        ...openGrantsSources.map(async (source) => {
-          // For now, return system info with fallback data to avoid API failures
-          // TODO: Re-enable API calls once CORS is resolved
-          const hasRealData = source.id === 'octant' || source.id === 'giveth';
-          
-          if (hasRealData) {
-            // Use fallback data for main systems to ensure dashboard works
-            const fallbackData = source.id === 'octant' 
-              ? { totalFunding: 887437, totalApplications: 81, totalPools: 3 }
-              : { totalFunding: 1650000, totalApplications: 317, totalPools: 3 };
-              
+        ...requestedSources.map(async (source) => {
+          try {
+            // Use the new systematic fetching approach
+            const { pools, applications, totalFunding } = await fetchSystemDataSystematically(source.id, source.source);
+            
             return {
               name: source.name,
               type: source.type,
               source: source.source,
-              totalFunding: fallbackData.totalFunding,
-              totalApplications: fallbackData.totalApplications,
-              totalPools: fallbackData.totalPools,
-              approvalRate: 100, // Both systems have high approval rates
+              totalFunding,
+              totalApplications: applications.length,
+              totalPools: pools.length,
+              approvalRate: undefined, // Coming soon
+              compatibility: source.standardization.compatibility,
+              fundingMechanisms: source.features.fundingMechanism,
+              description: source.description,
+              addedDate: source.metadata.addedDate
+            };
+          } catch (error) {
+            console.error(`Error fetching data for ${source.name}:`, error);
+            return {
+              name: source.name,
+              type: source.type,
+              source: source.source,
+              totalFunding: 0,
+              totalApplications: 0,
+              totalPools: 0,
+              approvalRate: undefined, // Coming soon
               compatibility: source.standardization.compatibility,
               fundingMechanisms: source.features.fundingMechanism,
               description: source.description,
               addedDate: source.metadata.addedDate
             };
           }
-
-          return {
-            name: source.name,
-            type: source.type,
-            source: source.source,
-            totalFunding: 0,
-            totalApplications: 0,
-            totalPools: 0,
-            approvalRate: 0,
-            compatibility: source.standardization.compatibility,
-            fundingMechanisms: source.features.fundingMechanism,
-            description: source.description,
-            addedDate: source.metadata.addedDate
-          };
-        }),
-        ...daoip5Sources.map(async (source) => {
-          // Use conservative approach to avoid rate limits and ensure systems appear
-          console.log(`Loading data for ${source.name} with rate limit consideration`);
-          
-          // Try to get real calculated data from iterative cache service
-          let data = { totalFunding: 0, totalApplications: 0, totalPools: 0, approvalRate: 0 };
-          
-          try {
-            const { iterativeCacheService } = await import('./iterative-cache-service');
-            const cachedData = await iterativeCacheService.getSystemData(source.id);
-            
-            if (cachedData) {
-              data = {
-                totalFunding: cachedData.totalFunding,
-                totalApplications: cachedData.totalApplications,
-                totalPools: cachedData.totalPools,
-                approvalRate: cachedData.approvalRate
-              };
-              console.log(`✅ Using cached calculated data for ${source.id}:`, data);
-            } else {
-              // Fallback to estimated data while iterative fetch is in progress
-              const fallbackData: Record<string, any> = {
-                'stellar': { totalFunding: 46180000, totalApplications: 2939, totalPools: 39, approvalRate: 23.7 },
-                'optimism': { totalFunding: 30000000, totalApplications: 850, totalPools: 9, approvalRate: 45 },
-                'arbitrumfoundation': { totalFunding: 18000000, totalApplications: 320, totalPools: 4, approvalRate: 55 },
-                'celo-org': { totalFunding: 8500000, totalApplications: 280, totalPools: 6, approvalRate: 70 },
-                'clrfund': { totalFunding: 1200000, totalApplications: 120, totalPools: 10, approvalRate: 85 },
-                'dao-drops-dorgtech': { totalFunding: 850000, totalApplications: 65, totalPools: 2, approvalRate: 75 }
-              };
-              
-              data = fallbackData[source.id] || { 
-                totalFunding: 500000, 
-                totalApplications: 50, 
-                totalPools: 3,
-                approvalRate: 60 
-              };
-              console.log(`⏳ Using fallback data for ${source.id} while fetching...`);
-            }
-          } catch (error) {
-            console.error('Error accessing iterative cache service:', error);
-            // Use fallback data
-            data = { totalFunding: 500000, totalApplications: 50, totalPools: 3, approvalRate: 60 };
-          }
-
-          return {
-            name: source.name,
-            type: source.type,
-            source: source.source,
-            totalFunding: data.totalFunding,
-            totalApplications: data.totalApplications,
-            totalPools: data.totalPools,
-            approvalRate: data.approvalRate,
-            compatibility: source.standardization.compatibility,
-            fundingMechanisms: source.features.fundingMechanism,
-            description: source.description,
-            addedDate: source.metadata.addedDate
-          };
         })
       ]);
 
@@ -310,7 +854,6 @@ export const dashboardApi = {
         .filter(result => result.status === 'fulfilled')
         .map(result => (result as PromiseFulfilledResult<any>).value);
 
-      queryClient.setQueryData([cacheKey], validSystems);
       return validSystems;
     } catch (error) {
       console.error('Error fetching systems:', error);
@@ -318,47 +861,57 @@ export const dashboardApi = {
     }
   },
 
-  // Get comprehensive ecosystem-wide statistics
+  // Get comprehensive ecosystem-wide statistics using accurate data
   async getEcosystemStats(): Promise<EcosystemStats> {
-    const cacheKey = 'dashboard-ecosystem-stats';
+    const cacheKey = 'dashboard-ecosystem-stats-accurate';
     const cached = queryClient.getQueryData([cacheKey]);
     if (cached) return cached as EcosystemStats;
 
     try {
-      const systems = await this.getAllSystems();
-      
-      const stats: EcosystemStats = {
-        totalFunding: systems.reduce((sum, system) => sum + (system.totalFunding || 0), 0),
-        totalGrantRounds: systems.reduce((sum, system) => sum + (system.totalPools || 0), 0),
-        totalSystems: systems.length,
-        totalProjects: 0, // Will be calculated from unique project IDs
-        totalApplications: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
-        averageApprovalRate: systems.length > 0 ? 
-          systems.reduce((sum, system) => sum + (system.approvalRate || 0), 0) / systems.length : 0
+      // Use the new accurate API endpoint
+      const stats = await accurateApi.getEcosystemStats();
+
+      // Transform to match expected interface
+      const ecosystemStats: EcosystemStats = {
+        totalFunding: stats.totalFunding,
+        totalGrantRounds: stats.totalGrantRounds || stats.totalPools || 0,
+        totalSystems: stats.totalSystems,
+        totalProjects: stats.totalApplications, // Each application represents a project
+        totalApplications: stats.totalApplications,
+        averageApprovalRate: stats.averageApprovalRate
       };
 
-      // Get unique project count with fallback data
-      try {
-        const openGrantsApps = await openGrantsApi.getApplications();
-        const uniqueProjects = new Set(openGrantsApps.map(app => app.projectId || app.projectName));
-        stats.totalProjects = uniqueProjects.size || 50; // Fallback to estimated count
-      } catch (error) {
-        console.warn('Using estimated project count');
-        stats.totalProjects = 50; // Estimated from sample data
-      }
-
-      queryClient.setQueryData([cacheKey], stats);
-      return stats;
+      queryClient.setQueryData([cacheKey], ecosystemStats);
+      return ecosystemStats;
     } catch (error) {
-      console.error('Error fetching ecosystem stats:', error);
-      return {
-        totalFunding: 0,
-        totalGrantRounds: 0,
-        totalSystems: 0,
-        totalProjects: 0,
-        totalApplications: 0,
-        averageApprovalRate: 0
-      };
+      console.error('Error fetching accurate ecosystem stats:', error);
+
+      // Fallback to legacy method only if accurate API fails
+      try {
+        const systems = await this.getAllSystems();
+
+        const fallbackStats: EcosystemStats = {
+          totalFunding: systems.reduce((sum, system) => sum + (system.totalFunding || 0), 0),
+          totalGrantRounds: systems.reduce((sum, system) => sum + (system.totalPools || 0), 0),
+          totalSystems: systems.length,
+          totalProjects: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
+          totalApplications: systems.reduce((sum, system) => sum + (system.totalApplications || 0), 0),
+          averageApprovalRate: systems.length > 0 ?
+            systems.reduce((sum, system) => sum + (system.approvalRate || 0), 0) / systems.length : 0
+        };
+
+        return fallbackStats;
+      } catch (fallbackError) {
+        console.error('Fallback ecosystem stats also failed:', fallbackError);
+        return {
+          totalFunding: 0,
+          totalGrantRounds: 0,
+          totalSystems: 0,
+          totalProjects: 0,
+          totalApplications: 0,
+          averageApprovalRate: 0
+        };
+      }
     }
   },
 
@@ -368,7 +921,7 @@ export const dashboardApi = {
     applications: GrantApplication[];
     stats: {
       totalApplications: number;
-      approvalRate: number;
+      approvalRate?: number;
       totalFunding: number;
     };
   }> {
@@ -404,64 +957,18 @@ export const dashboardApi = {
     const systemId = systemIdMap[systemName.toLowerCase()] || systemName.toLowerCase();
 
     try {
-      let pools: GrantPool[] = [];
-      let applications: GrantApplication[] = [];
-
-      // Check if it's an OpenGrants system (octant, giveth)
-      if (['octant', 'giveth'].includes(systemId.toLowerCase())) {
-        try {
-          [pools, applications] = await Promise.all([
-            openGrantsApi.getPools(systemId),
-            openGrantsApi.getApplications(systemId)
-          ]);
-        } catch (error) {
-          console.error(`Failed to fetch OpenGrants data for ${systemName}:`, error);
-          pools = [];
-          applications = [];
-        }
-      } else {
-        // Handle DAOIP5 systems (stellar, optimism, arbitrum, etc.)
-        try {
-          const poolFiles = await daoip5Api.getSystemPools(systemId);
-          const poolDataPromises = poolFiles.map(async (file) => {
-            const filename = file.replace('.json', '');
-            return await daoip5Api.getPoolData(systemId, filename);
-          });
-          
-          const poolData = (await Promise.all(poolDataPromises)).filter(data => data !== null);
-          
-          // For DAOIP5, pool data can be either GrantPool objects or application arrays
-          pools = poolData.filter(data => data && data.type === 'GrantPool');
-          applications = poolData.flatMap(data => {
-            if (Array.isArray(data)) {
-              return data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            if (data && data.data && Array.isArray(data.data)) {
-              return data.data.filter((item: any) => item.type === 'GrantApplication');
-            }
-            return [];
-          });
-        } catch (error) {
-          console.error(`Error fetching DAOIP5 data for ${systemName}:`, error);
-        }
-      }
-
-      // Calculate stats
-      const approvedApps = applications.filter(app => 
-        app.status === 'funded' || app.status === 'approved'
-      ).length;
-
-      const totalFunding = applications.reduce((sum, app) => {
-        const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
-        return sum + fundingUSD;
-      }, 0);
+      // Use the systematic fetching approach for all systems
+      const systemSource = ['octant', 'giveth'].includes(systemName.toLowerCase()) ? 'opengrants' : 'daoip5';
+      const { pools, applications, totalFunding } = await fetchSystemDataSystematically(systemName, systemSource);
+      
+      console.log(`System details for ${systemName}: ${pools.length} pools, ${applications.length} applications, $${totalFunding} funding`);
 
       const result = {
         pools,
         applications,
         stats: {
           totalApplications: applications.length,
-          approvalRate: applications.length > 0 ? (approvedApps / applications.length) * 100 : 0,
+          approvalRate: undefined, // Coming soon - don't calculate
           totalFunding
         }
       };
@@ -476,7 +983,7 @@ export const dashboardApi = {
         applications: [],
         stats: {
           totalApplications: 0,
-          approvalRate: 0,
+          approvalRate: undefined, // Coming soon
           totalFunding: 0
         }
       };
@@ -531,27 +1038,29 @@ export const dashboardApi = {
   }
 };
 
-// Utility function to format currency
+// Utility function to format currency with 3 decimal places accuracy
 export const formatCurrency = (amount: number): string => {
   if (amount >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
+    return `$${(amount / 1000000).toFixed(3)}M`;
   } else if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(1)}K`;
+    return `$${(amount / 1000).toFixed(3)}K`;
   } else {
-    return `$${amount.toFixed(0)}`;
+    return `$${amount.toFixed(3)}`;
   }
 };
 
-// Utility function to get system color
+// Utility function to get system color using brand palette
 export const getSystemColor = (systemName: string): string => {
   const colors: Record<string, string> = {
-    octant: '#10B981', // green
-    giveth: '#8B5CF6', // purple
-    stellar: '#0EA5E9', // blue
-    optimism: '#EF4444', // red
-    arbitrum: '#06B6D4', // cyan
-    celo: '#F59E0B', // amber
-    default: '#800020' // maroon
+    octant: '#8B9A46', // olive green (brand color)
+    giveth: '#2A0055', // deep purple (brand color)
+    scf: '#006E7F', // teal (brand color)
+    optimism: '#800020', // maroon (brand primary)
+    arbitrum: '#006E7F', // teal (brand color)
+    celo: '#8B9A46', // olive green (brand color)
+    'celo-org': '#8B9A46', // olive green (brand color)
+    'celopg': '#8B9A46', // olive green (brand color)
+    default: '#800020' // maroon (brand primary)
   };
   
   return colors[systemName.toLowerCase()] || colors.default;

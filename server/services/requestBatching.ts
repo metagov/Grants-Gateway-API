@@ -60,7 +60,7 @@ class RequestBatcher<T> extends EventEmitter {
     const requestsToProcess: BatchRequest<T>[] = [];
     
     // Collect all pending requests
-    for (const key of this.batchQueue.keys()) {
+    for (const key of Array.from(this.batchQueue.keys())) {
       if (!this.processingKeys.has(key)) {
         const requests = this.batchQueue.get(key)!;
         keysToProcess.push(key);

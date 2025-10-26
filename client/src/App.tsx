@@ -24,6 +24,14 @@ import MobileToast from "@/components/mobile-toast";
 function Router() {
   return (
     <Switch>
+<<<<<<< HEAD
+      {/* Dashboard Routes - Now at Root */}
+      <Route path="/" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
+      <Route path="/systems" component={() => <DashboardLayout><GrantSystems /></DashboardLayout>} />
+      <Route path="/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
+      <Route path="/search" component={() => <DashboardLayout><SearchAndFilter /></DashboardLayout>} />
+      <Route path="/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
+=======
       {/* Main API Documentation Routes */}
       <Route path="/" component={() => <Layout><OverviewPage /></Layout>} />
       <Route path="/query-builder" component={() => <Layout><QueryBuilderPage /></Layout>} />
@@ -32,13 +40,14 @@ function Router() {
       <Route path="/admin" component={() => <Layout><AdminDashboard /></Layout>} />
       <Route path="/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
       <Route path="/health" component={() => <Layout><HealthPage /></Layout>} />
+>>>>>>> main
       
-      {/* Dashboard Routes */}
-      <Route path="/dashboard" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
-      <Route path="/dashboard/systems" component={() => <DashboardLayout><GrantSystems /></DashboardLayout>} />
-      <Route path="/dashboard/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
-      <Route path="/dashboard/search" component={() => <DashboardLayout><SearchAndFilter /></DashboardLayout>} />
-      <Route path="/dashboard/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
+      {/* API Documentation Routes - Now under /dev */}
+      <Route path="/dev" component={() => <Layout><OverviewPage /></Layout>} />
+      <Route path="/dev/query-builder" component={() => <Layout><QueryBuilderPage /></Layout>} />
+      <Route path="/dev/endpoints" component={() => <Layout><EndpointsPage /></Layout>} />
+      <Route path="/dev/contributors" component={() => <Layout><ContributorsPage /></Layout>} />
+      <Route path="/dev/health" component={HealthPage} />
       
       {/* Catch all */}
       <Route component={NotFound} />

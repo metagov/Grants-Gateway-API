@@ -1,0 +1,113 @@
+{
+  "system": "Octant",
+  "adapterType": "Custom Adapter",
+  "adapterClass": "OctantAdapter",
+  "apiEndpoint": "https://backend.mainnet.octant.app",
+  "lastUpdated": "2025-09-22",
+  "mappings": {
+    "systems": {
+      "daoip5_standard_fields": {
+        "@context": "http://www.daostar.org/schemas",
+        "name": "Octant",
+        "type": "DAO",
+        "grantPoolsURI": "/api/v1/grantPools?system=octant"
+      },
+      "extensions": {
+        "app.octant.systemMetadata": {
+          "platform": "octant",
+          "description": "Quadratic funding for Ethereum public goods through ETH staking proceeds",
+          "website": "https://octant.app",
+          "apiEndpoint": "baseUrl",
+          "supportedNetworks": ["ethereum"],
+          "fundingMechanisms": ["quadratic_funding"],
+          "established": "2023",
+          "epochDuration": "90_days",
+          "fundingSource": "eth_staking_proceeds"
+        }
+      }
+    },
+    "pools": {
+      "native_to_daoip5": {
+        "epoch": "id (formatted as daoip5:octant:grantPool:{epoch})",
+        "epochInfo.matchedRewards || epochInfo.totalGrantPoolSize": "totalGrantPoolSize.amount",
+        "ETH": "totalGrantPoolSize.denomination",
+        "convertedUSD": "totalGrantPoolSizeUSD",
+        "calculated_close_date": "closeDate",
+        "Quadratic Funding": "grantFundingMechanism",
+        "status !== 'current'": "isOpen (inverted)"
+      },
+      "extensions": {
+        "app.octant.epochMetadata": {
+          "epochNumber": "epoch",
+          "stakingProceeds": "epochInfo.stakingProceeds",
+          "totalEffectiveDeposit": "epochInfo.totalEffectiveDeposit",
+          "vanillaIndividualRewards": "epochInfo.vanillaIndividualRewards",
+          "operationalCost": "epochInfo.operationalCost",
+          "matchedRewards": "epochInfo.matchedRewards",
+          "patronsRewards": "epochInfo.patronsRewards",
+          "totalWithdrawals": "epochInfo.totalWithdrawals",
+          "leftover": "epochInfo.leftover",
+          "ppf": "epochInfo.ppf",
+          "communityFund": "epochInfo.communityFund"
+        }
+      },
+      "date_mappings": {
+        "closeDate": "Hardcoded epoch close dates or calculated +90 days"
+      }
+    },
+    "projects": {
+      "native_to_daoip5": {
+        "address": "id (CAIP-10 format: eip155:1:{address})",
+        "name": "name",
+        "description": "description",
+        "profileImageSmall": "image",
+        "website": "website"
+      },
+      "social_mappings": {
+        "socials.twitter": "socials[].platform=twitter, url=value",
+        "socials.github": "socials[].platform=github, url=value",
+        "socials.discord": "socials[].platform=discord, url=value"
+      },
+      "extensions": {}
+    },
+    "applications": {
+      "native_to_daoip5": {
+        "derived_from_allocations": "id (daoip5:octant:grantPool:{epoch}:grantApplication:{projectAddress})",
+        "projectAddress": "projectId",
+        "project.name": "projectName",
+        "epoch_pool_id": "grantPoolId",
+        "epoch_pool_name": "grantPoolName",
+        "current_date": "createdAt",
+        "amount_wei": "fundsApproved.amount",
+        "ETH": "fundsApproved.denomination",
+        "converted_usd": "fundsApprovedInUSD",
+        "address": "payoutAddress",
+        "amount > 0 ? 'funded' : 'pending'": "status"
+      },
+      "extensions": {
+        "app.octant.applicationMetadata": {
+          "epochNumber": "epoch",
+          "matchedRewards": "allocation amount",
+          "projectAddress": "projectAddress"
+        },
+        "app.octant.projectDetails": {
+          "profileImageSmall": "project.profileImageSmall",
+          "profileImageMedium": "project.profileImageMedium",
+          "description": "project.description",
+          "website": "project.website"
+        },
+        "x-karmagap-uid": "Retrieved from Karma batch search"
+      },
+      "status_mappings": {
+        "allocation_amount > 0": "funded",
+        "allocation_amount = 0": "pending"
+      }
+    }
+  },
+  "special_transformations": {
+    "funding_calculation": "Prioritizes matchedRewards > totalGrantPoolSize > (ppf + communityFund) > leftover",
+    "epoch_dates": "Hardcoded schedule for epochs 1-7",
+    "currency_conversion": "Wei to ETH to USD using currency service",
+    "karma_integration": "Batch search for project names to get Karma GAP UIDs"
+  }
+}
