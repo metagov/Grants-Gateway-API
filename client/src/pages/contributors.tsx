@@ -99,7 +99,7 @@ export default function ContributorsPage() {
       </div>
       {/* Type 3 & Infrastructure */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Type 3 & Infrastructure Integrations</h2>
+        <h2 className="text-2xl font-bold mb-6">Infrastructure Integrations</h2>
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Questbook */}
           <div className="flex flex-col items-center text-center p-6 border rounded-lg hover:shadow-lg transition-all duration-200 hover:border-purple-200">
