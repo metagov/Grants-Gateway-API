@@ -31,7 +31,6 @@ export default function ContributorsPage() {
           Organizations and platforms powering the OpenGrants Gateway ecosystem.
         </p>
       </div>
-
       {/* Mission Statement */}
       <Card>
         <CardHeader>
@@ -49,7 +48,6 @@ export default function ContributorsPage() {
           </p>
         </CardContent>
       </Card>
-
       {/* Active Integrations */}
       <div>
         <h2 className="text-xl sm:text-2xl font-bold mb-6">Active Integrations</h2>
@@ -99,7 +97,6 @@ export default function ContributorsPage() {
           </div>
         </div>
       </div>
-
       {/* Type 3 & Infrastructure */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Type 3 & Infrastructure Integrations</h2>
@@ -142,10 +139,9 @@ export default function ContributorsPage() {
           </div>
         </div>
       </div>
-
       {/* Type 2: Data Integration Systems */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Type 2: Data Integration Systems</h2>
+        <h2 className="text-2xl font-bold mb-6">Data Integration Systems</h2>
         <p className="text-gray-600 text-gray-300 mb-6">
           These platforms share grant data in CSV/JSON format, available as static files after data traslation according to  DAOIP-5 at <a href="https://daoip5.daostar.org/" className="text-primary hover:underline font-medium" target="_blank" rel="noopener noreferrer">daoip5.daostar.org</a>
         </p>
@@ -239,7 +235,6 @@ export default function ContributorsPage() {
           </div>
         </div>
       </div>
-
       {/* Future Integrations */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
@@ -260,7 +255,6 @@ export default function ContributorsPage() {
           </div>
         </div>
       </div>
-
       {/* Support the Project */}
       <Card>
         <CardHeader>
