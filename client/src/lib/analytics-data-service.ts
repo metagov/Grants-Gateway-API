@@ -134,16 +134,12 @@ class AnalyticsDataService {
   // Batch load all system data efficiently
   async loadAllSystemData(forceRefresh = false): Promise<SystemDataCache> {
     const now = Date.now();
-<<<<<<< HEAD
     
     // If forceRefresh is true, clear cache first
     if (forceRefresh) {
       this.clearCache();
     }
     
-=======
-
->>>>>>> main
     // Return cached data if still fresh and not forcing refresh
     if (!forceRefresh && !this.cache.isStale && (now - this.cache.lastUpdated) < this.CACHE_DURATION) {
       return this.cache;
@@ -173,17 +169,9 @@ class AnalyticsDataService {
       console.log('🔄 Starting batch data load...');
       const startTime = performance.now();
 
-<<<<<<< HEAD
       // Get data sources for dashboard analytics (excludes Octant and Giveth)
-      const sources = dataSourceRegistry.getActiveSourcesForDashboard();
+      const activeSources = dataSourceRegistry.getActiveSourcesForDashboard();
       
-=======
-      // Get active sources from registry, excluding octant-golemfoundation to avoid duplication
-      const activeSources = dataSourceRegistry.getActiveSources().filter(source => 
-        source.id !== 'octant-golemfoundation'
-      );
-
->>>>>>> main
       // Batch load data for all systems
       const systemDataPromises = activeSources.map(async (source): Promise<SystemData> => {
         try {
@@ -368,80 +356,6 @@ class AnalyticsDataService {
   }
 
   private async _loadDaoip5SystemData(source: any): Promise<SystemData> {
-<<<<<<< HEAD
-    // For DAOIP5 systems, use the backend API endpoints that are already working
-    let poolData: PoolData[] = [];
-    let applicationData: ApplicationData[] = [];
-    
-    try {
-      // Use the working backend API endpoints for Stellar data
-      const poolsResponse = await fetch(`/api/proxy/daoip5/${source.id}/grants_pool.json`);
-      const applicationsResponse = await fetch(`/api/proxy/daoip5/${source.id}`);
-      
-      if (poolsResponse.ok) {
-        const poolsData = await poolsResponse.json();
-        if (poolsData && poolsData.grantPools) {
-          poolData = poolsData.grantPools.map((pool: any) => ({
-            id: pool.id || pool.name,
-            name: pool.name,
-            system: source.id,
-            totalFunding: parseFloat(pool.totalGrantPoolSizeUSD || pool.totalGrantPoolSize?.[0]?.amount || '0'),
-            isOpen: pool.isOpen || false,
-            closeDate: pool.closeDate,
-            mechanism: pool.grantFundingMechanism || 'Direct Grant'
-          }));
-        }
-      }
-      
-      if (applicationsResponse.ok) {
-        const applicationsData = await applicationsResponse.json();
-        if (Array.isArray(applicationsData)) {
-          // Get application details from each application file
-          const appPromises = applicationsData.map(async (appFile: string) => {
-            try {
-              const appResponse = await fetch(`/api/proxy/daoip5/${source.id}/${appFile}`);
-              if (appResponse.ok) {
-                const appData = await appResponse.json();
-                if (appData && appData.grantApplications) {
-                  return appData.grantApplications.map((app: any) => ({
-                    id: app.id || app.applicationId,
-                    projectName: app.projectName || app.projectId,
-                    system: source.id,
-                    poolId: app.grantPoolId,
-                    status: this._normalizeStatus(app.status || 'approved'),
-                    fundingUSD: parseFloat(app.fundsApprovedInUSD || '0'),
-                    createdAt: app.createdAt || new Date().toISOString()
-                  }));
-                }
-              }
-            } catch (error) {
-              console.warn(`Failed to load application file ${appFile}:`, error);
-            }
-            return [];
-          });
-          
-          const allApps = await Promise.all(appPromises);
-          applicationData = allApps.flat();
-        }
-      }
-      
-      // If API calls failed, fall back to static data
-      if (poolData.length === 0 && applicationData.length === 0) {
-        console.warn(`Using fallback data for ${source.name} due to API failures`);
-        const fallbackData = this._getDaoip5FallbackData(source.id);
-        poolData = fallbackData.pools;
-        applicationData = fallbackData.applications;
-      }
-      
-    } catch (error) {
-      console.warn(`Failed to load real data for ${source.name}, using fallback:`, error);
-      const fallbackData = this._getDaoip5FallbackData(source.id);
-      poolData = fallbackData.pools;
-      applicationData = fallbackData.applications;
-    }
-    
-    const metrics = this._calculateSystemMetrics(applicationData, poolData);
-=======
     try {
       console.log(`🔄 Fetching real data from daoip5.daostar.org for ${source.name}`);
       
@@ -469,7 +383,6 @@ class AnalyticsDataService {
         }
       }
       console.log(`Loaded ${poolData.length} pools for ${source.name}`);
->>>>>>> main
 
       // Extract pools and applications from the DAOIP5 data
       const pools: PoolData[] = poolData
@@ -652,76 +565,7 @@ class AnalyticsDataService {
     if (['rejected', 'declined', 'failed'].includes(normalized)) return 'rejected';
     return 'pending';
   }
-
-<<<<<<< HEAD
-  private _getDaoip5FallbackData(systemId: string): { pools: PoolData[], applications: ApplicationData[] } {
-    const fallbackData: Record<string, any> = {
-      'scf': {
-        pools: [
-          { id: 'scf-24', name: 'Stellar Community Fund 24', totalFunding: 100000, mechanism: 'Direct Grant' },
-          { id: 'scf-25', name: 'Stellar Community Fund 25', totalFunding: 100000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'scf-1', projectName: 'Stellar Wallet', poolId: 'scf-24', status: 'funded', fundingUSD: 25000, createdAt: '2024-01-15' },
-          { id: 'scf-2', projectName: 'Payment Gateway', poolId: 'scf-24', status: 'funded', fundingUSD: 30000, createdAt: '2024-01-20' },
-          { id: 'scf-3', name: 'DeFi Bridge', poolId: 'scf-25', status: 'approved', fundingUSD: 35000, createdAt: '2024-02-10' }
-        ]
-      },
-      'optimism': {
-        pools: [
-          { id: 'retro-3', name: 'RetroPGF Round 3', totalFunding: 30000000, mechanism: 'Retroactive Public Goods' },
-          { id: 'retro-4', name: 'RetroPGF Round 4', totalFunding: 10000000, mechanism: 'Retroactive Public Goods' }
-        ],
-        applications: [
-          { id: 'op-1', projectName: 'Protocol Development', poolId: 'retro-3', status: 'funded', fundingUSD: 150000, createdAt: '2024-01-10' },
-          { id: 'op-2', projectName: 'Infrastructure Tools', poolId: 'retro-3', status: 'funded', fundingUSD: 250000, createdAt: '2024-01-25' },
-          { id: 'op-3', projectName: 'Developer Education', poolId: 'retro-4', status: 'funded', fundingUSD: 100000, createdAt: '2024-03-15' }
-        ]
-      },
-      'arbitrumfoundation': {
-        pools: [
-          { id: 'stip', name: 'Arbitrum STIP', totalFunding: 50000000, mechanism: 'Direct Grant' },
-          { id: 'ltip', name: 'Arbitrum LTIP', totalFunding: 45000000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'arb-1', projectName: 'DEX Protocol', poolId: 'stip', status: 'funded', fundingUSD: 750000, createdAt: '2024-01-05' },
-          { id: 'arb-2', projectName: 'Lending Platform', poolId: 'ltip', status: 'funded', fundingUSD: 500000, createdAt: '2024-02-20' }
-        ]
-      },
-      'celopg': {
-        pools: [
-          { id: 'cgp-100', name: 'CeloPG Grants Pool', totalFunding: 250000, mechanism: 'Direct Grant' }
-        ],
-        applications: [
-          { id: 'celo-1', projectName: 'Mobile Wallet', poolId: 'cgp-100', status: 'funded', fundingUSD: 50000, createdAt: '2024-01-12' },
-          { id: 'celo-2', projectName: 'ReFi Platform', poolId: 'cgp-100', status: 'funded', fundingUSD: 75000, createdAt: '2024-02-08' }
-        ]
-      }
-    };
-
-    const systemData = fallbackData[systemId] || {
-      pools: [{ id: `${systemId}-1`, name: `${systemId} Grant Pool`, totalFunding: 500000, mechanism: 'Direct Grant' }],
-      applications: [{ id: `${systemId}-app-1`, projectName: `${systemId} Project`, poolId: `${systemId}-1`, status: 'funded', fundingUSD: 100000, createdAt: '2024-01-01' }]
-    };
-
-    return {
-      pools: systemData.pools.map((pool: any) => ({
-        ...pool,
-        system: systemId,
-        isOpen: Math.random() > 0.5,
-        closeDate: new Date(Date.now() + Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString()
-      })),
-      applications: systemData.applications.map((app: any) => ({
-        ...app,
-        system: systemId,
-        projectName: app.projectName || app.name
-      }))
-    };
-  }
-=======
   
->>>>>>> main
-
   // Get accurate ecosystem stats using the new API
   async getAccurateEcosystemStats(): Promise<any> {
     try {
