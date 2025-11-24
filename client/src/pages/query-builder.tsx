@@ -148,6 +148,42 @@ export default function QueryBuilderPage() {
             </div>
           )}
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="page">Page</Label>
+              <Input
+                id="page"
+                type="number"
+                min="1"
+                placeholder="1"
+                value={queryFilters.page || ""}
+                onChange={(e) => setQueryFilters(prev => ({ ...prev, page: e.target.value ? parseInt(e.target.value) : undefined }))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="limit" className="flex items-center">
+                Limit
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfoIcon className="h-4 w-4 ml-1 text-gray-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Number of results per page (1-100, default: 10)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </Label>
+              <Input
+                id="limit"
+                type="number"
+                min="1"
+                max="100"
+                placeholder="10"
+                value={queryFilters.limit || ""}
+                onChange={(e) => setQueryFilters(prev => ({ ...prev, limit: e.target.value ? parseInt(e.target.value) : undefined }))}
+              />
+            </div>
+          </div>
+
           <Button 
             onClick={handleExecuteQuery} 
             className="w-full"
@@ -195,7 +231,7 @@ export default function QueryBuilderPage() {
           <CardTitle className="flex items-center justify-between">
             Response
             {executeQueryMutation.isSuccess && (
-              <Badge variant="default" className="bg-green-100 text-green-800">
+              <Badge variant="default" className="bg-primary/10 text-primary">
                 200 OK
               </Badge>
             )}
@@ -215,7 +251,7 @@ export default function QueryBuilderPage() {
               </div>
             )}
             {executeQueryMutation.isSuccess && (
-              <pre className="text-sm overflow-auto max-h-[600px] text-gray-800">
+              <pre className="text-sm overflow-x-auto overflow-y-auto max-h-[600px] text-gray-800 whitespace-pre-wrap break-words">
                 {JSON.stringify(executeQueryMutation.data, null, 2)}
               </pre>
             )}

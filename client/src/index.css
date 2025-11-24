@@ -16,7 +16,7 @@
   --input: hsl(20, 5.9%, 90%);
   --primary: hsl(350, 100%, 25%); /* Maroon #800020 - Brand Primary */
   --primary-foreground: hsl(0, 0%, 93%); /* #EEEEEE - Brand Text Color */
-  --secondary: hsl(73, 36%, 45%); /* Olive Green #8B9A46 */
+  --secondary: hsl(350, 100%, 35%); /* Lighter Maroon */
   --secondary-foreground: hsl(0, 0%, 93%);
   --accent: hsl(190, 100%, 25%); /* Teal #006E7F */
   --accent-foreground: hsl(0, 0%, 93%);
@@ -25,7 +25,7 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
   --chart-1: hsl(350, 100%, 25%); /* Maroon #800020 */
-  --chart-2: hsl(73, 36%, 45%); /* Olive Green #8B9A46 */
+  --chart-2: hsl(350, 100%, 35%); /* Lighter Maroon */
   --chart-3: hsl(190, 100%, 25%); /* Teal #006E7F */
   --chart-4: hsl(270, 100%, 17%); /* Deep Purple #2A0055 */
   --chart-5: hsl(27, 87%, 67%);

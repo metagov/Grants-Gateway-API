@@ -351,10 +351,19 @@ export class OctantAdapter extends BaseAdapter {
   }
 
   async getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>> {
-    const allPools = await this.getPools(filters);
+    // Get all filtered pools without pagination limits to count total
+    const filtersWithoutPagination = { ...filters, limit: undefined, offset: undefined };
+    const allPools = await this.getPools(filtersWithoutPagination);
+    const totalCount = allPools.length;
+    
+    // Apply pagination
+    const offset = filters?.offset || 0;
+    const limit = filters?.limit || 20;
+    const data = allPools.slice(offset, offset + limit);
+    
     return {
-      data: allPools,
-      totalCount: allPools.length
+      data,
+      totalCount
     };
   }
 

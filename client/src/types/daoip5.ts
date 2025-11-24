@@ -122,6 +122,7 @@ export interface ApiResponse<T> {
 
 export interface QueryFilters {
   system?: string;
+  page?: number;
   limit?: number;
   offset?: number;
   search?: string;

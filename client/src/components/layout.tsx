@@ -117,7 +117,7 @@ export default function Layout({ children }: LayoutProps) {
             
             <div className="flex items-center space-x-4">
               <div className="hidden sm:flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
                 <span className="text-sm font-medium">API Status: Online</span>
               </div>
             </div>
