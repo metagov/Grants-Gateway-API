@@ -5,27 +5,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Switch, Route } from "wouter";
 import NotFound from "@/pages/not-found";
-import Layout from "@/components/layout";
-import Overview from "@/pages/overview";
-import Endpoints from "@/pages/endpoints";
-import QueryBuilder from "@/pages/query-builder";
-import GetApiAccess from "@/pages/get-api-access";
-import Health from "@/pages/health";
-import Contributors from "@/pages/contributors";
-import AdminDashboard from "@/pages/admin-dashboard";
+import DashboardLayout from "@/components/dashboard-layout";
+import EcosystemOverview from "@/pages/dashboard/analysis-enhanced";
+import GrantSystems from "@/pages/dashboard/systems";
+import SystemProfile from "@/pages/dashboard/system-profile-enhanced";
+import DashboardOverviewArchived from "@/pages/dashboard/overview-archived";
 import MobileToast from "@/components/mobile-toast";
 
 function Router() {
   return (
     <Switch>
-      {/* API Documentation Routes */}
-      <Route path="/" component={() => <Layout><Overview /></Layout>} />
-      <Route path="/endpoints" component={() => <Layout><Endpoints /></Layout>} />
-      <Route path="/query-builder" component={() => <Layout><QueryBuilder /></Layout>} />
-      <Route path="/get-api-access" component={() => <Layout><GetApiAccess /></Layout>} />
-      <Route path="/health" component={() => <Layout><Health /></Layout>} />
-      <Route path="/contributors" component={() => <Layout><Contributors /></Layout>} />
-      <Route path="/admin" component={() => <Layout><AdminDashboard /></Layout>} />
+      {/* Dashboard Routes - Analytics Dashboard */}
+      <Route path="/" component={() => <DashboardLayout><EcosystemOverview /></DashboardLayout>} />
+      <Route path="/systems" component={() => <DashboardLayout><GrantSystems /></DashboardLayout>} />
+      <Route path="/systems/:systemName" component={() => <DashboardLayout><SystemProfile /></DashboardLayout>} />
+      <Route path="/overview-archived" component={() => <DashboardLayout><DashboardOverviewArchived /></DashboardLayout>} />
 
       {/* 404 Route */}
       <Route component={NotFound} />
