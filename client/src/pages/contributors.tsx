@@ -161,7 +161,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -183,7 +183,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -205,7 +205,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -227,7 +227,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data  
                 </Badge>
@@ -253,7 +253,7 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Advanced data lake integration for deeper project impact insights and developer activity tracking
             </p>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 bg-gray-900/20 text-gray-300">
+            <Badge variant="outline" className="text-gray-300 bg-[#ffffff]">
               <Clock className="h-3 w-3 mr-1" />
               Future Enhancement
             </Badge>
