@@ -8,11 +8,8 @@ import {
   DollarSign,
   Calendar,
   ArrowRight,
-<<<<<<< HEAD
-=======
   AlertTriangle,
   RefreshCw
->>>>>>> main
 } from "lucide-react";
 import {
   Card,
@@ -77,10 +74,7 @@ const formatMechanismName = (mechanism: string): string => {
 
 function SystemCard({ system }: { system: any }) {
   const systemColor = getSystemColor(system.name);
-<<<<<<< HEAD
-=======
   const compatibilityColor = system.compatibility >= 90 ? 'text-green-600' : system.compatibility >= 75 ? 'text-yellow-600' : 'text-orange-600';
->>>>>>> main
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 group cursor-pointer relative">
@@ -279,32 +273,6 @@ export default function GrantSystems() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Grant Systems</h1>
       </div>
-<<<<<<< HEAD
-      {/* API Integrated Systems */}
-      {apiSystems.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Type 1: Live API Integrations
-            </h2>
-            <Badge variant="secondary" className="text-xs">
-              Real-time data
-            </Badge>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {apiSystems.map((system) => (
-              <SystemCard key={system.name} system={system} />
-            ))}
-          </div>
-        </div>
-      )}
-      {/* Static Data Systems */}
-      {staticSystems.length > 0 && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {staticSystems.map((system) => (
-=======
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -350,7 +318,6 @@ export default function GrantSystems() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {systems.map((system) => (
->>>>>>> main
               <SystemCard key={system.name} system={system} />
             ))}
           </div>
@@ -374,29 +341,14 @@ export default function GrantSystems() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-<<<<<<< HEAD
-              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Unable to load systems
-              </h3>
-=======
               <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Error</h3>
->>>>>>> main
               <p className="text-gray-600 mb-4">
                 Unable to connect to the grant systems API. The OpenGrants API server may be unavailable.
               </p>
-<<<<<<< HEAD
-              <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-              >
-                Try Again
-=======
               <Button onClick={() => window.location.reload()} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry
->>>>>>> main
               </Button>
             </div>
           </CardContent>
