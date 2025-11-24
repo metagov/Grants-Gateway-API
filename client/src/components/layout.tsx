@@ -43,14 +43,6 @@ export default function Layout({ children }: LayoutProps) {
   const isAdmin = !authLoading && !adminLoading && !!adminStats && !adminError;
 
   const sidebarItems = [
-<<<<<<< HEAD
-    { id: "/dev", label: "Overview", icon: Building, path: "/dev" },
-    { id: "/dev/endpoints", label: "API Endpoints", icon: Target, path: "/dev/endpoints" },
-    { id: "/dev/query-builder", label: "Query Builder", icon: Code, path: "/dev/query-builder" },
-
-    { id: "/dev/health", label: "API Health", icon: Activity, path: "/dev/health" },
-    { id: "/dev/contributors", label: "Contributors", icon: Heart, path: "/dev/contributors" },
-=======
     { id: "/", label: "Overview", icon: Building, path: "/" },
     { id: "/endpoints", label: "API Endpoints", icon: Target, path: "/endpoints" },
     { id: "/query-builder", label: "Query Builder", icon: Code, path: "/query-builder" },
@@ -58,7 +50,6 @@ export default function Layout({ children }: LayoutProps) {
     { id: "/health", label: "API Health", icon: Activity, path: "/health" },
     { id: "/contributors", label: "Contributors", icon: Heart, path: "/contributors" },
     ...(isAdmin ? [{ id: "/admin", label: "Admin Dashboard", icon: Shield, path: "/admin" }] : []),
->>>>>>> main
   ];
 
   return (

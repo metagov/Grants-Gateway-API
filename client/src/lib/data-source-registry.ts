@@ -233,17 +233,8 @@ class DataSourceRegistry {
 
     // DAOIP-5 static data systems 
     const knownDaoip5Systems = [
-<<<<<<< HEAD
       'stellar',  // Stellar Community Fund
       'celopg'  // Celo Public Goods
-=======
-      'arbitrumfoundation',
-      'clrfund', 
-      'dao-drops-dorgtech',
-      'optimism',
-      'stellar',
-      'celo-org'
->>>>>>> main
     ];
 
     // Register known DAOIP5 systems without external fetch
