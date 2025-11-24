@@ -115,7 +115,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 bg-purple-900/20 text-purple-300 border-purple-800 cursor-help">
+                <Badge variant="secondary" className="text-purple-300 border-purple-800 cursor-help bg-[#ffffff]">
                   <Circle className="h-3 w-3 mr-1 fill-purple-500" />
                   Type 3 Integration
                 </Badge>
@@ -135,7 +135,7 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Cross-platform project identification through unique UIDs
             </p>
-            <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200 bg-amber-900/20 text-amber-300 border-amber-800">
+            <Badge variant="secondary" className="text-amber-300 border-amber-800 bg-[#ffffff]">
               <Circle className="h-3 w-3 mr-1 fill-amber-500" />
               Project Identity Provider
             </Badge>
