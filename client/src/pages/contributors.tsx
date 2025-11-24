@@ -20,6 +20,7 @@ import optimismLogo from "@/assets/optimism-logo.png";
 import arbitrumLogo from "@/assets/arbitrum-logo.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function ContributorsPage() {
   return (
@@ -62,10 +63,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Ethereum public goods funding platform with quadratic funding mechanisms
             </p>
-            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-              <Circle className="h-3 w-3 mr-1 fill-green-500" />
-              Type 1 Integration
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-green-500" />
+                  Type 1 Integration
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>API Integration - Fetches data from custom APIs and transforms to DAOIP-5 format</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Giveth */}
@@ -77,10 +85,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Donation platform for public goods and social impact projects
             </p>
-            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-              <Circle className="h-3 w-3 mr-1 fill-green-500" />
-              Type 1 Integration
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-green-500" />
+                  Type 1 Integration
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>API Integration - Fetches data from custom APIs and transforms to DAOIP-5 format</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -98,10 +113,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Native DAOIP-5 endpoint for decentralized grants orchestration
             </p>
-            <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 bg-purple-900/20 text-purple-300 border-purple-800">
-              <Circle className="h-3 w-3 mr-1 fill-purple-500" />
-              Type 3 Integration
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 bg-purple-900/20 text-purple-300 border-purple-800 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-purple-500" />
+                  Type 3 Integration
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Endpoint Integration - Provides DAOIP-5 compliant endpoints, monitored but not integrated into our unified API</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* KarmaGAP */}
@@ -137,10 +159,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Cross-border payments and financial inclusion platform
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
-              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
-              Type 2 Data
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+                  Type 2 Data
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Data Integration - Grant data files in CSV/JSON translated to DAOIP-5, accessible via daoip5.daostar.org</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Celo */}
@@ -152,10 +181,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Mobile-first blockchain platform focused on financial inclusion
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
-              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
-              Type 2 Data
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+                  Type 2 Data
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Data Integration - Grant data files in CSV/JSON translated to DAOIP-5, accessible via daoip5.daostar.org</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Optimism */}
@@ -167,10 +203,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Ethereum L2 with retroactive public goods funding
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
-              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
-              Type 2 Data
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+                  Type 2 Data
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Data Integration - Grant data files in CSV/JSON translated to DAOIP-5, accessible via daoip5.daostar.org</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Arbitrum */}
@@ -182,10 +225,17 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Ethereum L2 optimistic rollup with ecosystem grants
             </p>
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800">
-              <Circle className="h-3 w-3 mr-1 fill-blue-500" />
-              Type 2 Data  
-            </Badge>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 bg-blue-900/20 text-blue-300 border-blue-800 cursor-help">
+                  <Circle className="h-3 w-3 mr-1 fill-blue-500" />
+                  Type 2 Data  
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Data Integration - Grant data files in CSV/JSON translated to DAOIP-5, accessible via daoip5.daostar.org</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
