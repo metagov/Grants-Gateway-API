@@ -50,7 +50,9 @@ function getSessionId(req: Request): string {
 }
 
 function setSessionCookie(res: Response, sessionId: string) {
-  res.setHeader('Set-Cookie', `__internal_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/__internal; Max-Age=1800`);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secureFlag = isProduction ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `__internal_session=${sessionId}; HttpOnly; SameSite=Strict; Path=/__internal; Max-Age=1800${secureFlag}`);
 }
 
 function generateSessionId(): string {
