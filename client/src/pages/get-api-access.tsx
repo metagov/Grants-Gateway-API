@@ -123,7 +123,7 @@ export default function GetApiAccess() {
               className="w-full"
               data-testid="button-login"
             >
-              Log in with Google
+              Log in with Replit
             </Button>
           </CardContent>
         </Card>
