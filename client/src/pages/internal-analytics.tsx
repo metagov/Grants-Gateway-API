@@ -85,7 +85,7 @@ export default function InternalAnalytics() {
   const fetchAnalytics = async () => {
     try {
       const [analyticsRes, auditRes, keysRes] = await Promise.all([
-        fetch('/__internal/usage?days=30', { credentials: 'include' }),
+        fetch('/__internal/usage/data?days=30', { credentials: 'include' }),
         fetch('/__internal/audit?limit=50', { credentials: 'include' }),
         fetch('/__internal/api-keys-stats', { credentials: 'include' })
       ]);

@@ -119,7 +119,7 @@ export function registerInternalAnalyticsRoutes(app: Express): void {
     res.json({ success: true });
   });
 
-  app.get('/__internal/usage', requireAnalyticsAuth, async (req, res) => {
+  app.get('/__internal/usage/data', requireAnalyticsAuth, async (req, res) => {
     try {
       const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
       const days = Math.min(parseInt(req.query.days as string) || 30, 90);
