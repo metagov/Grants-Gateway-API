@@ -42,6 +42,17 @@ export interface AuthenticatedApiRequest extends Request {
     };
     access_token?: string;
     expires_at?: number;
+  } | {
+    id: string;
+    email: string;
+    name: string;
+    orgName: string;
+    apiKeyId?: string;
+    rateLimit?: number;
+  } | {
+    id: number;
+    username: string;
+    rateLimit: number;
   };
   queryMetrics?: {
     startTime: number;
@@ -49,6 +60,37 @@ export interface AuthenticatedApiRequest extends Request {
     complexity: number;
   };
 }
+
+function getUserIdFromRequest(req: AuthenticatedApiRequest): string | null {
+  if (!req.user) return null;
+  
+  if ('claims' in req.user && req.user.claims?.sub) {
+    return req.user.claims.sub;
+  }
+  
+  if ('id' in req.user) {
+    return String(req.user.id);
+  }
+  
+  return null;
+}
+
+export const requireAuth: RequestHandler = (req, res, next) => {
+  const authReq = req as AuthenticatedApiRequest;
+  
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  
+  if (authReq.user && getUserIdFromRequest(authReq)) {
+    return next();
+  }
+  
+  return res.status(401).json({
+    error: "Unauthorized",
+    message: "Authentication required to access this endpoint. Use Replit login or API key."
+  });
+};
 
 export const requireReplitAuth: RequestHandler = (req, res, next) => {
   const authReq = req as AuthenticatedApiRequest;
@@ -60,7 +102,7 @@ export const requireReplitAuth: RequestHandler = (req, res, next) => {
     });
   }
   
-  if (!authReq.user?.claims?.sub) {
+  if (!authReq.user || !('claims' in authReq.user) || !authReq.user.claims?.sub) {
     return res.status(401).json({
       error: "Unauthorized",
       message: "Valid user session required"
@@ -72,7 +114,7 @@ export const requireReplitAuth: RequestHandler = (req, res, next) => {
 
 export const perUserRateLimiter: RequestHandler = (req, res, next) => {
   const authReq = req as AuthenticatedApiRequest;
-  const userId = authReq.user?.claims?.sub;
+  const userId = getUserIdFromRequest(authReq);
   
   if (!userId) {
     return res.status(401).json({
@@ -159,7 +201,7 @@ export const validateQueryParams: RequestHandler = (req, res, next) => {
 
 export const queryMetricsStart: RequestHandler = (req, res, next) => {
   const authReq = req as AuthenticatedApiRequest;
-  const userId = authReq.user?.claims?.sub || "anonymous";
+  const userId = getUserIdFromRequest(authReq) || "anonymous";
   
   authReq.queryMetrics = {
     startTime: Date.now(),

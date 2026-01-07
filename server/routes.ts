@@ -7,12 +7,12 @@ import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
 import { 
-  requireReplitAuth, 
+  requireAuth as requireQueryAuth, 
   perUserRateLimiter, 
   validateQueryParams, 
   queryMetricsStart, 
   queryMetricsEnd,
-  AuthenticatedApiRequest 
+  AuthenticatedApiRequest as QueryAuthRequest 
 } from "./middleware/queryProtection";
 
 import { BaseAdapter } from "./adapters/base";
@@ -184,9 +184,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Query protection middleware for data endpoints
-  // Requires Replit Auth, applies per-user rate limiting, validates parameters, and logs metrics
+  // Requires authentication (Replit Auth or API key), applies per-user rate limiting, validates parameters, and logs metrics
   const queryProtection = [
-    requireReplitAuth,
+    requireQueryAuth,
     perUserRateLimiter,
     validateQueryParams,
     queryMetricsStart,
