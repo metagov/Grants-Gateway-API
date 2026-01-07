@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 ### Key Components
 - **Database Schema**: Core tables for users, grant systems, field mappings, API configurations, and logs.
 - **API Adapters**: Implements an adapter pattern (BaseAdapter, OctantAdapter, GivethAdapter) for integrating diverse grant systems and normalizing data to the DAOIP-5 standard. Designed for extensibility.
-- **Authentication & Rate Limiting**: API key-based authentication with Bearer token support, per-user rate limiting, and anonymous access with reduced limits.
+- **Authentication & Rate Limiting**: Dual authentication support (Replit Auth via OIDC + API key-based Bearer tokens), per-user rate limiting (10 req/min for data endpoints), query parameter validation, and structured logging with user ID and execution metrics.
 - **Frontend Features**: Interactive API documentation, query builder, real-time response preview, and dark/light theme support with a mobile-responsive design.
 
 ### Data Flow
