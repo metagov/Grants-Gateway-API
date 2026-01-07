@@ -5,7 +5,15 @@ import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMi
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { 
+  requireReplitAuth, 
+  perUserRateLimiter, 
+  validateQueryParams, 
+  queryMetricsStart, 
+  queryMetricsEnd,
+  AuthenticatedApiRequest 
+} from "./middleware/queryProtection";
 
 import { BaseAdapter } from "./adapters/base";
 import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
@@ -21,6 +29,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : true,
     credentials: true
   }));
+
+  // Setup Replit Auth (must be before other routes)
+  await setupAuth(app);
+  registerAuthRoutes(app);
 
   // Add API proxy endpoints to avoid CORS issues
   app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {
@@ -171,8 +183,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // Grant Systems endpoints
-  app.get('/api/v1/grantSystems', async (req, res) => {
+  // Query protection middleware for data endpoints
+  // Requires Replit Auth, applies per-user rate limiting, validates parameters, and logs metrics
+  const queryProtection = [
+    requireReplitAuth,
+    perUserRateLimiter,
+    validateQueryParams,
+    queryMetricsStart,
+    queryMetricsEnd
+  ];
+
+  // Grant Systems endpoints (protected)
+  app.get('/api/v1/grantSystems', ...queryProtection, async (req, res) => {
     try {
       const { system } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -212,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantSystems/:id', async (req, res) => {
+  app.get('/api/v1/grantSystems/:id', ...queryProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -238,8 +260,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Grant Pools endpoints
-  app.get('/api/v1/grantPools', async (req, res) => {
+  // Grant Pools endpoints (protected)
+  app.get('/api/v1/grantPools', ...queryProtection, async (req, res) => {
     try {
       const { system, isOpen, mechanism } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -326,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantPools/:id', async (req, res) => {
+  app.get('/api/v1/grantPools/:id', ...queryProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
@@ -505,8 +527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Applications endpoints
-  app.get('/api/v1/grantApplications', async (req, res) => {
+  // Applications endpoints (protected)
+  app.get('/api/v1/grantApplications', ...queryProtection, async (req, res) => {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
@@ -626,7 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/v1/grantApplications/:id', async (req, res) => {
+  app.get('/api/v1/grantApplications/:id', ...queryProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;

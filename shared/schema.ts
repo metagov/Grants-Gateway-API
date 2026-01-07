@@ -309,3 +309,6 @@ export interface PaginatedResponse<T> {
 }
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
+
+// Re-export auth types from models
+export * from "./models/auth";
