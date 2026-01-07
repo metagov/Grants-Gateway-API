@@ -98,10 +98,10 @@ export default function GetApiAccess() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="p-6 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -109,38 +109,40 @@ export default function GetApiAccess() {
 
   if (!typedUser || !typedUser.email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Authentication Required</CardTitle>
-            <CardDescription>
-              You need to log in to access API registration
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={() => window.location.href = '/api/login'} 
-              className="w-full"
-              data-testid="button-login"
-            >
-              Log in with Replit
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="p-6">
+        <div className="max-w-md mx-auto">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold">Authentication Required</CardTitle>
+              <CardDescription>
+                You need to log in to access API registration
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => window.location.href = '/api/login'} 
+                className="w-full"
+                data-testid="button-login"
+              >
+                Log in with Replit
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (apiKey) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <div className="max-w-2xl mx-auto pt-8">
+      <div className="p-6">
+        <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
-                <Key className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <Key className="w-6 h-6 text-green-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-400">
+              <CardTitle className="text-2xl font-bold text-green-700">
                 Registration Complete!
               </CardTitle>
               <CardDescription>
@@ -148,14 +150,14 @@ export default function GetApiAccess() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2 flex items-center">
                   <Key className="w-4 h-4 mr-2" />
                   Your API Key
                 </h3>
                 <div className="flex items-center space-x-2">
                   <code 
-                    className="flex-1 bg-white dark:bg-gray-900 p-2 rounded border text-sm font-mono break-all"
+                    className="flex-1 bg-white p-2 rounded border text-sm font-mono break-all"
                     data-testid="text-api-key"
                   >
                     {apiKey}
@@ -173,10 +175,10 @@ export default function GetApiAccess() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="flex items-start space-x-3">
-                  <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <Shield className="w-5 h-5 text-primary mt-0.5" />
                   <div>
                     <h4 className="font-medium">Secure Storage</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600">
                       Store this key securely. It cannot be recovered if lost.
                     </p>
                   </div>
@@ -185,7 +187,7 @@ export default function GetApiAccess() {
                   <Clock className="w-5 h-5 text-orange-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium">Expires in 3 Months</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600">
                       Your key expires on {new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                     </p>
                   </div>
@@ -225,12 +227,12 @@ export default function GetApiAccess() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="max-w-2xl mx-auto pt-8">
+    <div className="p-6">
+      <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
-              <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">Get API Access</CardTitle>
             <CardDescription>
@@ -238,7 +240,7 @@ export default function GetApiAccess() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-semibold mb-2">Logged in as:</h3>
               <div className="flex items-center space-x-3">
                 {typedUser.profileImageUrl && (
@@ -250,7 +252,7 @@ export default function GetApiAccess() {
                 )}
                 <div>
                   <p className="font-medium">{typedUser.firstName || ''} {typedUser.lastName || ''}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{typedUser.email}</p>
+                  <p className="text-sm text-gray-600">{typedUser.email}</p>
                 </div>
               </div>
             </div>
