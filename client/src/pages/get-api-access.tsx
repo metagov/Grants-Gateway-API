@@ -196,10 +196,22 @@ export default function GetApiAccess() {
 
               <div className="border-t pt-4">
                 <h3 className="font-semibold mb-2">Using Your API Key</h3>
-                <div className="bg-gray-900 text-gray-100 p-3 rounded text-sm font-mono">
-                  <div>curl -H "Authorization: Bearer {apiKey.slice(0, 20)}..." \</div>
-                  <div className="ml-4">https://your-app.replit.app/api/octant/epochs</div>
+                <div className="bg-gray-900 text-gray-100 p-3 rounded text-sm font-mono overflow-x-auto">
+                  <div className="whitespace-nowrap">curl -H "Authorization: Bearer {apiKey}" \</div>
+                  <div className="ml-4 whitespace-nowrap">{window.location.origin}/api/v1/grantSystems</div>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-2 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`curl -H "Authorization: Bearer ${apiKey}" ${window.location.origin}/api/v1/grantSystems`);
+                    toast({ title: "Command copied", description: "curl command copied to clipboard" });
+                  }}
+                  data-testid="button-copy-curl"
+                >
+                  Copy curl command
+                </Button>
               </div>
 
               <div className="flex space-x-3">
