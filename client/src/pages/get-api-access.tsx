@@ -8,9 +8,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Key, Clock, Users } from "lucide-react";
+import { Shield, Key, Clock, Users, Trash2, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface RegistrationResponse {
   message: string;
@@ -32,13 +33,58 @@ interface User {
   profileImageUrl?: string;
 }
 
+interface ApiKeyInfo {
+  id: string;
+  preview: string;
+  name: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  expiresAt: string;
+  status: string;
+}
+
 export default function GetApiAccess() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
 
   // Type-safe user with proper properties
   const typedUser = user as User | undefined;
+
+  // Fetch existing API keys
+  const { data: keysData, isLoading: keysLoading } = useQuery<{ keys: ApiKeyInfo[] }>({
+    queryKey: ['/api/auth/keys'],
+    enabled: !!typedUser?.email,
+  });
+
+  // Delete/revoke API key mutation
+  const revokeMutation = useMutation({
+    mutationFn: async (keyId: string) => {
+      const response = await fetch(`/api/auth/keys/${keyId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to revoke key');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/keys'] });
+      toast({
+        title: "Key revoked",
+        description: "The API key has been revoked and can no longer be used.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to revoke key",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const form = useForm<RegistrationData>({
     resolver: zodResolver(registrationSchema),
@@ -68,6 +114,7 @@ export default function GetApiAccess() {
     },
     onSuccess: (data) => {
       setApiKey(data.apiKey);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/keys'] });
       toast({
         title: "Registration successful!",
         description: "Your API key has been generated. Please save it securely.",
@@ -238,17 +285,107 @@ export default function GetApiAccess() {
     );
   }
 
+  const existingKeys = keysData?.keys || [];
+  const activeKeys = existingKeys.filter(k => k.status === 'active');
+
+  const getExpirationStatus = (expiresAt: string) => {
+    const expDate = new Date(expiresAt);
+    const now = new Date();
+    const daysLeft = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft <= 0) return { text: 'Expired', variant: 'destructive' as const };
+    if (daysLeft <= 7) return { text: `${daysLeft}d left`, variant: 'destructive' as const };
+    if (daysLeft <= 30) return { text: `${daysLeft}d left`, variant: 'secondary' as const };
+    return { text: `${daysLeft}d left`, variant: 'outline' as const };
+  };
+
   return (
     <div className="p-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Existing Keys Management */}
+        {!keysLoading && existingKeys.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                Your API Keys
+              </CardTitle>
+              <CardDescription>
+                Manage your existing API keys. {activeKeys.length} active key{activeKeys.length !== 1 ? 's' : ''}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {existingKeys.map((key) => {
+                  const expStatus = getExpirationStatus(key.expiresAt);
+                  const isExpired = key.status === 'revoked' || expStatus.text === 'Expired';
+                  
+                  return (
+                    <div 
+                      key={key.id} 
+                      className={`flex items-center justify-between p-3 rounded-lg border ${isExpired ? 'bg-gray-50 opacity-60' : 'bg-white'}`}
+                      data-testid={`key-item-${key.id}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <code className="text-sm font-mono">{key.preview}</code>
+                          {key.status === 'revoked' ? (
+                            <Badge variant="destructive" className="text-xs">Revoked</Badge>
+                          ) : (
+                            <Badge variant={expStatus.variant} className="text-xs">{expStatus.text}</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{key.name}</p>
+                        <div className="flex gap-3 text-xs text-gray-400 mt-1">
+                          <span>Created: {new Date(key.createdAt).toLocaleDateString()}</span>
+                          {key.lastUsedAt && (
+                            <span>Last used: {new Date(key.lastUsedAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
+                      {key.status === 'active' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => revokeMutation.mutate(key.id)}
+                          disabled={revokeMutation.isPending}
+                          data-testid={`button-revoke-${key.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {activeKeys.length >= 3 && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-yellow-700">
+                    You have {activeKeys.length} active keys. Consider revoking unused keys for better security.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Registration Form */}
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold">Get API Access</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              {existingKeys.length > 0 ? 'Generate New API Key' : 'Get API Access'}
+            </CardTitle>
             <CardDescription>
-              Register for API access to the OpenGrants Gateway. Tell us about your organization and intended use.
+              {existingKeys.length > 0 
+                ? 'Generate an additional API key for your account.'
+                : 'Register for API access to the OpenGrants Gateway. Tell us about your organization and intended use.'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
