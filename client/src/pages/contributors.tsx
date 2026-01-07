@@ -112,7 +112,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="text-purple-300 border-purple-800 cursor-help bg-[#ffffff]">
+                <Badge variant="secondary" className="text-purple-700 border-purple-300 cursor-help bg-white">
                   <Circle className="h-3 w-3 mr-1 fill-purple-500" />
                   Type 3 Integration
                 </Badge>
@@ -132,7 +132,7 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Cross-platform project identification through unique UIDs
             </p>
-            <Badge variant="secondary" className="text-amber-300 border-amber-800 bg-[#ffffff]">
+            <Badge variant="secondary" className="text-amber-700 border-amber-300 bg-white">
               <Circle className="h-3 w-3 mr-1 fill-amber-500" />
               Project Identity Provider
             </Badge>
@@ -157,7 +157,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
+                <Badge variant="secondary" className="text-blue-700 border-blue-300 cursor-help bg-white">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -179,7 +179,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
+                <Badge variant="secondary" className="text-blue-700 border-blue-300 cursor-help bg-white">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -201,7 +201,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
+                <Badge variant="secondary" className="text-blue-700 border-blue-300 cursor-help bg-white">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data
                 </Badge>
@@ -223,7 +223,7 @@ export default function ContributorsPage() {
             </p>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="secondary" className="text-blue-300 border-blue-800 cursor-help bg-[#ffffff]">
+                <Badge variant="secondary" className="text-blue-700 border-blue-300 cursor-help bg-white">
                   <Circle className="h-3 w-3 mr-1 fill-blue-500" />
                   Type 2 Data  
                 </Badge>
@@ -248,7 +248,7 @@ export default function ContributorsPage() {
             <p className="text-sm text-gray-600 mb-3">
               Advanced data lake integration for deeper project impact insights and developer activity tracking
             </p>
-            <Badge variant="outline" className="text-gray-300 bg-[#ffffff]">
+            <Badge variant="outline" className="text-gray-700 border-gray-300 bg-white">
               <Clock className="h-3 w-3 mr-1" />
               Future Enhancement
             </Badge>

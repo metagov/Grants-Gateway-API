@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import Layout from "@/components/layout";
 
 interface AdapterHealthStatus {
   name: string;
@@ -104,34 +103,31 @@ export default function HealthPage() {
 
   if (error) {
     return (
-      <Layout>
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-red-600">
-                <XCircle className="h-6 w-6 mr-2" />
-                Health Check Failed
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Unable to fetch system health status. The monitoring system may
-                be down.
-              </p>
-              <Button onClick={() => refetch()} className="mr-2">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-600">
+              <XCircle className="h-6 w-6 mr-2" />
+              Health Check Failed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Unable to fetch system health status. The monitoring system may
+              be down.
+            </p>
+            <Button onClick={() => refetch()} className="mr-2">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
+    <div className="max-w-6xl mx-auto space-y-4 md:space-y-8">
         {/* Page Header */}
         <div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">API Health Monitor</h1>
@@ -412,7 +408,6 @@ export default function HealthPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </Layout>
+    </div>
   );
 }
