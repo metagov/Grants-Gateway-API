@@ -6,6 +6,7 @@ import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { registerInternalAnalyticsRoutes } from "./routes/internalAnalytics";
 import { 
   requireAuth as requireQueryAuth, 
   perUserRateLimiter, 
@@ -33,6 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth (must be before other routes)
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  // Register hidden internal analytics routes (protected by INTERNAL_ANALYTICS_PASSWORD secret)
+  registerInternalAnalyticsRoutes(app);
 
   // Add API proxy endpoints to avoid CORS issues
   app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {

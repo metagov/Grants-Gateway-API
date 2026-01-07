@@ -13,11 +13,15 @@ import GetApiAccess from "@/pages/get-api-access";
 import Health from "@/pages/health";
 import Contributors from "@/pages/contributors";
 import AdminDashboard from "@/pages/admin-dashboard";
+import InternalAnalytics from "@/pages/internal-analytics";
 import MobileToast from "@/components/mobile-toast";
 
 function Router() {
   return (
     <Switch>
+      {/* Hidden internal analytics route - not linked anywhere */}
+      <Route path="/__internal/usage" component={InternalAnalytics} />
+      
       {/* API Documentation Routes */}
       <Route path="/" component={() => <Layout><Overview /></Layout>} />
       <Route path="/endpoints" component={() => <Layout><Endpoints /></Layout>} />
