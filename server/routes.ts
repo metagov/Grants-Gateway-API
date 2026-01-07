@@ -1,49 +1,77 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authenticateApiKey, requireAuth, AuthenticatedRequest, requestLoggingMiddleware, adminRouteGuard } from "./middleware/auth";
+import {
+  authenticateApiKey,
+  requireAuth,
+  AuthenticatedRequest,
+  requestLoggingMiddleware,
+  adminRouteGuard,
+} from "./middleware/auth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
 import { OctantAdapter } from "./adapters/octant";
 import { GivethAdapter } from "./adapters/giveth";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import {
+  setupAuth,
+  isAuthenticated,
+  registerAuthRoutes,
+} from "./replit_integrations/auth";
 import { registerInternalAnalyticsRoutes } from "./routes/internalAnalytics";
-import { 
-  requireAuth as requireQueryAuth, 
-  perUserRateLimiter, 
-  validateQueryParams, 
-  queryMetricsStart, 
+import {
+  requireAuth as requireQueryAuth,
+  perUserRateLimiter,
+  validateQueryParams,
+  queryMetricsStart,
   queryMetricsEnd,
-  AuthenticatedApiRequest as QueryAuthRequest 
+  AuthenticatedApiRequest as QueryAuthRequest,
 } from "./middleware/queryProtection";
 
 import { BaseAdapter } from "./adapters/base";
-import { createPaginationMeta, parsePaginationParams } from "./utils/pagination";
+import {
+  createPaginationMeta,
+  parsePaginationParams,
+} from "./utils/pagination";
 import { PaginatedResponse, registrationSchema } from "../shared/schema";
 import cors from "cors";
 import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
-  app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL || 'https://your-domain.com'
-      : true,
-    credentials: true
-  }));
+  app.use(
+    cors({
+      origin:
+        process.env.NODE_ENV === "production"
+          ? process.env.FRONTEND_URL || "https://your-domain.com"
+          : true,
+      credentials: true,
+    }),
+  );
 
   // Setup Replit Auth (must be before other routes)
-  await setupAuth(app);
-  registerAuthRoutes(app);
-  
+  const replitAuthEnabled =
+    process.env.NODE_ENV !== "production" &&
+    !!process.env.REPLIT_CLIENT_ID &&
+    !!process.env.REPLIT_CLIENT_SECRET;
+
+  if (replitAuthEnabled) {
+    await setupAuth(app);
+    registerAuthRoutes(app);
+    console.log("✅ Replit auth enabled");
+  } else {
+    console.log("ℹ️ Replit auth disabled (production or missing config)");
+  }
+
   // Register hidden internal analytics routes (protected by INTERNAL_ANALYTICS_PASSWORD secret)
   registerInternalAnalyticsRoutes(app);
 
   // Add API proxy endpoints to avoid CORS issues
-  app.get('/api/proxy/opengrants/:endpoint', async (req, res) => {
+  app.get("/api/proxy/opengrants/:endpoint", async (req, res) => {
     try {
       const { endpoint } = req.params;
-      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
-      const url = `https://grants.daostar.org/api/v1/${endpoint}${queryString ? `?${queryString}` : ''}`;
+      const queryString = new URLSearchParams(
+        req.query as Record<string, string>,
+      ).toString();
+      const url = `https://grants.daostar.org/api/v1/${endpoint}${queryString ? `?${queryString}` : ""}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -55,14 +83,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(data);
       }
     } catch (error) {
-      console.error('OpenGrants proxy error:', error);
+      console.error("OpenGrants proxy error:", error);
       if (!res.headersSent) {
-        res.status(500).json({ error: 'Failed to fetch from OpenGrants API' });
+        res.status(500).json({ error: "Failed to fetch from OpenGrants API" });
       }
     }
   });
 
-  app.get('/api/proxy/daoip5/:system/:file', async (req, res) => {
+  app.get("/api/proxy/daoip5/:system/:file", async (req, res) => {
     try {
       const { system, file } = req.params;
       const url = `https://daoip5.daostar.org/${system}/${file}`;
@@ -77,15 +105,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(data);
       }
     } catch (error) {
-      console.error('DAOIP-5 proxy error:', error);
+      console.error("DAOIP-5 proxy error:", error);
       if (!res.headersSent) {
-        res.status(500).json({ error: 'Failed to fetch from DAOIP-5 API' });
+        res.status(500).json({ error: "Failed to fetch from DAOIP-5 API" });
       }
     }
   });
 
   // Directory listing for DAOIP-5 systems
-  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+  app.get("/api/proxy/daoip5/:system", async (req, res) => {
     try {
       const { system } = req.params;
       const url = `https://daoip5.daostar.org/${system}`;
@@ -100,18 +128,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(data);
       }
     } catch (error) {
-      console.error('DAOIP-5 directory proxy error:', error);
+      console.error("DAOIP-5 directory proxy error:", error);
       if (!res.headersSent) {
-        res.status(500).json({ error: 'Failed to fetch directory from DAOIP-5 API' });
+        res
+          .status(500)
+          .json({ error: "Failed to fetch directory from DAOIP-5 API" });
       }
     }
   });
 
-
-
   // Apply middleware to all API routes
-  app.use('/api', authenticateApiKey as any);
-  app.use('/api', rateLimitMiddleware as any);
+  app.use("/api", authenticateApiKey as any);
+  app.use("/api", rateLimitMiddleware as any);
 
   // Initialize adapters dynamically based on configuration
   let adapters: { [key: string]: BaseAdapter } = {};
@@ -119,27 +147,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Load adapters based on systems configuration
   const initializeAdapters = async () => {
     try {
-      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const { systemsConfigService } = await import(
+        "./services/systemsConfigService"
+      );
       const activeSystems = await systemsConfigService.getActiveSystems();
-      
-      console.log(`🔧 Initializing adapters for ${activeSystems.length} active systems`);
-      
+
+      console.log(
+        `🔧 Initializing adapters for ${activeSystems.length} active systems`,
+      );
+
       for (const systemConfig of activeSystems) {
-        if (systemConfig.source === 'opengrants') {
+        if (systemConfig.source === "opengrants") {
           // Initialize OpenGrants-based adapters
-          if (systemConfig.id === 'octant') {
+          if (systemConfig.id === "octant") {
             adapters[systemConfig.id] = new OctantAdapter();
-          } else if (systemConfig.id === 'giveth') {
+          } else if (systemConfig.id === "giveth") {
             adapters[systemConfig.id] = new GivethAdapter();
           }
-          console.log(`✅ Initialized ${systemConfig.id} adapter (${systemConfig.source})`);
+          console.log(
+            `✅ Initialized ${systemConfig.id} adapter (${systemConfig.source})`,
+          );
         }
         // DAOIP-5 systems don't need adapters as they use static data fetching
       }
 
-      console.log(`🎯 Active adapters: ${Object.keys(adapters).join(', ')}`);
+      console.log(`🎯 Active adapters: ${Object.keys(adapters).join(", ")}`);
     } catch (error) {
-      console.error('❌ Error initializing adapters:', error);
+      console.error("❌ Error initializing adapters:", error);
       // Fallback to default adapters
       adapters = {
         octant: new OctantAdapter(),
@@ -160,30 +194,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // API logging middleware - only for legacy routes
-  app.use('/api/v1', async (req, res, next) => {
+  app.use("/api/v1", async (req, res, next) => {
     const aReq = req as AuthenticatedRequest;
     const start = Date.now();
-    
-    res.on('finish', async () => {
+
+    res.on("finish", async () => {
       const responseTime = Date.now() - start;
-      
+
       try {
         // Legacy API logging for backward compatibility
-        const userId = typeof aReq.user?.id === 'number' ? aReq.user.id : null;
+        const userId = typeof aReq.user?.id === "number" ? aReq.user.id : null;
         await storage.createApiLog({
           userId,
           endpoint: req.path,
           method: req.method,
           statusCode: res.statusCode,
           responseTime,
-          userAgent: req.get('User-Agent') || null,
-          ipAddress: req.ip || null
+          userAgent: req.get("User-Agent") || null,
+          ipAddress: req.ip || null,
         });
       } catch (error) {
-        console.error('Failed to log API request:', error);
+        console.error("Failed to log API request:", error);
       }
     });
-    
+
     next();
   });
 
@@ -194,16 +228,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     perUserRateLimiter,
     validateQueryParams,
     queryMetricsStart,
-    queryMetricsEnd
+    queryMetricsEnd,
   ];
 
   // Grant Systems endpoints (protected)
-  app.get('/api/v1/grantSystems', ...queryProtection, async (req, res) => {
+  app.get("/api/v1/grantSystems", ...queryProtection, async (req, res) => {
     try {
       const { system } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
       const selectedAdapters = getAdapter(system as string);
-      
+
       const allSystems = [];
       for (const adapter of selectedAdapters) {
         const adapterSystems = await adapter.getSystems();
@@ -211,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Handle single system vs collection responses
-      if (system && typeof system === 'string' && allSystems.length === 1) {
+      if (system && typeof system === "string" && allSystems.length === 1) {
         // Single system query - return flattened object
         const systemData = allSystems[0];
         res.json(systemData);
@@ -224,26 +258,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const response: PaginatedResponse<any> = {
           "@context": "http://www.daostar.org/schemas",
           data: paginatedSystems,
-          pagination: paginationMeta
+          pagination: paginationMeta,
         };
 
         res.json(response);
       }
     } catch (error) {
-      console.error('Error fetching systems:', error);
+      console.error("Error fetching systems:", error);
       res.status(500).json({
         error: "Internal server error",
-        message: "Failed to fetch grant systems"
+        message: "Failed to fetch grant systems",
       });
     }
   });
 
-  app.get('/api/v1/grantSystems/:id', ...queryProtection, async (req, res) => {
+  app.get("/api/v1/grantSystems/:id", ...queryProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
       const selectedAdapters = getAdapter(system as string);
-      
+
       for (const adapter of selectedAdapters) {
         const systemData = await adapter.getSystem(id);
         if (systemData) {
@@ -253,34 +287,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(404).json({
         error: "System not found",
-        message: `Grant system with ID ${id} not found`
+        message: `Grant system with ID ${id} not found`,
       });
     } catch (error) {
-      console.error('Error fetching system:', error);
+      console.error("Error fetching system:", error);
       res.status(500).json({
         error: "Internal server error",
-        message: "Failed to fetch grant system"
+        message: "Failed to fetch grant system",
       });
     }
   });
 
   // Grant Pools endpoints (protected)
-  app.get('/api/v1/grantPools', ...queryProtection, async (req, res) => {
+  app.get("/api/v1/grantPools", ...queryProtection, async (req, res) => {
     try {
       const { system, isOpen, mechanism } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
 
       const filters = {
-        isOpen: isOpen ? isOpen === 'true' : undefined,
+        isOpen: isOpen ? isOpen === "true" : undefined,
         mechanism: mechanism as string,
         limit,
-        offset
+        offset,
       };
 
       const selectedAdapters = getAdapter(system as string);
       let allPools: any[] = [];
       let totalCount = 0;
-      
+
       for (const adapter of selectedAdapters) {
         const result = await adapter.getPoolsPaginated(filters);
         allPools.push(...result.data);
@@ -302,15 +336,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Multi-system aggregation - mark as extension
         extensions["io.opengrants.aggregated"] = {
-          systems: ["Multi-System"],  // Simplified for now
-          totalAdapters: selectedAdapters.length
+          systems: ["Multi-System"], // Simplified for now
+          totalAdapters: selectedAdapters.length,
         };
       }
 
       // Ensure all pools have required DAOIP-5 fields
-      const validatedPools = allPools.map(pool => ({
+      const validatedPools = allPools.map((pool) => ({
         type: "GrantPool",
-        id: pool.id || `unknown:pool:${pool.name?.toLowerCase().replace(/\s+/g, '-') || 'unnamed'}`,
+        id:
+          pool.id ||
+          `unknown:pool:${pool.name?.toLowerCase().replace(/\s+/g, "-") || "unnamed"}`,
         name: pool.name || "Unnamed Pool",
         description: pool.description || "No description available",
         grantFundingMechanism: pool.grantFundingMechanism || "Direct Grants",
@@ -319,45 +355,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(pool.closeDate && { closeDate: pool.closeDate }),
         ...(pool.applicationsURI && { applicationsURI: pool.applicationsURI }),
         ...(pool.governanceURI && { governanceURI: pool.governanceURI }),
-        ...(pool.attestationIssuersURI && { attestationIssuersURI: pool.attestationIssuersURI }),
-        ...(pool.requiredCredentials && { requiredCredentials: pool.requiredCredentials }),
-        ...(pool.totalGrantPoolSize && { totalGrantPoolSize: pool.totalGrantPoolSize }),
+        ...(pool.attestationIssuersURI && {
+          attestationIssuersURI: pool.attestationIssuersURI,
+        }),
+        ...(pool.requiredCredentials && {
+          requiredCredentials: pool.requiredCredentials,
+        }),
+        ...(pool.totalGrantPoolSize && {
+          totalGrantPoolSize: pool.totalGrantPoolSize,
+        }),
         ...(pool.email && { email: pool.email }),
         ...(pool.image && { image: pool.image }),
         ...(pool.coverImage && { coverImage: pool.coverImage }),
-        ...(pool.extensions && { extensions: pool.extensions })
+        ...(pool.extensions && { extensions: pool.extensions }),
       }));
 
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
-      
+
       // Add pagination to extensions for API metadata
       extensions["io.opengrants.pagination"] = paginationMeta;
-      
+
       // DAOIP-5 compliant response structure
       const response = {
         "@context": "http://www.daostar.org/schemas",
         name: entityName,
         type: entityType,
         grantPools: validatedPools,
-        ...(Object.keys(extensions).length > 0 && { extensions })
+        ...(Object.keys(extensions).length > 0 && { extensions }),
       };
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching pools:', error);
+      console.error("Error fetching pools:", error);
       res.status(500).json({
         error: "Internal server error",
-        message: "Failed to fetch grant pools"
+        message: "Failed to fetch grant pools",
       });
     }
   });
 
-  app.get('/api/v1/grantPools/:id', ...queryProtection, async (req, res) => {
+  app.get("/api/v1/grantPools/:id", ...queryProtection, async (req, res) => {
     try {
       const { id } = req.params;
       const { system } = req.query;
       const selectedAdapters = getAdapter(system as string);
-      
+
       for (const adapter of selectedAdapters) {
         const pool = await adapter.getPool(id);
         if (pool) {
@@ -367,86 +409,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(404).json({
         error: "Pool not found",
-        message: `Grant pool with ID ${id} not found`
+        message: `Grant pool with ID ${id} not found`,
       });
     } catch (error) {
-      console.error('Error fetching pool:', error);
+      console.error("Error fetching pool:", error);
       res.status(500).json({
         error: "Internal server error",
-        message: "Failed to fetch grant pool"
+        message: "Failed to fetch grant pool",
       });
     }
   });
 
-
-
   // Health endpoints
-  app.get('/api/v1/health', async (req, res) => {
+  app.get("/api/v1/health", async (req, res) => {
     try {
-      const { healthService } = await import('./services/health');
-      const forceRefresh = req.query.refresh === 'true';
+      const { healthService } = await import("./services/health");
+      const forceRefresh = req.query.refresh === "true";
       const health = await healthService.getSystemHealth(forceRefresh);
-      
+
       // Set appropriate HTTP status based on health
-      const statusCode = health.status === 'healthy' ? 200 : 
-                        health.status === 'degraded' ? 200 : 503;
-      
+      const statusCode =
+        health.status === "healthy"
+          ? 200
+          : health.status === "degraded"
+            ? 200
+            : 503;
+
       res.status(statusCode).json(health);
     } catch (error) {
-      console.error('Health check failed:', error);
+      console.error("Health check failed:", error);
       res.status(503).json({
-        status: 'down',
+        status: "down",
         timestamp: new Date().toISOString(),
-        error: 'Health check system failure'
+        error: "Health check system failure",
       });
     }
   });
 
   // Public endpoints for frontend (cached data, no auth required)
-  app.get('/api/public/daoip5/systems', async (req, res) => {
+  app.get("/api/public/daoip5/systems", async (req, res) => {
     try {
-      const { daoip5Service } = await import('./services/daoip5-service');
+      const { daoip5Service } = await import("./services/daoip5-service");
       const summaries = await daoip5Service.getAllSystemSummaries();
       res.json(summaries);
     } catch (error) {
-      console.error('Failed to fetch DAOIP5 systems:', error);
-      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
+      console.error("Failed to fetch DAOIP5 systems:", error);
+      res.status(500).json({ error: "Failed to fetch DAOIP5 systems" });
     }
   });
 
-  app.get('/api/public/daoip5/:system/summary', async (req, res) => {
+  app.get("/api/public/daoip5/:system/summary", async (req, res) => {
     try {
       const { system } = req.params;
-      const { daoip5Service } = await import('./services/daoip5-service');
+      const { daoip5Service } = await import("./services/daoip5-service");
       const summary = await daoip5Service.getSystemSummary(system);
       res.json(summary);
     } catch (error) {
-      console.error(`Failed to fetch DAOIP5 summary for ${req.params.system}:`, error);
-      res.status(500).json({ error: `Failed to fetch summary for ${req.params.system}` });
+      console.error(
+        `Failed to fetch DAOIP5 summary for ${req.params.system}:`,
+        error,
+      );
+      res
+        .status(500)
+        .json({ error: `Failed to fetch summary for ${req.params.system}` });
     }
   });
 
-  app.get('/api/public/daoip5/:system/:pool', async (req, res) => {
+  app.get("/api/public/daoip5/:system/:pool", async (req, res) => {
     try {
       const { system, pool } = req.params;
-      const { daoip5Service } = await import('./services/daoip5-service');
+      const { daoip5Service } = await import("./services/daoip5-service");
       const poolData = await daoip5Service.getPoolData(system, pool);
       res.json(poolData);
     } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.pool}:`, error);
-      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
+      console.error(
+        `Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.pool}:`,
+        error,
+      );
+      res
+        .status(500)
+        .json({ error: `Failed to fetch pool data for ${req.params.system}` });
     }
   });
 
   // Apply authentication middleware to all proxy endpoints - REQUIRE API tokens
-  app.use('/api/proxy', authenticateApiKey, requireAuth);
-  app.use('/api/proxy', rateLimitMiddleware);
+  app.use("/api/proxy", authenticateApiKey, requireAuth);
+  app.use("/api/proxy", rateLimitMiddleware);
 
   // DAOIP5 API Proxy endpoints to handle CORS
-  app.get('/api/proxy/daoip5', async (req, res) => {
+  app.get("/api/proxy/daoip5", async (req, res) => {
     try {
-      const response = await fetch('https://daoip5.daostar.org/', {
-        headers: { 'Accept': 'application/json' }
+      const response = await fetch("https://daoip5.daostar.org/", {
+        headers: { Accept: "application/json" },
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -454,16 +508,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error('Failed to fetch DAOIP5 systems:', error);
-      res.status(500).json({ error: 'Failed to fetch DAOIP5 systems' });
+      console.error("Failed to fetch DAOIP5 systems:", error);
+      res.status(500).json({ error: "Failed to fetch DAOIP5 systems" });
     }
   });
 
-  app.get('/api/proxy/daoip5/:system', async (req, res) => {
+  app.get("/api/proxy/daoip5/:system", async (req, res) => {
     try {
       const { system } = req.params;
       const response = await fetch(`https://daoip5.daostar.org/${system}`, {
-        headers: { 'Accept': 'application/json' }
+        headers: { Accept: "application/json" },
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -471,78 +525,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pools for ${req.params.system}:`, error);
-      res.status(500).json({ error: `Failed to fetch pools for ${req.params.system}` });
+      console.error(
+        `Failed to fetch DAOIP5 pools for ${req.params.system}:`,
+        error,
+      );
+      res
+        .status(500)
+        .json({ error: `Failed to fetch pools for ${req.params.system}` });
     }
   });
 
-  app.get('/api/proxy/daoip5/:system/:filename', async (req, res) => {
+  app.get("/api/proxy/daoip5/:system/:filename", async (req, res) => {
     try {
       const { system, filename } = req.params;
-      const response = await fetch(`https://daoip5.daostar.org/${system}/${filename}.json`, {
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await fetch(
+        `https://daoip5.daostar.org/${system}/${filename}.json`,
+        {
+          headers: { Accept: "application/json" },
+        },
+      );
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
       const data = await response.json();
       res.json(data);
     } catch (error) {
-      console.error(`Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.filename}:`, error);
-      res.status(500).json({ error: `Failed to fetch pool data for ${req.params.system}` });
+      console.error(
+        `Failed to fetch DAOIP5 pool data for ${req.params.system}/${req.params.filename}:`,
+        error,
+      );
+      res
+        .status(500)
+        .json({ error: `Failed to fetch pool data for ${req.params.system}` });
     }
   });
 
-  app.get('/api/v1/health/:adapter', async (req, res) => {
+  app.get("/api/v1/health/:adapter", async (req, res) => {
     try {
-      const { healthService } = await import('./services/health');
+      const { healthService } = await import("./services/health");
       const { adapter } = req.params;
       const adapterHealth = await healthService.getAdapterHealth(adapter);
-      
+
       if (!adapterHealth) {
         return res.status(404).json({
           error: "Adapter not found",
-          message: `Health status for adapter '${adapter}' not available`
+          message: `Health status for adapter '${adapter}' not available`,
         });
       }
 
-      const statusCode = adapterHealth.status === 'healthy' ? 200 :
-                        adapterHealth.status === 'degraded' ? 200 : 503;
-      
+      const statusCode =
+        adapterHealth.status === "healthy"
+          ? 200
+          : adapterHealth.status === "degraded"
+            ? 200
+            : 503;
+
       res.status(statusCode).json(adapterHealth);
     } catch (error) {
-      console.error(`Health check failed for adapter ${req.params.adapter}:`, error);
+      console.error(
+        `Health check failed for adapter ${req.params.adapter}:`,
+        error,
+      );
       res.status(503).json({
-        status: 'down',
+        status: "down",
         timestamp: new Date().toISOString(),
-        error: 'Adapter health check failure'
+        error: "Adapter health check failure",
       });
     }
   });
 
   // Quick health check endpoint (no detailed checks, uses cache)
-  app.get('/api/v1/health-quick', async (req, res) => {
+  app.get("/api/v1/health-quick", async (req, res) => {
     try {
-      const { healthService } = await import('./services/health');
+      const { healthService } = await import("./services/health");
       const quickHealth = healthService.getQuickHealth();
       res.json(quickHealth);
     } catch (error) {
-      res.status(503).json({ status: 'down' });
+      res.status(503).json({ status: "down" });
     }
   });
 
   // Applications endpoints (protected)
-  app.get('/api/v1/grantApplications', ...queryProtection, async (req, res) => {
+  app.get("/api/v1/grantApplications", ...queryProtection, async (req, res) => {
     try {
       const { system, poolId, projectId, status } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
-      
+
       // DEBUG: Log the incoming query parameters
-      console.log(`[QUERY DEBUG] /api/v1/grantApplications called with:`, { system, poolId, projectId, status, limit, offset });
+      console.log(`[QUERY DEBUG] /api/v1/grantApplications called with:`, {
+        system,
+        poolId,
+        projectId,
+        status,
+        limit,
+        offset,
+      });
 
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
-      
+
       // If no poolId is provided, fetch the latest closed pool
       if (!poolId) {
         const allPools = [];
@@ -550,33 +631,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const pools = await adapter.getPools({ limit: 20 });
           allPools.push(...pools);
         }
-        
+
         if (allPools.length > 0) {
           // Find the latest closed pool specifically (where isOpen is false)
-          const closedPools = allPools.filter(pool => !pool.isOpen);
-          
-          const latestPool = closedPools.length > 0 
-            ? closedPools.reduce((latest, pool) => {
-                if (!latest) return pool;
-                const latestDate = latest.closeDate
-                  ? new Date(latest.closeDate)
-                  : new Date(0);
-                const poolDate = pool.closeDate
-                  ? new Date(pool.closeDate)
-                  : new Date(0);
-                return poolDate > latestDate ? pool : latest;
-              })
-            : allPools.reduce((latest, pool) => {
-                // Fallback to any pool if no closed pools found
-                if (!latest) return pool;
-                const latestDate = latest.closeDate
-                  ? new Date(latest.closeDate)
-                  : new Date(0);
-                const poolDate = pool.closeDate
-                  ? new Date(pool.closeDate)
-                  : new Date(0);
-                return poolDate > latestDate ? pool : latest;
-              }, allPools[0]);
+          const closedPools = allPools.filter((pool) => !pool.isOpen);
+
+          const latestPool =
+            closedPools.length > 0
+              ? closedPools.reduce((latest, pool) => {
+                  if (!latest) return pool;
+                  const latestDate = latest.closeDate
+                    ? new Date(latest.closeDate)
+                    : new Date(0);
+                  const poolDate = pool.closeDate
+                    ? new Date(pool.closeDate)
+                    : new Date(0);
+                  return poolDate > latestDate ? pool : latest;
+                })
+              : allPools.reduce((latest, pool) => {
+                  // Fallback to any pool if no closed pools found
+                  if (!latest) return pool;
+                  const latestDate = latest.closeDate
+                    ? new Date(latest.closeDate)
+                    : new Date(0);
+                  const poolDate = pool.closeDate
+                    ? new Date(pool.closeDate)
+                    : new Date(0);
+                  return poolDate > latestDate ? pool : latest;
+                }, allPools[0]);
 
           finalPoolId = latestPool?.id;
         }
@@ -587,12 +669,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectId: projectId as string,
         status: status as string,
         limit,
-        offset
+        offset,
       };
 
       let allApplications: any[] = [];
       let totalCount = 0;
-      
+
       for (const adapter of selectedAdapters) {
         const result = await adapter.getApplicationsPaginated(filters);
         allApplications.push(...result.data);
@@ -600,168 +682,198 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Group applications by grant pools to match DAOIP-5 schema
-      const poolsMap = new Map<string, {
-        id: string;
-        name: string;
-        applications: any[];
-      }>();
+      const poolsMap = new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          applications: any[];
+        }
+      >();
 
       // Group applications by their grant pool
-      allApplications.forEach(app => {
-        const poolKey = app.grantPoolId || 'unknown';
+      allApplications.forEach((app) => {
+        const poolKey = app.grantPoolId || "unknown";
         if (!poolsMap.has(poolKey)) {
           poolsMap.set(poolKey, {
             id: poolKey,
-            name: app.grantPoolName || 'Unknown Pool',
-            applications: []
+            name: app.grantPoolName || "Unknown Pool",
+            applications: [],
           });
         }
         poolsMap.get(poolKey)!.applications.push(app);
       });
 
       // Convert to DAOIP-5 compliant structure
-      const grantPools = Array.from(poolsMap.values()).map(pool => ({
+      const grantPools = Array.from(poolsMap.values()).map((pool) => ({
         type: "GrantPool",
         id: pool.id,
         name: pool.name,
-        applications: pool.applications
+        applications: pool.applications,
       }));
 
       // Determine system name based on selected adapters
-      const systemStr = typeof system === 'string' ? system : '';
-      const systemName = systemStr ? `${systemStr.charAt(0).toUpperCase()}${systemStr.slice(1)} Grant System` : "Multi-System Grant Data";
-      const systemType = selectedAdapters.length === 1 ? "GrantSystem" : "GrantDataAggregator";
+      const systemStr = typeof system === "string" ? system : "";
+      const systemName = systemStr
+        ? `${systemStr.charAt(0).toUpperCase()}${systemStr.slice(1)} Grant System`
+        : "Multi-System Grant Data";
+      const systemType =
+        selectedAdapters.length === 1 ? "GrantSystem" : "GrantDataAggregator";
 
       const paginationMeta = createPaginationMeta(totalCount, limit, offset);
-      
+
       const response = {
         "@context": "http://www.daostar.org/schemas",
         name: systemName,
         type: systemType,
         grantPools: grantPools,
-        pagination: paginationMeta
+        pagination: paginationMeta,
       };
 
       res.json(response);
     } catch (error) {
-      console.error('Error fetching applications:', error);
+      console.error("Error fetching applications:", error);
       res.status(500).json({
         error: "Internal server error",
-        message: "Failed to fetch applications"
+        message: "Failed to fetch applications",
       });
     }
   });
 
-  app.get('/api/v1/grantApplications/:id', ...queryProtection, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { system } = req.query;
-      const selectedAdapters = getAdapter(system as string);
-      
-      for (const adapter of selectedAdapters) {
-        const application = await adapter.getApplication(id);
-        if (application) {
-          return res.json(application);
+  app.get(
+    "/api/v1/grantApplications/:id",
+    ...queryProtection,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { system } = req.query;
+        const selectedAdapters = getAdapter(system as string);
+
+        for (const adapter of selectedAdapters) {
+          const application = await adapter.getApplication(id);
+          if (application) {
+            return res.json(application);
+          }
         }
-      }
 
-      res.status(404).json({
-        error: "Application not found",
-        message: `Application with ID ${id} not found`
-      });
-    } catch (error) {
-      console.error('Error fetching application:', error);
-      res.status(500).json({
-        error: "Internal server error",
-        message: "Failed to fetch application"
-      });
-    }
-  });
+        res.status(404).json({
+          error: "Application not found",
+          message: `Application with ID ${id} not found`,
+        });
+      } catch (error) {
+        console.error("Error fetching application:", error);
+        res.status(500).json({
+          error: "Internal server error",
+          message: "Failed to fetch application",
+        });
+      }
+    },
+  );
 
   // Health check endpoint
-  app.get('/api/health', (req, res) => {
+  app.get("/api/health", (req, res) => {
     res.json({
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
       services: {
-        database: 'connected',
-        adapters: Object.keys(adapters)
-      }
+        database: "connected",
+        adapters: Object.keys(adapters),
+      },
     });
   });
 
-
-
   // Accurate Analytics Endpoints
-  app.get('/api/v1/analytics/ecosystem-stats', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { accurateDataService } = await import('./services/accurateDataService.js');
-      const stats = await accurateDataService.getEcosystemStats();
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching ecosystem stats:', error);
-      res.status(500).json({
-        error: "Failed to fetch ecosystem statistics",
-        message: "Unable to compute accurate ecosystem metrics"
-      });
-    }
-  });
+  app.get(
+    "/api/v1/analytics/ecosystem-stats",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { accurateDataService } = await import(
+          "./services/accurateDataService.js"
+        );
+        const stats = await accurateDataService.getEcosystemStats();
+        res.json(stats);
+      } catch (error) {
+        console.error("Error fetching ecosystem stats:", error);
+        res.status(500).json({
+          error: "Failed to fetch ecosystem statistics",
+          message: "Unable to compute accurate ecosystem metrics",
+        });
+      }
+    },
+  );
 
-  app.get('/api/v1/analytics/system/:systemName', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { systemName } = req.params;
-      const { source = 'opengrants' } = req.query;
-      const { accurateDataService } = await import('./services/accurateDataService.js');
+  app.get(
+    "/api/v1/analytics/system/:systemName",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { systemName } = req.params;
+        const { source = "opengrants" } = req.query;
+        const { accurateDataService } = await import(
+          "./services/accurateDataService.js"
+        );
 
-      const metrics = await accurateDataService.calculateSystemMetrics(
-        systemName,
-        source as 'opengrants' | 'daoip5'
-      );
+        const metrics = await accurateDataService.calculateSystemMetrics(
+          systemName,
+          source as "opengrants" | "daoip5",
+        );
 
-      res.json(metrics);
-    } catch (error) {
-      console.error(`Error fetching system metrics for ${req.params.systemName}:`, error);
-      res.status(500).json({
-        error: "Failed to fetch system metrics",
-        message: `Unable to compute metrics for system ${req.params.systemName}`
-      });
-    }
-  });
+        res.json(metrics);
+      } catch (error) {
+        console.error(
+          `Error fetching system metrics for ${req.params.systemName}:`,
+          error,
+        );
+        res.status(500).json({
+          error: "Failed to fetch system metrics",
+          message: `Unable to compute metrics for system ${req.params.systemName}`,
+        });
+      }
+    },
+  );
 
-  app.get('/api/v1/analytics/funding-trends', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { accurateDataService } = await import('./services/accurateDataService.js');
+  app.get(
+    "/api/v1/analytics/funding-trends",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { accurateDataService } = await import(
+          "./services/accurateDataService.js"
+        );
 
-      // This would need to be implemented to calculate quarterly trends from real data
-      // For now, return a placeholder structure
-      const trends = [
-        { quarter: '2024-Q1', funding: 0, applications: 0 },
-        { quarter: '2024-Q2', funding: 0, applications: 0 },
-        { quarter: '2024-Q3', funding: 0, applications: 0 },
-        { quarter: '2024-Q4', funding: 0, applications: 0 }
-      ];
+        // This would need to be implemented to calculate quarterly trends from real data
+        // For now, return a placeholder structure
+        const trends = [
+          { quarter: "2024-Q1", funding: 0, applications: 0 },
+          { quarter: "2024-Q2", funding: 0, applications: 0 },
+          { quarter: "2024-Q3", funding: 0, applications: 0 },
+          { quarter: "2024-Q4", funding: 0, applications: 0 },
+        ];
 
-      res.json(trends);
-    } catch (error) {
-      console.error('Error fetching funding trends:', error);
-      res.status(500).json({
-        error: "Failed to fetch funding trends",
-        message: "Unable to compute funding trend data"
-      });
-    }
-  });
+        res.json(trends);
+      } catch (error) {
+        console.error("Error fetching funding trends:", error);
+        res.status(500).json({
+          error: "Failed to fetch funding trends",
+          message: "Unable to compute funding trend data",
+        });
+      }
+    },
+  );
 
   // Systems configuration endpoints - READ ONLY
-  app.get('/api/v1/systems/config', async (req: AuthenticatedRequest, res) => {
+  app.get("/api/v1/systems/config", async (req: AuthenticatedRequest, res) => {
     try {
-      const { systemsConfigService } = await import('./services/systemsConfigService');
+      const { systemsConfigService } = await import(
+        "./services/systemsConfigService"
+      );
       const config = await systemsConfigService.loadConfiguration();
-      
+
       // Return the full configuration with only enabled systems
-      const enabledSystems = config.activeSystems.filter(system => system.enabled);
-      
+      const enabledSystems = config.activeSystems.filter(
+        (system) => system.enabled,
+      );
+
       res.json({
-        activeSystems: enabledSystems.map(system => ({
+        activeSystems: enabledSystems.map((system) => ({
           id: system.id,
           name: system.name,
           displayName: system.displayName,
@@ -775,54 +887,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
             supportedNetworks: system.metadata.supportedNetworks,
             fundingMechanisms: system.metadata.fundingMechanisms,
             established: system.metadata.established,
-            compatibility: system.metadata.compatibility
-          }
-        }))
+            compatibility: system.metadata.compatibility,
+          },
+        })),
       });
     } catch (error) {
-      console.error('Error fetching systems config:', error);
+      console.error("Error fetching systems config:", error);
       res.status(500).json({
         error: "Failed to load systems configuration",
-        message: "Unable to retrieve systems configuration"
+        message: "Unable to retrieve systems configuration",
       });
     }
   });
 
-  app.get('/api/v1/systems/config/active', async (req: AuthenticatedRequest, res) => {
-    try {
-      const { systemsConfigService } = await import('./services/systemsConfigService');
-      const activeSystems = await systemsConfigService.getActiveSystems();
-      
-      // Only return essential info for active systems
-      const publicSystemsInfo = activeSystems.map(system => ({
-        id: system.id,
-        name: system.name,
-        displayName: system.displayName,
-        source: system.source,
-        type: system.type,
-        priority: system.priority,
-        metadata: {
-          description: system.metadata.description,
-          website: system.metadata.website,
-          supportedNetworks: system.metadata.supportedNetworks,
-          fundingMechanisms: system.metadata.fundingMechanisms,
-          established: system.metadata.established,
-          compatibility: system.metadata.compatibility
-        }
-      }));
-      
-      res.json({ activeSystems: publicSystemsInfo });
-    } catch (error) {
-      console.error('Error fetching active systems:', error);
-      res.status(500).json({
-        error: "Failed to load active systems",
-        message: "Unable to retrieve active systems configuration"
-      });
-    }
-  });
+  app.get(
+    "/api/v1/systems/config/active",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { systemsConfigService } = await import(
+          "./services/systemsConfigService"
+        );
+        const activeSystems = await systemsConfigService.getActiveSystems();
+
+        // Only return essential info for active systems
+        const publicSystemsInfo = activeSystems.map((system) => ({
+          id: system.id,
+          name: system.name,
+          displayName: system.displayName,
+          source: system.source,
+          type: system.type,
+          priority: system.priority,
+          metadata: {
+            description: system.metadata.description,
+            website: system.metadata.website,
+            supportedNetworks: system.metadata.supportedNetworks,
+            fundingMechanisms: system.metadata.fundingMechanisms,
+            established: system.metadata.established,
+            compatibility: system.metadata.compatibility,
+          },
+        }));
+
+        res.json({ activeSystems: publicSystemsInfo });
+      } catch (error) {
+        console.error("Error fetching active systems:", error);
+        res.status(500).json({
+          error: "Failed to load active systems",
+          message: "Unable to retrieve active systems configuration",
+        });
+      }
+    },
+  );
 
   // API documentation endpoint
-  app.get('/api/v1/docs', (req, res) => {
+  app.get("/api/v1/docs", (req, res) => {
     res.json({
       name: "OpenGrants Gateway API",
       version: "1.0.0",
@@ -832,16 +949,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pools: "/api/v1/pools",
         applications: "/api/v1/applications",
         config: {
-          activeSystems: "/api/v1/systems/config/active"
+          activeSystems: "/api/v1/systems/config/active",
         },
         analytics: {
           ecosystemStats: "/api/v1/analytics/ecosystem-stats",
           systemMetrics: "/api/v1/analytics/system/:systemName",
-          fundingTrends: "/api/v1/analytics/funding-trends"
-        }
+          fundingTrends: "/api/v1/analytics/funding-trends",
+        },
       },
       supportedSystems: Object.keys(adapters),
-      documentation: "https://docs.daostar.org/"
+      documentation: "https://docs.daostar.org/",
     });
   });
 
