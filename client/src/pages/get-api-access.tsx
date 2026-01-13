@@ -44,7 +44,7 @@ interface ApiKeyInfo {
 }
 
 export default function GetApiAccess() {
-  const { user, isLoading: authLoading, login } = useAuth();
+  const { user, isLoading: authLoading, login, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -390,8 +390,18 @@ export default function GetApiAccess() {
           </CardHeader>
           <CardContent>
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold mb-2">Logged in as:</h3>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Logged in as:</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => logout()}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  Log out
+                </Button>
+              </div>
+              <div className="flex items-center space-x-3 mt-2">
                 {typedUser.profileImageUrl && (
                   <img 
                     src={typedUser.profileImageUrl} 
