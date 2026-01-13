@@ -44,7 +44,7 @@ interface ApiKeyInfo {
 }
 
 export default function GetApiAccess() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, login } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -167,11 +167,11 @@ export default function GetApiAccess() {
             </CardHeader>
             <CardContent>
               <Button 
-                onClick={() => window.location.href = '/api/login'} 
+                onClick={() => login()} 
                 className="w-full"
                 data-testid="button-login"
               >
-                Log in with Replit
+                Log In
               </Button>
             </CardContent>
           </Card>

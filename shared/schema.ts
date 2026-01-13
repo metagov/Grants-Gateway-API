@@ -22,9 +22,10 @@ export const sessions = pgTable("sessions", {
   expire: timestamp("expire").notNull(),
 });
 
-// OAuth users table for Replit Auth
+// OAuth users table for Privy Auth (previously Replit Auth)
 export const oauthUsers = pgTable("oauth_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  privyUserId: varchar("privy_user_id").unique(), // Privy DID (did:privy:...)
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
@@ -36,7 +37,7 @@ export const oauthUsers = pgTable("oauth_users", {
 // API users with org info and intent
 export const apiUsers = pgTable("api_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  replitUserId: varchar("replit_user_id").notNull().unique().references(() => oauthUsers.id),
+  replitUserId: varchar("replit_user_id").unique().references(() => oauthUsers.id), // Legacy Replit user reference (nullable for Privy users)
   email: varchar("email").notNull(),
   name: varchar("name").notNull(),
   orgName: varchar("org_name").notNull(),
