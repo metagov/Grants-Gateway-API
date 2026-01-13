@@ -265,16 +265,16 @@ export default function QueryBuilderPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <div className="text-xs font-medium text-gray-500 mb-2">REQUEST URL</div>
               <code className="text-sm text-primary break-all">
                 {queryPreview}
               </code>
             </div>
             
-            <div className="bg-gray-900 rounded-lg p-4">
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs font-medium text-gray-400">cURL COMMAND</div>
+                <div className="text-xs font-medium text-gray-500">cURL COMMAND</div>
                 {apiKey && (
                   <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/30">
                     <Key className="h-3 w-3 mr-1" />
@@ -282,7 +282,7 @@ export default function QueryBuilderPage() {
                   </Badge>
                 )}
               </div>
-              <code className="text-sm text-green-400 break-all whitespace-pre-wrap font-mono">
+              <code className="text-sm text-gray-800 break-all whitespace-pre-wrap font-mono">
                 {curlCommand}
               </code>
             </div>
