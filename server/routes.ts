@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cors({
       origin:
         process.env.NODE_ENV === "production"
-          ? process.env.FRONTEND_URL || "https://your-domain.com"
+          ? process.env.FRONTEND_URL || "https://grants.daostar.org"
           : true,
       credentials: true,
     }),
