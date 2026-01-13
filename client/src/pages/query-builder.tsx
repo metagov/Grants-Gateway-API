@@ -31,6 +31,11 @@ export default function QueryBuilderPage() {
     apiClient.setApiKey(apiKey || null);
   }, [apiKey]);
 
+  // Generate cURL command
+  const curlCommand = apiKey 
+    ? `curl -X GET "${queryPreview}" \\\n  -H "Authorization: Bearer ${apiKey}"`
+    : `curl -X GET "${queryPreview}"`;
+
   // Update query preview when filters change
   useEffect(() => {
     let query = `https://grants.daostar.org/api/v1/${entityType}`;
@@ -252,18 +257,33 @@ export default function QueryBuilderPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => copyToClipboard(queryPreview)}
+                onClick={() => copyToClipboard(curlCommand)}
               >
                 <Copy className="h-3 w-3 mr-1" />
-                Copy
+                Copy cURL
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="bg-gray-50 rounded-lg p-4">
+          <CardContent className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
               <div className="text-xs font-medium text-gray-500 mb-2">REQUEST URL</div>
               <code className="text-sm text-primary break-all">
                 {queryPreview}
+              </code>
+            </div>
+            
+            <div className="bg-gray-900 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-medium text-gray-400">cURL COMMAND</div>
+                {apiKey && (
+                  <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/30">
+                    <Key className="h-3 w-3 mr-1" />
+                    Authenticated
+                  </Badge>
+                )}
+              </div>
+              <code className="text-sm text-green-400 break-all whitespace-pre-wrap font-mono">
+                {curlCommand}
               </code>
             </div>
           </CardContent>
@@ -274,16 +294,28 @@ export default function QueryBuilderPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Response
+            <div className="flex items-center gap-2">
+              Response
+              {executeQueryMutation.isSuccess && (
+                <Badge variant="default" className="bg-primary/10 text-primary">
+                  200 OK
+                </Badge>
+              )}
+              {executeQueryMutation.isError && (
+                <Badge variant="destructive">
+                  Error
+                </Badge>
+              )}
+            </div>
             {executeQueryMutation.isSuccess && (
-              <Badge variant="default" className="bg-primary/10 text-primary">
-                200 OK
-              </Badge>
-            )}
-            {executeQueryMutation.isError && (
-              <Badge variant="destructive">
-                Error
-              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => copyToClipboard(JSON.stringify(executeQueryMutation.data, null, 2))}
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                Copy Response
+              </Button>
             )}
           </CardTitle>
         </CardHeader>
