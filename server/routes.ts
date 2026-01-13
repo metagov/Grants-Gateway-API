@@ -48,17 +48,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Setup Replit Auth (must be before other routes)
-  const replitAuthEnabled =
-    process.env.NODE_ENV !== "production" &&
-    !!process.env.REPLIT_CLIENT_ID &&
-    !!process.env.REPLIT_CLIENT_SECRET;
+  // REPL_ID is automatically provided by Replit platform
+  const replitAuthEnabled = !!process.env.REPL_ID;
 
   if (replitAuthEnabled) {
     await setupAuth(app);
     registerAuthRoutes(app);
     console.log("✅ Replit auth enabled");
   } else {
-    console.log("ℹ️ Replit auth disabled (production or missing config)");
+    console.log("ℹ️ Replit auth disabled (not running on Replit)");
   }
 
   // Register hidden internal analytics routes (protected by INTERNAL_ANALYTICS_PASSWORD secret)
