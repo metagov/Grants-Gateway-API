@@ -3,7 +3,9 @@ import {
   Play, 
   Copy,
   Loader2,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Key,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +17,19 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { QueryFilters } from "@/types/daoip5";
+import { Link } from "wouter";
 
 export default function QueryBuilderPage() {
   // Query builder state
   const [entityType, setEntityType] = useState("grantSystems");
   const [queryFilters, setQueryFilters] = useState<QueryFilters>({});
   const [queryPreview, setQueryPreview] = useState("https://grants.daostar.org/api/v1/grantSystems");
+  const [apiKey, setApiKey] = useState("");
+
+  // Update API client when key changes
+  useEffect(() => {
+    apiClient.setApiKey(apiKey || null);
+  }, [apiKey]);
 
   // Update query preview when filters change
   useEffect(() => {
@@ -95,6 +104,42 @@ export default function QueryBuilderPage() {
             <CardTitle>Build Your Query</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
+          <div>
+            <Label htmlFor="apiKey" className="flex items-center">
+              <Key className="h-4 w-4 mr-1 text-primary" />
+              API Key
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InfoIcon className="h-4 w-4 ml-1 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Enter your API key to authenticate requests.</p>
+                  <p>Get one from the Get API Access page.</p>
+                </TooltipContent>
+              </Tooltip>
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="apiKey"
+                type="password"
+                placeholder="Enter your API key"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="flex-1"
+              />
+              <Link href="/get-api-access">
+                <Button variant="outline" size="icon" title="Get API Access">
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+            {!apiKey && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Need an API key? <Link href="/get-api-access" className="text-primary hover:underline">Get one here</Link>
+              </p>
+            )}
+          </div>
+
           <div>
             <Label htmlFor="entityType">Entity Type</Label>
             <Select value={entityType} onValueChange={setEntityType}>
@@ -256,8 +301,21 @@ export default function QueryBuilderPage() {
               </pre>
             )}
             {executeQueryMutation.isError && (
-              <div className="text-red-600">
-                Error: {executeQueryMutation.error.message}
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="text-red-600 font-medium mb-2">
+                  Error: {executeQueryMutation.error.message}
+                </div>
+                {executeQueryMutation.error.message.includes('Unauthorized') && (
+                  <div className="text-sm text-gray-600">
+                    <p className="mb-2">You need a valid API key to access this endpoint.</p>
+                    <Link href="/get-api-access">
+                      <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/10">
+                        <Key className="h-4 w-4 mr-2" />
+                        Get API Access
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
             {executeQueryMutation.isIdle && (

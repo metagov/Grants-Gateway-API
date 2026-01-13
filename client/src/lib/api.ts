@@ -3,19 +3,38 @@ import { QueryFilters, ApiResponse, DAOIP5System, DAOIP5GrantPool, DAOIP5Project
 const API_BASE_URL = '/api/v1';
 
 class ApiClient {
+  private apiKey: string | null = null;
+
+  setApiKey(key: string | null) {
+    this.apiKey = key;
+  }
+
+  getApiKey(): string | null {
+    return this.apiKey;
+  }
+
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options?.headers as Record<string, string>),
+    };
+
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+    
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
+      headers,
       ...options,
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      if (response.status === 401) {
+        throw new Error('Unauthorized: Please enter a valid API key. Get one at /get-api-access');
+      }
       throw new Error(error.message || error.error || `HTTP ${response.status}`);
     }
 
