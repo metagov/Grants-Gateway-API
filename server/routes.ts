@@ -728,13 +728,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pagination: paginationMeta,
       };
 
-      res.json(response);
+      if (!res.headersSent) {
+        res.json(response);
+      }
     } catch (error) {
       console.error("Error fetching applications:", error);
-      res.status(500).json({
-        error: "Internal server error",
-        message: "Failed to fetch applications",
-      });
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: "Internal server error",
+          message: "Failed to fetch applications",
+        });
+      }
     }
   });
 
@@ -783,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Accurate Analytics Endpoints
   app.get(
     "/api/v1/analytics/ecosystem-stats",
-    async (req: AuthenticatedRequest, res) => {
+    async (req, res) => {
       try {
         const { accurateDataService } = await import(
           "./services/accurateDataService.js"
@@ -802,7 +806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/v1/analytics/system/:systemName",
-    async (req: AuthenticatedRequest, res) => {
+    async (req, res) => {
       try {
         const { systemName } = req.params;
         const { source = "opengrants" } = req.query;
@@ -831,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/v1/analytics/funding-trends",
-    async (req: AuthenticatedRequest, res) => {
+    async (req, res) => {
       try {
         const { accurateDataService } = await import(
           "./services/accurateDataService.js"
@@ -858,7 +862,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Systems configuration endpoints - READ ONLY
-  app.get("/api/v1/systems/config", async (req: AuthenticatedRequest, res) => {
+  app.get("/api/v1/systems/config", async (req, res) => {
     try {
       const { systemsConfigService } = await import(
         "./services/systemsConfigService"
@@ -900,7 +904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/v1/systems/config/active",
-    async (req: AuthenticatedRequest, res) => {
+    async (req, res) => {
       try {
         const { systemsConfigService } = await import(
           "./services/systemsConfigService"
