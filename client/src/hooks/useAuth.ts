@@ -1,9 +1,20 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function useAuth() {
   const { ready, authenticated, user: privyUser, login, logout } = usePrivy();
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (!ready) {
+      const timer = setTimeout(() => {
+        console.warn('Privy auth timed out - may not be configured for this domain');
+        setTimedOut(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [ready]);
 
   const { data: backendUser, isLoading: backendLoading, refetch } = useQuery({
     queryKey: ["/api/auth/user"],
@@ -27,13 +38,16 @@ export function useAuth() {
     ...(typeof backendUser === 'object' && backendUser !== null ? backendUser : {}),
   } : null;
 
+  const effectiveReady = ready || timedOut;
+
   return {
     user,
     privyUser,
-    isLoading: !ready || (authenticated && backendLoading),
+    isLoading: !effectiveReady || (authenticated && backendLoading),
     isAuthenticated: authenticated && !!privyUser,
     login,
     logout,
-    ready,
+    ready: effectiveReady,
+    authError: timedOut && !ready,
   };
 }

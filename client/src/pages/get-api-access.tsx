@@ -44,7 +44,7 @@ interface ApiKeyInfo {
 }
 
 export default function GetApiAccess() {
-  const { user, isLoading: authLoading, login, logout } = useAuth();
+  const { user, isLoading: authLoading, login, logout, authError } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -165,14 +165,27 @@ export default function GetApiAccess() {
                 You need to log in to access API registration
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={() => login()} 
-                className="w-full"
-                data-testid="button-login"
-              >
-                Log In
-              </Button>
+            <CardContent className="space-y-4">
+              {authError && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-yellow-700">
+                      <p className="font-medium">Authentication service unavailable</p>
+                      <p className="mt-1">Please contact us at <a href="mailto:rashmi@daostar.org" className="underline">rashmi@daostar.org</a> to request API access.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {!authError && (
+                <Button 
+                  onClick={() => login()} 
+                  className="w-full"
+                  data-testid="button-login"
+                >
+                  Log In
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
