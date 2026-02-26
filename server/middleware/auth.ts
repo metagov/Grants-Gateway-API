@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { storage } from "../storage";
 import crypto from "crypto";
+import { verifyPrivyToken, PrivyAuthenticatedRequest } from "./privyAuth";
+import { adminService } from "../services/admin-service";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -87,10 +89,11 @@ export const authenticateApiKey: RequestHandler = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);
-    res.status(500).json({ 
-      error: "Authentication error",
-      message: "An error occurred during authentication"
-    });
+    // If the database is unreachable, fall through to anonymous access
+    // rather than blocking the entire request with a 500.
+    // Routes that require authentication use authenticateNewApiKey instead.
+    aReq.user = undefined;
+    next();
   }
 }
 
@@ -174,68 +177,23 @@ export const authenticateNewApiKey: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const requireAuth: RequestHandler = (req, res, next) => {
-  const aReq = req as AuthenticatedRequest;
-  if (!aReq.user) {
-    return res.status(401).json({
-      error: "Authentication required",
-      message: "This endpoint requires a valid API key"
-    });
-  }
-  next();
-}
-
-// Admin route guard middleware - requires authentication and admin privileges
-export const adminRouteGuard: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-  
-  try {
-    // Check if user is authenticated via Replit OAuth
-    if (!req.isAuthenticated() || !user?.expires_at || !user?.claims) {
-      return res.status(401).json({ 
-        error: "Unauthorized",
-        message: "Authentication required. Please log in with your Google account."
-      });
+// Admin route guard: verifies Privy JWT then checks admin status
+export const adminRouteGuard: RequestHandler[] = [
+  verifyPrivyToken,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const privyUser = (req as PrivyAuthenticatedRequest).privyUser;
+    if (!privyUser) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
     }
-
-    // Check if token is still valid (simplified check)
-    const now = Math.floor(Date.now() / 1000);
-    if (now > user.expires_at) {
-      return res.status(401).json({ 
-        error: "Unauthorized",
-        message: "Your session has expired. Please log in again."
-      });
-    }
-    
-    const userId = user.claims.sub;
-    if (!userId) {
-      return res.status(401).json({ 
-        error: "Unauthorized",
-        message: "Invalid user information. Please log in again."
-      });
-    }
-    
-    // Import admin service dynamically to avoid circular dependencies
-    const { adminService } = await import('../services/admin-service');
-    
-    // Check if user is admin - return 403 for non-admin users
-    const isAdmin = await adminService.isAdmin(userId);
+    const isAdmin = await adminService.isAdmin(privyUser.userId);
     if (!isAdmin) {
-      return res.status(403).json({ 
-        error: "Access denied",
-        message: "You don't have permission to access this resource"
-      });
+      res.status(403).json({ error: "Forbidden", message: "Admin access required" });
+      return;
     }
-    
     next();
-  } catch (error) {
-    console.error('Admin route guard error:', error as Error);
-    res.status(500).json({ 
-      error: "Internal server error",
-      message: "An error occurred while processing your request"
-    });
-  }
-};
+  },
+];
 
 // Comprehensive request logging middleware for all endpoints
 export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
@@ -270,9 +228,9 @@ export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
           responseTimeMs: responseTime,
           rateLimitHit: false
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Request logging failed:', {
-          error: error instanceof Error ? error.message : String(error),
+          error: error?.message,
           endpoint: req.originalUrl || req.path,
           method: req.method,
           status: res.statusCode

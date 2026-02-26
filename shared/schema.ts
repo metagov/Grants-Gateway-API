@@ -13,19 +13,11 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// New authentication tables for OAuth and API management
+// Authentication tables for OAuth and API management
 
-// Session storage table for Replit Auth
-export const sessions = pgTable("sessions", {
-  sid: varchar("sid").primaryKey(),
-  sess: jsonb("sess").notNull(),
-  expire: timestamp("expire").notNull(),
-});
-
-// OAuth users table for Privy Auth (previously Replit Auth)
+// OAuth users table (will be migrated to Privy users in Phase 3)
 export const oauthUsers = pgTable("oauth_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  privyUserId: varchar("privy_user_id").unique(), // Privy DID (did:privy:...)
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
@@ -37,7 +29,7 @@ export const oauthUsers = pgTable("oauth_users", {
 // API users with org info and intent
 export const apiUsers = pgTable("api_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  replitUserId: varchar("replit_user_id").unique().references(() => oauthUsers.id), // Legacy Replit user reference (nullable for Privy users)
+  oauthUserId: varchar("oauth_user_id").notNull().unique().references(() => oauthUsers.id),
   email: varchar("email").notNull(),
   name: varchar("name").notNull(),
   orgName: varchar("org_name").notNull(),
@@ -157,8 +149,8 @@ export const apiLogsRelations = relations(apiLogs, ({ one }) => ({
 
 // New authentication relations
 export const apiUsersRelations = relations(apiUsers, ({ one, many }) => ({
-  replitUser: one(oauthUsers, {
-    fields: [apiUsers.replitUserId],
+  oauthUser: one(oauthUsers, {
+    fields: [apiUsers.oauthUserId],
     references: [oauthUsers.id],
   }),
   apiKeys: many(apiKeys),
@@ -310,6 +302,3 @@ export interface PaginatedResponse<T> {
 }
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
-
-// Re-export auth types from models
-export * from "./models/auth";

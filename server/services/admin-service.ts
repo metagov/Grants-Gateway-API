@@ -41,7 +41,7 @@ export interface AdminUserDetail {
   name: string;
   orgName: string;
   status: string;
-  replitUserId: string;
+  oauthUserId: string;
   createdAt: string;
   apiKeys: Array<{
     id: string;
@@ -194,7 +194,7 @@ class AdminService {
         name: user.name,
         orgName: user.orgName,
         status: user.status,
-        replitUserId: user.replitUserId,
+        oauthUserId: user.oauthUserId,
         createdAt: user.createdAt.toISOString(),
         apiKeys: userApiKeys.map(key => ({
           id: key.id,
@@ -251,12 +251,9 @@ class AdminService {
     }
   }
 
-  // Check if user is admin - RESTRICTED TO OWNER ONLY
-  async isAdmin(replitUserId: string): Promise<boolean> {
-    // Only the project owner can access admin functionality
-    // This is hardcoded for security - admin access is completely private
-    const OWNER_USER_ID = '2104566';
-    return replitUserId === OWNER_USER_ID;
+  async isAdmin(privyDid: string): Promise<boolean> {
+    const adminDids = (process.env.ADMIN_PRIVY_DIDS || '').split(',').map(d => d.trim()).filter(Boolean);
+    return adminDids.includes(privyDid);
   }
 }
 

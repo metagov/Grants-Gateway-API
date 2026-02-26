@@ -20,13 +20,13 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserApiKey(id: number, apiKey: string): Promise<User>;
 
-  // New OAuth user methods (for Replit Auth)
+  // OAuth user methods (for Privy Auth)
   getOAuthUser(id: string): Promise<OAuthUser | undefined>;
   upsertOAuthUser(user: UpsertOAuthUser): Promise<OAuthUser>;
 
   // API user methods (for registration and API access)
   getApiUser(id: string): Promise<ApiUser | undefined>;
-  getApiUserByReplitId(replitUserId: string): Promise<ApiUser | undefined>;
+  getApiUserByOAuthId(oauthUserId: string): Promise<ApiUser | undefined>;
   createApiUser(user: InsertApiUser): Promise<ApiUser>;
   updateApiUser(id: string, user: Partial<InsertApiUser>): Promise<ApiUser>;
 
@@ -77,157 +77,6 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // OAuth user methods
-  async getOAuthUser(id: string): Promise<OAuthUser | undefined> {
-    const [user] = await db.select().from(oauthUsers).where(eq(oauthUsers.id, id));
-    return user || undefined;
-  }
-
-  async upsertOAuthUser(user: UpsertOAuthUser): Promise<OAuthUser> {
-    const [result] = await db
-      .insert(oauthUsers)
-      .values(user)
-      .onConflictDoUpdate({
-        target: oauthUsers.id,
-        set: {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          profileImageUrl: user.profileImageUrl,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return result;
-  }
-
-  // API user methods
-  async getApiUser(id: string): Promise<ApiUser | undefined> {
-    const [user] = await db.select().from(apiUsers).where(eq(apiUsers.id, id));
-    return user || undefined;
-  }
-
-  async getApiUserByReplitId(replitUserId: string): Promise<ApiUser | undefined> {
-    const [user] = await db.select().from(apiUsers).where(eq(apiUsers.replitUserId, replitUserId));
-    return user || undefined;
-  }
-
-  async createApiUser(user: InsertApiUser): Promise<ApiUser> {
-    const [result] = await db.insert(apiUsers).values(user).returning();
-    return result;
-  }
-
-  async updateApiUser(id: string, user: Partial<InsertApiUser>): Promise<ApiUser> {
-    const [result] = await db
-      .update(apiUsers)
-      .set({ ...user, updatedAt: new Date() })
-      .where(eq(apiUsers.id, id))
-      .returning();
-    return result;
-  }
-
-  // API key methods
-  async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
-    const [result] = await db.insert(apiKeys).values(apiKey).returning();
-    return result;
-  }
-
-  async getApiKeyByHash(keyHash: string): Promise<ApiKey | undefined> {
-    const [key] = await db.select().from(apiKeys).where(eq(apiKeys.keyHash, keyHash));
-    return key || undefined;
-  }
-
-  async getApiKeysByUserId(userId: string): Promise<ApiKey[]> {
-    return await db.select().from(apiKeys).where(eq(apiKeys.userId, userId));
-  }
-
-  async updateApiKeyLastUsed(id: string): Promise<void> {
-    await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, id));
-  }
-
-  async revokeApiKey(id: string): Promise<ApiKey> {
-    const [result] = await db
-      .update(apiKeys)
-      .set({ status: "revoked" })
-      .where(eq(apiKeys.id, id))
-      .returning();
-    return result;
-  }
-
-  // Request logging methods
-  async createRequestLog(log: InsertRequestLog): Promise<RequestLog> {
-    const [result] = await db.insert(requestLogs).values(log).returning();
-    return result;
-  }
-
-  async getRequestLogs(userId?: string, limit = 100): Promise<RequestLog[]> {
-    if (userId) {
-      return await db.select().from(requestLogs)
-        .where(eq(requestLogs.userId, userId))
-        .orderBy(desc(requestLogs.timestamp))
-        .limit(limit);
-    }
-    return await db.select().from(requestLogs)
-      .orderBy(desc(requestLogs.timestamp))
-      .limit(limit);
-  }
-
-  // Rate limiting methods
-  async getRateLimit(userId: string, endpointPattern: string): Promise<RateLimit | undefined> {
-    const [result] = await db.select().from(rateLimits)
-      .where(and(eq(rateLimits.userId, userId), eq(rateLimits.endpointPattern, endpointPattern)));
-    return result || undefined;
-  }
-
-  async updateRateLimit(userId: string, endpointPattern: string, increment: number): Promise<RateLimit> {
-    const [result] = await db
-      .insert(rateLimits)
-      .values({ userId, endpointPattern, requestCount: increment })
-      .onConflictDoUpdate({
-        target: [rateLimits.userId, rateLimits.endpointPattern],
-        set: { requestCount: sql`${rateLimits.requestCount} + ${increment}` },
-      })
-      .returning();
-    return result;
-  }
-
-  async resetRateLimit(userId: string, endpointPattern: string): Promise<void> {
-    await db.update(rateLimits)
-      .set({ requestCount: 0, windowStart: new Date() })
-      .where(and(eq(rateLimits.userId, userId), eq(rateLimits.endpointPattern, endpointPattern)));
-  }
-
-  // Admin methods
-  async getAllApiKeys(): Promise<ApiKey[]> {
-    return await db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
-  }
-
-  async getAllApiUsers(): Promise<ApiUser[]> {
-    return await db.select().from(apiUsers).orderBy(desc(apiUsers.createdAt));
-  }
-
-  async getApiLogsByUserId(userId: string, params?: { limit?: number }): Promise<ApiLog[]> {
-    return await db.select().from(apiLogs)
-      .orderBy(desc(apiLogs.createdAt))
-      .limit(params?.limit || 100);
-  }
-
-  async getAllRequestLogs(params?: { limit?: number; startDate?: Date }): Promise<RequestLog[]> {
-    let query = db.select().from(requestLogs).orderBy(desc(requestLogs.timestamp));
-    if (params?.limit) {
-      query = query.limit(params.limit) as any;
-    }
-    return await query;
-  }
-
-  async getRequestLogsByUserId(userId: string, params?: { limit?: number }): Promise<RequestLog[]> {
-    return await db.select().from(requestLogs)
-      .where(eq(requestLogs.userId, userId))
-      .orderBy(desc(requestLogs.timestamp))
-      .limit(params?.limit || 100);
-  }
-
-  // Legacy user methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -321,17 +170,256 @@ export class DatabaseStorage implements IStorage {
     return newLog;
   }
 
-  async getApiLogs(params?: { userId?: number; limit?: number; startDate?: Date }): Promise<ApiLog[]> {
-    const limit = params?.limit || 100;
-    if (params?.userId) {
+  async getApiLogs(params: { userId?: number; limit?: number; startDate?: Date } = {}): Promise<ApiLog[]> {
+    const { userId, limit = 100, startDate } = params;
+    
+    let query = db.select().from(apiLogs);
+    
+    const conditions = [];
+    if (userId) {
+      conditions.push(eq(apiLogs.userId, userId));
+    }
+    if (startDate) {
+      conditions.push(gte(apiLogs.createdAt, startDate));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query
+      .orderBy(desc(apiLogs.createdAt))
+      .limit(limit);
+  }
+
+  // OAuth user methods (for Privy Auth)
+  async getOAuthUser(id: string): Promise<OAuthUser | undefined> {
+    const [user] = await db.select().from(oauthUsers).where(eq(oauthUsers.id, id));
+    return user || undefined;
+  }
+
+  async upsertOAuthUser(userData: UpsertOAuthUser & { id?: string }): Promise<OAuthUser> {
+    const { id, ...userDataWithoutId } = userData;
+    
+    if (id) {
+      // Update existing user
+      const [user] = await db
+        .insert(oauthUsers)
+        .values({ id, ...userDataWithoutId })
+        .onConflictDoUpdate({
+          target: oauthUsers.id,
+          set: {
+            ...userDataWithoutId,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      return user;
+    } else {
+      // Create new user (PostgreSQL will generate UUID)
+      const [user] = await db
+        .insert(oauthUsers)
+        .values(userDataWithoutId)
+        .returning();
+      return user;
+    }
+  }
+
+  // API user methods (for registration and API access)
+  async getApiUser(id: string): Promise<ApiUser | undefined> {
+    const [user] = await db.select().from(apiUsers).where(eq(apiUsers.id, id));
+    return user || undefined;
+  }
+
+  async getApiUserByOAuthId(oauthUserId: string): Promise<ApiUser | undefined> {
+    const [user] = await db.select().from(apiUsers).where(eq(apiUsers.oauthUserId, oauthUserId));
+    return user || undefined;
+  }
+
+  async createApiUser(userData: InsertApiUser): Promise<ApiUser> {
+    const [user] = await db.insert(apiUsers).values(userData).returning();
+    return user;
+  }
+
+  async updateApiUser(id: string, userData: Partial<InsertApiUser>): Promise<ApiUser> {
+    const [user] = await db
+      .update(apiUsers)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(apiUsers.id, id))
+      .returning();
+    return user;
+  }
+
+  // API key methods
+  async createApiKey(keyData: InsertApiKey): Promise<ApiKey> {
+    const [apiKey] = await db.insert(apiKeys).values(keyData).returning();
+    return apiKey;
+  }
+
+  async getApiKeyByHash(keyHash: string): Promise<ApiKey | undefined> {
+    const [apiKey] = await db.select().from(apiKeys)
+      .where(and(
+        eq(apiKeys.keyHash, keyHash),
+        eq(apiKeys.status, 'active'),
+        gte(apiKeys.expiresAt, new Date())
+      ));
+    return apiKey || undefined;
+  }
+
+  async getApiKeysByUserId(userId: string): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys)
+      .where(eq(apiKeys.userId, userId))
+      .orderBy(desc(apiKeys.createdAt));
+  }
+
+  async updateApiKeyLastUsed(id: string): Promise<void> {
+    await db
+      .update(apiKeys)
+      .set({ lastUsedAt: new Date() })
+      .where(eq(apiKeys.id, id));
+  }
+
+  async revokeApiKey(id: string): Promise<ApiKey> {
+    const [apiKey] = await db
+      .update(apiKeys)
+      .set({ status: 'revoked' })
+      .where(eq(apiKeys.id, id))
+      .returning();
+    return apiKey;
+  }
+
+  // Request logging methods
+  async createRequestLog(logData: InsertRequestLog): Promise<RequestLog> {
+    const [log] = await db.insert(requestLogs).values(logData).returning();
+    return log;
+  }
+
+  async getRequestLogs(userId?: string, limit = 100): Promise<RequestLog[]> {
+    if (userId) {
+      return await db.select().from(requestLogs)
+        .where(eq(requestLogs.userId, userId))
+        .orderBy(desc(requestLogs.timestamp))
+        .limit(limit);
+    }
+    
+    return await db.select().from(requestLogs)
+      .orderBy(desc(requestLogs.timestamp))
+      .limit(limit);
+  }
+
+  // Rate limiting methods
+  async getRateLimit(userId: string, endpointPattern: string): Promise<RateLimit | undefined> {
+    const [rateLimit] = await db.select().from(rateLimits)
+      .where(and(
+        eq(rateLimits.userId, userId),
+        eq(rateLimits.endpointPattern, endpointPattern)
+      ));
+    return rateLimit || undefined;
+  }
+
+  async updateRateLimit(userId: string, endpointPattern: string, increment: number): Promise<RateLimit> {
+    // Check if rate limit exists
+    const existing = await this.getRateLimit(userId, endpointPattern);
+    
+    if (existing) {
+      // Check if window has expired
+      const windowEnd = new Date(existing.windowStart);
+      windowEnd.setHours(windowEnd.getHours() + 1); // 1 hour window
+      
+      if (new Date() > windowEnd) {
+        // Reset window
+        const [rateLimit] = await db
+          .update(rateLimits)
+          .set({ 
+            requestCount: increment,
+            windowStart: new Date()
+          })
+          .where(eq(rateLimits.id, existing.id))
+          .returning();
+        return rateLimit;
+      } else {
+        // Increment existing
+        const [rateLimit] = await db
+          .update(rateLimits)
+          .set({ requestCount: (existing.requestCount || 0) + increment })
+          .where(eq(rateLimits.id, existing.id))
+          .returning();
+        return rateLimit;
+      }
+    } else {
+      // Create new rate limit
+      const [rateLimit] = await db.insert(rateLimits).values({
+        userId,
+        endpointPattern,
+        requestCount: increment,
+        windowStart: new Date()
+      }).returning();
+      return rateLimit;
+    }
+  }
+
+  async resetRateLimit(userId: string, endpointPattern: string): Promise<void> {
+    await db
+      .update(rateLimits)
+      .set({ 
+        requestCount: 0,
+        windowStart: new Date()
+      })
+      .where(and(
+        eq(rateLimits.userId, userId),
+        eq(rateLimits.endpointPattern, endpointPattern)
+      ));
+  }
+
+  // Admin methods for dashboard
+  async getAllApiKeys(): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys)
+      .orderBy(desc(apiKeys.createdAt));
+  }
+
+  async getAllApiUsers(): Promise<ApiUser[]> {
+    return await db.select().from(apiUsers)
+      .orderBy(desc(apiUsers.createdAt));
+  }
+
+  async getApiLogsByUserId(userId: string, params: { limit?: number } = {}): Promise<ApiLog[]> {
+    const { limit = 100 } = params;
+    
+    // Check if userId is a number (legacy system) or UUID (new system)
+    const numericUserId = parseInt(userId);
+    if (!isNaN(numericUserId) && numericUserId.toString() === userId) {
+      // Legacy numeric user ID
       return await db.select().from(apiLogs)
-        .where(eq(apiLogs.userId, params.userId))
+        .where(eq(apiLogs.userId, numericUserId))
         .orderBy(desc(apiLogs.createdAt))
         .limit(limit);
     }
-
-    return await db.select().from(apiLogs)
-      .orderBy(desc(apiLogs.createdAt))
+    
+    // UUID user ID - no matching logs in legacy apiLogs table
+    return [];
+  }
+  
+  // New request logs methods for modern analytics
+  async getAllRequestLogs(params: { limit?: number; startDate?: Date } = {}): Promise<RequestLog[]> {
+    const { limit = 1000, startDate } = params;
+    
+    let query = db.select().from(requestLogs);
+    
+    if (startDate) {
+      query = query.where(gte(requestLogs.timestamp, startDate));
+    }
+    
+    return await query
+      .orderBy(desc(requestLogs.timestamp))
+      .limit(limit);
+  }
+  
+  async getRequestLogsByUserId(userId: string, params: { limit?: number } = {}): Promise<RequestLog[]> {
+    const { limit = 100 } = params;
+    
+    return await db.select().from(requestLogs)
+      .where(eq(requestLogs.userId, userId))
+      .orderBy(desc(requestLogs.timestamp))
       .limit(limit);
   }
 }

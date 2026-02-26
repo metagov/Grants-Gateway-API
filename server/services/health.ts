@@ -1,6 +1,7 @@
 import { OctantAdapter } from "../adapters/octant";
 import { GivethAdapter } from "../adapters/giveth";
 import { QuestbookAdapter } from "../adapters/questbook";
+import { SCFAdapter } from "../adapters/scf";
 
 export interface AdapterHealthStatus {
   name: string;
@@ -106,7 +107,8 @@ class HealthService {
     const adapters = [
       { instance: new OctantAdapter(), name: 'Octant' },
       { instance: new GivethAdapter(), name: 'Giveth' },
-      { instance: new QuestbookAdapter(), name: 'Questbook' }
+      { instance: new QuestbookAdapter(), name: 'Questbook' },
+      { instance: new SCFAdapter(), name: 'SCF' }
     ];
 
     // Check all adapters and database in parallel
