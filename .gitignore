@@ -11,3 +11,4 @@ DEV
 .env
 ca.crt
 .claude/
+AGENT.md
