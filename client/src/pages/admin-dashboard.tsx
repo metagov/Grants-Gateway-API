@@ -56,16 +56,38 @@ interface AdminUser {
 }
 
 export default function AdminDashboard() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { authenticated, isLoading: authLoading, login, getAccessToken } = useAuth();
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<AdminStats>({
-    queryKey: ['/api/admin/stats'],
-    enabled: !authLoading && !!user,
+    queryKey: ['/api/admin/stats', authenticated],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("401");
+      const res = await fetch('/api/admin/stats', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err: any = new Error(`${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    },
+    enabled: !authLoading && authenticated,
   });
 
   const { data: users, isLoading: usersLoading } = useQuery<AdminUser[]>({
-    queryKey: ['/api/admin/users'],
-    enabled: !authLoading && !!user,
+    queryKey: ['/api/admin/users', authenticated],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) throw new Error("401");
+      const res = await fetch('/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      return res.json();
+    },
+    enabled: !authLoading && authenticated,
   });
 
   // Show loading while checking auth
@@ -96,9 +118,12 @@ export default function AdminDashboard() {
               <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
               <CardTitle>Authentication Required</CardTitle>
               <CardDescription>
-                Please log in with your Google account to access the admin dashboard.
+                Please log in to access the admin dashboard.
               </CardDescription>
             </CardHeader>
+            <CardContent>
+              <Button onClick={login} className="w-full">Log in</Button>
+            </CardContent>
           </Card>
         </div>
       );

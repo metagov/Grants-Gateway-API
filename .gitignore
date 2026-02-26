@@ -5,3 +5,9 @@ server/public
 vite.config.ts.*
 *.tar.gz
 attached_assets
+issues_for_claude.json
+TODO.md
+DEV
+.env
+ca.crt
+.claude/
