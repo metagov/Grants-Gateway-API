@@ -229,6 +229,7 @@ export const requestLoggingMiddleware: RequestHandler = (req, res, next) => {
           rateLimitHit: false
         });
       } catch (error: any) {
+        if (error?.message?.includes('ECONNRESET')) return;
         console.error('Request logging failed:', {
           error: error?.message,
           endpoint: req.originalUrl || req.path,
