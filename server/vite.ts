@@ -76,10 +76,8 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const distPath = isProduction
-    ? path.resolve(import.meta.dirname, "..", "public")
-    : path.resolve(import.meta.dirname, "public");
+  const projectRoot = process.cwd();
+  const distPath = path.resolve(projectRoot, "dist", "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
