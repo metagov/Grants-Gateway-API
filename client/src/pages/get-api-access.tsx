@@ -184,7 +184,7 @@ export default function GetApiAccess() {
               <div className="border-t pt-4">
                 <h3 className="font-semibold mb-2">Using Your API Key</h3>
                 <div className="bg-gray-900 text-gray-100 p-3 rounded text-sm font-mono">
-                  <div>curl -H "Authorization: Bearer {apiKey.slice(0, 20)}..." \</div>
+                  <div>curl -H "Authorization: Bearer {apiKey}" \</div>
                   <div className="ml-4">https://grants.daostar.org/api/v1/grantSystems</div>
                 </div>
               </div>

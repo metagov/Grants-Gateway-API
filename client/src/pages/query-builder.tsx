@@ -245,7 +245,7 @@ export default function QueryBuilderPage() {
               <div className="text-xs font-medium text-gray-500  mb-2">CURL</div>
               <code className="text-xs text-gray-700  break-all whitespace-pre-wrap">
                 {customApiKey.trim()
-                  ? `curl -H "Authorization: Bearer ${customApiKey.trim().slice(0, 8)}..." \\\n  "${queryPreview}"`
+                  ? `curl -H "Authorization: Bearer ${customApiKey.trim()}" \\\n  "${queryPreview}"`
                   : `curl "${queryPreview}"`}
               </code>
             </div>
