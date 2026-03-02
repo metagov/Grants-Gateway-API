@@ -61,6 +61,19 @@ export class SCFAdapter extends BaseAdapter {
     try {
       const { whereClause, whereParams } = this.buildPoolWhereClause(filters);
 
+      // Build ORDER BY clause
+      const sortBy = filters?.sortBy || 'id';
+      const sortOrder = filters?.sortOrder === 'asc' ? 'ASC' : 'DESC';
+      
+      // Map sortBy to database column names
+      const sortColumnMap: Record<string, string> = {
+        id: 'id',
+        name: 'name',
+        closeDate: 'close_date',
+        createdAt: 'created_at'
+      };
+      const sortColumn = sortColumnMap[sortBy] || 'id';
+
       // Count query
       const countResult = await pool.query(
         `SELECT COUNT(*) FROM public.silver_scf_grant_pools${whereClause}`,
@@ -68,12 +81,12 @@ export class SCFAdapter extends BaseAdapter {
       );
       const totalCount = parseInt(countResult.rows[0].count, 10);
 
-      // Data query with LIMIT/OFFSET
+      // Data query with LIMIT/OFFSET and ORDER BY
       const limit = filters?.limit ?? 20;
       const offset = filters?.offset ?? 0;
       const dataParams = [...whereParams, limit, offset];
       const dataResult = await pool.query(
-        `SELECT * FROM public.silver_scf_grant_pools${whereClause} ORDER BY id LIMIT $${whereParams.length + 1} OFFSET $${whereParams.length + 2}`,
+        `SELECT * FROM public.silver_scf_grant_pools${whereClause} ORDER BY ${sortColumn} ${sortOrder} LIMIT $${whereParams.length + 1} OFFSET $${whereParams.length + 2}`,
         dataParams
       );
 
@@ -118,6 +131,19 @@ export class SCFAdapter extends BaseAdapter {
     try {
       const { whereClause, whereParams } = this.buildApplicationWhereClause(filters);
 
+      // Build ORDER BY clause
+      const sortBy = filters?.sortBy || 'id';
+      const sortOrder = filters?.sortOrder === 'asc' ? 'ASC' : 'DESC';
+      
+      // Map sortBy to database column names
+      const sortColumnMap: Record<string, string> = {
+        id: 'id',
+        name: 'name',
+        closeDate: 'created_at',
+        createdAt: 'created_at'
+      };
+      const sortColumn = sortColumnMap[sortBy] || 'id';
+
       const countResult = await pool.query(
         `SELECT COUNT(*) FROM public.silver_scf_grant_applications${whereClause}`,
         whereParams
@@ -128,7 +154,7 @@ export class SCFAdapter extends BaseAdapter {
       const offset = filters?.offset ?? 0;
       const dataParams = [...whereParams, limit, offset];
       const dataResult = await pool.query(
-        `SELECT * FROM public.silver_scf_grant_applications${whereClause} ORDER BY id LIMIT $${whereParams.length + 1} OFFSET $${whereParams.length + 2}`,
+        `SELECT * FROM public.silver_scf_grant_applications${whereClause} ORDER BY ${sortColumn} ${sortOrder} LIMIT $${whereParams.length + 1} OFFSET $${whereParams.length + 2}`,
         dataParams
       );
 

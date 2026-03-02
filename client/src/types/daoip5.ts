@@ -132,4 +132,6 @@ export interface QueryFilters {
   poolId?: string;
   projectId?: string;
   mechanism?: string;
+  sortBy?: 'id' | 'name' | 'closeDate';
+  sortOrder?: 'asc' | 'desc';
 }

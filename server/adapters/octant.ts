@@ -353,7 +353,31 @@ export class OctantAdapter extends BaseAdapter {
   async getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>> {
     // Get all filtered pools without pagination limits to count total
     const filtersWithoutPagination = { ...filters, limit: undefined, offset: undefined };
-    const allPools = await this.getPools(filtersWithoutPagination);
+    let allPools = await this.getPools(filtersWithoutPagination);
+    
+    // Apply sorting
+    const sortBy = filters?.sortBy || 'id';
+    const sortOrder = filters?.sortOrder || 'desc';
+    
+    allPools.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'closeDate':
+          comparison = new Date(a.closeDate || 0).getTime() - new Date(b.closeDate || 0).getTime();
+          break;
+        case 'id':
+        default:
+          comparison = a.id.localeCompare(b.id);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
     const totalCount = allPools.length;
     
     // Apply pagination
@@ -371,7 +395,32 @@ export class OctantAdapter extends BaseAdapter {
 
   async getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>> {
     // For Octant, we need to calculate total without applying limit/offset
-    const allApplications = await this.getApplications({ ...filters, limit: undefined, offset: undefined });
+    let allApplications = await this.getApplications({ ...filters, limit: undefined, offset: undefined });
+    
+    // Apply sorting
+    const sortBy = filters?.sortBy || 'id';
+    const sortOrder = filters?.sortOrder || 'desc';
+    
+    allApplications.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = (a.projectName || '').localeCompare(b.projectName || '');
+          break;
+        case 'closeDate':
+        case 'createdAt':
+          comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+          break;
+        case 'id':
+        default:
+          comparison = a.id.localeCompare(b.id);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
     const totalCount = allApplications.length;
     
     // Apply pagination

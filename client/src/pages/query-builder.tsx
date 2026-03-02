@@ -150,6 +150,43 @@ export default function QueryBuilderPage() {
             </Select>
           </div>
 
+          {/* Sorting options - only for Pools and Applications */}
+          {(entityType === "grantPools" || entityType === "grantApplications") && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="sortBy">Sort By</Label>
+                <Select 
+                  value={queryFilters.sortBy || "id"} 
+                  onValueChange={(value) => setQueryFilters(prev => ({ ...prev, sortBy: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="id">ID</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="closeDate">Close Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="sortOrder">Order</Label>
+                <Select 
+                  value={queryFilters.sortOrder || "desc"} 
+                  onValueChange={(value) => setQueryFilters(prev => ({ ...prev, sortOrder: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">Descending</SelectItem>
+                    <SelectItem value="asc">Ascending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
           {entityType === "grantApplications" && (
             <div>
               <Label htmlFor="poolId" className="flex items-center">

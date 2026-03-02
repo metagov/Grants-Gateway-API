@@ -305,14 +305,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grant Pools endpoints
   app.get('/api/v1/grantPools', async (req, res) => {
     try {
-      const { system, isOpen, mechanism } = req.query;
+      const { system, isOpen, mechanism, sortBy, sortOrder } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
 
       const filters = {
         isOpen: isOpen ? isOpen === 'true' : undefined,
         mechanism: mechanism as string,
         limit,
-        offset
+        offset,
+        sortBy: sortBy as 'id' | 'name' | 'closeDate' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
       };
 
       const selectedAdapters = getAdapter(system as string);
@@ -535,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Applications endpoints
   app.get('/api/v1/grantApplications', async (req, res) => {
     try {
-      const { system, poolId, projectId, status } = req.query;
+      const { system, poolId, projectId, status, sortBy, sortOrder } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
 
       const selectedAdapters = getAdapter(system as string);
@@ -562,7 +564,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectId: projectId as string,
         status: status as string,
         limit,
-        offset
+        offset,
+        sortBy: sortBy as 'id' | 'name' | 'closeDate' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
       };
 
       let allApplications: any[] = [];
