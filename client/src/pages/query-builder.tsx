@@ -285,7 +285,7 @@ export default function QueryBuilderPage() {
               </div>
             )}
             {executeQueryMutation.isSuccess && (
-              <pre className="text-sm overflow-auto max-h-[600px] text-gray-800 ">
+              <pre className="text-sm overflow-x-auto max-h-[600px] text-gray-800 whitespace-pre-wrap break-all">
                 {JSON.stringify(executeQueryMutation.data, null, 2)}
               </pre>
             )}
