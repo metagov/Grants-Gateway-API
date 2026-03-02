@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(find:*)",
+      "WebFetch(domain:docs.privy.io)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(curl -s -i -H \"Authorization: Bearer test-invalid-key\" http://localhost:5000/api/v1/grantSystems)",
+      "Bash(pnpm install:*)",
+      "Bash(set:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm add:*)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(PGSSLROOTCERT=ca.crt psql:*)",
+      "Bash(node:*)",
+      "Bash(echo === Test 1: Valid API key ===:*)",
+      "Bash(lsof:*)",
+      "Bash(source .env:*)",
+      "Bash(python3:*)",
+      "Bash(git:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(pnpm check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh pr:*)"
+    ]
+  }
+}

@@ -9,6 +9,5 @@ issues_for_claude.json
 TODO.md
 DEV
 .env
-ca.crt
-.claude/
+=.claude/
 AGENT.md
