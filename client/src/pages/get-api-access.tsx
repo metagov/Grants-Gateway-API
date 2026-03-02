@@ -8,9 +8,9 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { Shield, Key, Clock, Users } from "lucide-react";
+import { Shield, Key, Clock, Users, AlertCircle } from "lucide-react";
 
 interface RegistrationResponse {
   message: string;
@@ -19,11 +19,34 @@ interface RegistrationResponse {
   expiresAt: string;
 }
 
+interface ApiKeyInfo {
+  id: string;
+  keyPreview: string;
+  status: string;
+  createdAt: string;
+  expiresAt: string;
+  lastUsedAt: string | null;
+}
+
 export default function GetApiAccess() {
-  const { authenticated, isLoading: authLoading, login, getAccessToken, privyUser } = useAuth();
+  const { authenticated, isLoading: authLoading, login, getAccessToken, privyUser, registered } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
+
+  const { data: keysData } = useQuery({
+    queryKey: ["/api/auth/keys"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      if (!token) return { keys: [] };
+      const res = await fetch("/api/auth/keys", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return { keys: [] };
+      return res.json();
+    },
+    enabled: authenticated && !!registered,
+  });
 
   const userEmail = privyUser?.email?.address;
 
@@ -301,6 +324,47 @@ export default function GetApiAccess() {
                 </Button>
               </form>
             </Form>
+
+            {/* Show existing API keys */}
+            {registered && keysData?.keys && keysData.keys.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">Your API Keys</h3>
+                <div className="space-y-3">
+                  {keysData.keys.map((key: ApiKeyInfo) => (
+                    <div key={key.id} className="border rounded-lg p-4 bg-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Key className="h-4 w-4 text-gray-500" />
+                          <span className="font-mono">...{key.keyPreview}</span>
+                          <span className={`px-2 py-0.5 text-xs rounded ${
+                            key.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {key.status}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(key.expiresAt) > new Date() ? (
+                            <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>
+                          ) : (
+                            <span className="text-red-600 flex items-center">
+                              <AlertCircle className="h-3 w-3 mr-1" /> Expired
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {key.lastUsedAt && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          Last used: {new Date(key.lastUsedAt).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-500 mt-4">
+                  Generate a new key above to replace expired or revoked keys.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

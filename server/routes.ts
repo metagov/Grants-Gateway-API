@@ -127,6 +127,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all API keys for the logged-in user
+  app.get('/api/auth/keys', verifyPrivyToken, async (req, res) => {
+    const privyUser = (req as PrivyAuthenticatedRequest).privyUser!;
+    try {
+      const oauthUser = await storage.getOAuthUser(privyUser.userId);
+      if (!oauthUser) {
+        return res.json({ keys: [] });
+      }
+
+      const apiUser = await storage.getApiUserByOAuthId(oauthUser.id);
+      if (!apiUser) {
+        return res.json({ keys: [] });
+      }
+
+      const keys = await storage.getApiKeysByUserId(apiUser.id);
+      
+      // Return keys with preview (not the full key)
+      const keysWithoutSecret = keys.map(k => ({
+        id: k.id,
+        keyPreview: k.keyPreview,
+        status: k.status,
+        createdAt: k.createdAt,
+        expiresAt: k.expiresAt,
+        lastUsedAt: k.lastUsedAt,
+      }));
+
+      res.json({ keys: keysWithoutSecret });
+    } catch (error) {
+      console.error('Error fetching keys:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // --- Admin routes (Privy JWT + admin check) ---
 
   app.get('/api/admin/stats', ...adminRouteGuard, async (_req, res) => {
