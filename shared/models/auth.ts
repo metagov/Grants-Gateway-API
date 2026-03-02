@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { index, jsonb, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 
 // Re-export the sessions table - this matches the existing sessions in main schema
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// (IMPORTANT) This table is mandatory for Auth, don't drop it.
 export const authSessions = pgTable(
   "sessions",
   {
@@ -14,7 +14,7 @@ export const authSessions = pgTable(
 );
 
 // Re-export the oauth_users table structure matching existing schema
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// (IMPORTANT) This table is mandatory for Auth, don't drop it.
 export const authUsers = pgTable("oauth_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
