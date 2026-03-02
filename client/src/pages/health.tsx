@@ -54,8 +54,12 @@ export default function HealthPage() {
     isLoading,
     refetch,
     error,
-  } = useQuery<SystemHealthStatus>({
-    queryKey: ["/api/v1/health"],
+  } = useQuery({
+    queryKey: ["/api/health"],
+    queryFn: async () => {
+      const res = await fetch("/api/health");
+      return res.json();
+    },
     refetchInterval: autoRefresh ? 30000 : false,
   });
 
@@ -247,7 +251,7 @@ export default function HealthPage() {
 
             {/* Adapter Status */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {healthData.adapters.map((adapter) => (
+              {healthData.adapters.map((adapter: AdapterHealthStatus) => (
                 <Card key={adapter.name}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">

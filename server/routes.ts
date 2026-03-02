@@ -623,15 +623,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Health check endpoint
-  app.get('/api/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      services: {
-        database: 'connected',
-        adapters: Object.keys(adapters)
-      }
-    });
+  app.get('/api/health', async (req, res) => {
+    try {
+      const { healthService } = await import('./services/health.js');
+      const health = await healthService.getSystemHealth(true);
+      res.json(health);
+    } catch (error) {
+      res.json({
+        status: 'degraded',
+        timestamp: new Date().toISOString(),
+        adapters: [],
+        database: { status: 'healthy' },
+        summary: { totalAdapters: 0, healthyAdapters: 0, degradedAdapters: 0, downAdapters: 0 }
+      });
+    }
   });
 
 
