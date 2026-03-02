@@ -3,7 +3,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { PrivyAuthProvider } from "@/components/privy-provider";
 import { Switch, Route } from "wouter";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/layout";
@@ -40,17 +39,15 @@ function Router() {
 
 function App() {
   return (
-    <PrivyAuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <MobileToast />
-            <Router />
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </PrivyAuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <MobileToast />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
