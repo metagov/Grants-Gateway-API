@@ -93,7 +93,7 @@ export default function AdminDashboard() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="min-h-screen bg-gray-50  p-4">
         <div className="max-w-7xl mx-auto space-y-6">
           <Skeleton className="h-8 w-64" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
     
     if (errorStatus === 401) {
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50  flex items-center justify-center">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
     
     if (errorStatus === 403) {
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50  flex items-center justify-center">
           <Card className="max-w-md mx-auto">
             <CardHeader className="text-center">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -148,19 +148,19 @@ export default function AdminDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active': return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950';
-      case 'expired': case 'revoked': return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950';
-      default: return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-950';
+      case 'active': return 'text-green-600 bg-green-50  ';
+      case 'expired': case 'revoked': return 'text-red-600 bg-red-50  ';
+      default: return 'text-gray-600 bg-gray-50  ';
     }
   };
 
   const getMethodColor = (method: string) => {
     switch (method.toUpperCase()) {
-      case 'GET': return 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950';
-      case 'POST': return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950';
-      case 'PUT': case 'PATCH': return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-950';
-      case 'DELETE': return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950';
-      default: return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-950';
+      case 'GET': return 'text-blue-600 bg-blue-50  ';
+      case 'POST': return 'text-green-600 bg-green-50  ';
+      case 'PUT': case 'PATCH': return 'text-yellow-600 bg-yellow-50  ';
+      case 'DELETE': return 'text-red-600 bg-red-50  ';
+      default: return 'text-gray-600 bg-gray-50  ';
     }
   };
 
@@ -171,11 +171,11 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4" data-testid="admin-dashboard">
+    <div className="min-h-screen bg-gray-50  p-4" data-testid="admin-dashboard">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 ">Admin Dashboard</h1>
           <Badge variant="outline" className="text-sm">
             Admin Access
           </Badge>

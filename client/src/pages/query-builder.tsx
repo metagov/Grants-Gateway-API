@@ -105,7 +105,7 @@ export default function QueryBuilderPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-4">Interactive Query Builder</h1>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-gray-600 ">
           Build and test API queries with real-time preview and execution.
         </p>
       </div>
@@ -235,15 +235,15 @@ export default function QueryBuilderPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">REQUEST URL</div>
+            <div className="bg-gray-50  rounded-lg p-4">
+              <div className="text-xs font-medium text-gray-500  mb-2">REQUEST URL</div>
               <code className="text-sm text-primary break-all">
                 {queryPreview}
               </code>
             </div>
-            <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">CURL</div>
-              <code className="text-xs text-gray-700 dark:text-gray-300 break-all whitespace-pre-wrap">
+            <div className="bg-gray-50  rounded-lg p-4">
+              <div className="text-xs font-medium text-gray-500  mb-2">CURL</div>
+              <code className="text-xs text-gray-700  break-all whitespace-pre-wrap">
                 {customApiKey.trim()
                   ? `curl -H "Authorization: Bearer ${customApiKey.trim().slice(0, 8)}..." \\\n  "${queryPreview}"`
                   : `curl "${queryPreview}"`}
@@ -265,7 +265,7 @@ export default function QueryBuilderPage() {
           <CardTitle className="flex items-center justify-between">
             Response
             {executeQueryMutation.isSuccess && (
-              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <Badge variant="default" className="bg-green-100 text-green-800  ">
                 200 OK
               </Badge>
             )}
@@ -277,7 +277,7 @@ export default function QueryBuilderPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-4 min-h-[400px]">
+          <div className="bg-gray-50  rounded-lg p-4 min-h-[400px]">
             {executeQueryMutation.isPending && (
               <div className="flex items-center justify-center h-[400px]">
                 <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -285,17 +285,17 @@ export default function QueryBuilderPage() {
               </div>
             )}
             {executeQueryMutation.isSuccess && (
-              <pre className="text-sm overflow-auto max-h-[600px] text-gray-800 dark:text-gray-200">
+              <pre className="text-sm overflow-auto max-h-[600px] text-gray-800 ">
                 {JSON.stringify(executeQueryMutation.data, null, 2)}
               </pre>
             )}
             {executeQueryMutation.isError && (
-              <div className="text-red-600 dark:text-red-400">
+              <div className="text-red-600 ">
                 Error: {executeQueryMutation.error.message}
               </div>
             )}
             {executeQueryMutation.isIdle && (
-              <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-center h-[400px] text-gray-500 ">
                 Click "Execute Query" to see results here
               </div>
             )}
