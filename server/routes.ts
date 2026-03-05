@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         apiKey: rawKey,
         keyPreview,
         expiresAt: expiresAt.toISOString(),
-        message: "Save your API key now — it won't be shown again.",
+        message: "Save your API key now.",
       });
     } catch (error) {
       console.error('Registration error:', error);
