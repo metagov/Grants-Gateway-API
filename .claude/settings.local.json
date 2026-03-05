@@ -22,7 +22,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(pnpm check:*)",
       "Bash(npx tsc:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(wc:*)"
     ]
   }
 }

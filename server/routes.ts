@@ -19,7 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
   app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-      ? process.env.FRONTEND_URL || 'https://your-domain.com'
+      ? process.env.FRONTEND_URL || 'https://grants.daostar.org'
       : true,
     credentials: true
   }));
@@ -156,6 +156,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ keys: keysWithoutSecret });
     } catch (error) {
       console.error('Error fetching keys:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create a new API key (max 3 per user)
+  app.post('/api/auth/keys', verifyPrivyToken, async (req, res) => {
+    const privyUser = (req as PrivyAuthenticatedRequest).privyUser!;
+    try {
+      const oauthUser = await storage.getOAuthUser(privyUser.userId);
+      if (!oauthUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const apiUser = await storage.getApiUserByOAuthId(oauthUser.id);
+      if (!apiUser) {
+        return res.status(401).json({ error: "Not registered" });
+      }
+
+      const existingKeys = await storage.getApiKeysByUserId(apiUser.id);
+      const activeKeys = existingKeys.filter(k => k.status === 'active' && new Date(k.expiresAt) > new Date());
+      if (activeKeys.length >= 3) {
+        return res.status(400).json({ error: "Maximum of 3 active API keys allowed" });
+      }
+
+      const rawKey = crypto.randomBytes(32).toString('hex');
+      const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+      const keyPreview = rawKey.slice(-4);
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 3);
+
+      const newKey = await storage.createApiKey({
+        userId: apiUser.id,
+        keyHash,
+        keyPreview,
+        expiresAt,
+        status: 'active',
+      });
+
+      res.status(201).json({
+        id: newKey.id,
+        apiKey: rawKey,
+        keyPreview,
+        expiresAt: expiresAt.toISOString(),
+        message: "Save your API key now — it won't be shown again.",
+      });
+    } catch (error) {
+      console.error('Error creating key:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
