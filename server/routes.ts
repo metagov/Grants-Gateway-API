@@ -315,6 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(response);
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching systems:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -341,6 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Grant system with ID ${id} not found`
       });
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching system:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -384,6 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(response);
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching pools:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -410,6 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Grant pool with ID ${id} not found`
       });
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching pool:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -635,6 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(response);
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching applications:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -661,6 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Application with ID ${id} not found`
       });
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching application:', error);
       res.status(500).json({
         error: "Internal server error",
@@ -698,6 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pagination: createPaginationMeta(totalCount, limit, offset),
       });
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching projects:', error);
       res.status(500).json({ error: "Internal server error", message: "Failed to fetch projects" });
     }
@@ -715,6 +722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.status(404).json({ error: "Project not found", message: `Project with ID ${req.params.id} not found` });
     } catch (error) {
+      if (res.headersSent) return;
       console.error('Error fetching project:', error);
       res.status(500).json({ error: "Internal server error", message: "Failed to fetch project" });
     }
