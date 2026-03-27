@@ -275,13 +275,6 @@ export class SCFAdapter extends BaseAdapter {
       paramIndex++;
     }
 
-    if (filters?.phase) {
-      // phase is stored in org.stellar.communityfund.phase extension column
-      conditions.push(`"org.stellar.communityfund.phase" = $${paramIndex}`);
-      params.push(filters.phase);
-      paramIndex++;
-    }
-
     const whereClause = conditions.length > 0
       ? ` WHERE ${conditions.join(' AND ')}`
       : '';

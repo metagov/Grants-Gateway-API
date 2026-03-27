@@ -50,7 +50,7 @@ GET /api/v1/grantApplications?poolId=daoip5:octant:grantPool:7
 | Endpoint | Description | Parameters |
 |----------|-------------|------------|
 | `GET /api/v1/grantSystems` | List all grant systems | `system` (optional) |
-| `GET /api/v1/grantPools` | List grant pools | `system`, `limit`, `offset`, `isOpen`, `phase` |
+| `GET /api/v1/grantPools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
 | `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `sortBy`, `sortOrder` |
 | `GET /api/v1/grantApplications` | List applications | `system`, `poolId`, `limit`, `offset` |
 | `GET /api/v1/health` | API health status | `refresh` (optional) |

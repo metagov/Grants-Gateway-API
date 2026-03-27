@@ -99,7 +99,6 @@ export interface QueryFilters {
   poolId?: string;
   projectId?: string;
   mechanism?: string;
-  phase?: string;
   sortBy?: 'id' | 'name' | 'closeDate';
   sortOrder?: 'asc' | 'desc';
 }
