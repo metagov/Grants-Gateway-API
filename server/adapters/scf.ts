@@ -372,6 +372,13 @@ export class SCFAdapter extends BaseAdapter {
     }
   }
 
+  // Airtable attachments are stored as "filename (https://url)" — extract just the URL
+  private extractImageUrl(value: any): string | undefined {
+    if (!value) return undefined;
+    const match = String(value).match(/\(([^)]+)\)\s*$/);
+    return match ? match[1] : String(value);
+  }
+
   private mapRowToProject(row: any): DAOIP5Project {
     // silver_scf_projects follows DAOIP-5 schema with camelCase field names
     const scfExtensions: Record<string, any> = {};
@@ -413,8 +420,8 @@ export class SCFAdapter extends BaseAdapter {
       membersURI: row.membersURI || undefined,
       attestationIssuersURI: row.attestationIssuersURI || undefined,
       relevantTo,
-      image: row.image || undefined,
-      coverImage: row.coverImage || undefined,
+      image: this.extractImageUrl(row.image),
+      coverImage: this.extractImageUrl(row.coverImage),
       licenseURI: row.licenseURI || undefined,
       socials,
       extensions: Object.keys(extensions).length > 0 ? extensions : undefined
