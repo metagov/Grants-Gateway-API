@@ -104,39 +104,34 @@ export const openGrantsApi = {
   baseUrl: 'https://grants.daostar.org/api/v1',
 
   async getSystems(): Promise<any[]> {
-    // Use server proxy to avoid CORS errors
     try {
-      const response = await fetch('/api/proxy/opengrants/grantSystems');
+      const response = await fetch('/api/v1/grantSystems');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const responseData = await response.json();
-      // OpenGrants API returns data in 'data' field
       const systems = responseData.data || responseData.grantSystems || responseData.systems || [];
       console.log(`Fetched ${systems.length} systems from OpenGrants API`);
       return systems;
     } catch (error) {
-      console.error('Error fetching systems via proxy:', error);
-      // Never return fallback data - return empty array on error
+      console.error('Error fetching systems:', error);
       return [];
     }
   },
 
   async getPools(system?: string): Promise<any[]> {
     try {
-      const url = system ? `/api/proxy/opengrants/grantPools?system=${system}` : '/api/proxy/opengrants/grantPools';
+      const url = system ? `/api/v1/grantPools?system=${system}` : '/api/v1/grantPools';
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const responseData = await response.json();
-      // OpenGrants API returns data in 'data' field, not 'grantPools'
       const pools = responseData.data || responseData.grantPools || [];
       console.log(`Fetched ${pools.length} pools for ${system || 'all systems'}`);
       return pools;
     } catch (error) {
-      console.error('Error fetching pools via proxy:', error);
-      // Never return sample data - return empty array on error
+      console.error('Error fetching pools:', error);
       return [];
     }
   },
@@ -148,7 +143,7 @@ export const openGrantsApi = {
 
   async getApplications(system?: string, poolId?: string): Promise<any[]> {
     try {
-      let url = '/api/proxy/opengrants/grantApplications';
+      let url = '/api/v1/grantApplications';
       const params = new URLSearchParams();
       if (system) params.append('system', system);
       if (poolId) params.append('poolId', poolId);
@@ -159,13 +154,11 @@ export const openGrantsApi = {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const responseData = await response.json();
-      // OpenGrants API returns data in 'data' field, not 'grantApplications'
       const applications = responseData.data || responseData.grantApplications || [];
       console.log(`Fetched ${applications.length} applications for ${system || 'all systems'}`);
       return applications;
     } catch (error) {
-      console.error(`Error fetching applications for ${system} via proxy:`, error);
-      // Never return sample data - return empty array on error
+      console.error(`Error fetching applications for ${system}:`, error);
       return [];
     }
   },
