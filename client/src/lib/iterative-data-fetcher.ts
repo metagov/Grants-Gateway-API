@@ -59,23 +59,47 @@ export class IterativeDataFetcher {
     };
 
     try {
-      // For now, use fallback data to avoid CORS issues with external APIs
-      console.warn('Using sample applications data for octant to avoid CORS errors');
-      return this.getOctantFallbackData();
+      const [poolsData, appsData] = await Promise.all([
+        this.fetchWithFallback('/api/v1/grantPools?system=octant&limit=100'),
+        this.fetchWithFallback('/api/v1/grantApplications?system=octant&limit=500')
+      ]);
+
+      if (poolsData?.data) {
+        result.pools = poolsData.data.map((pool: any) => ({
+          id: pool.id,
+          name: pool.name,
+          totalFunding: parseFloat(pool.extensions?.['app.octant.epochMetadata']?.totalGrantPoolSizeUSD || '0'),
+          totalApplications: 0,
+          approvalRate: 100
+        }));
+      }
+
+      if (appsData?.data) {
+        result.applications = appsData.data;
+
+        for (const app of appsData.data) {
+          const poolName = app.grantPoolName || app.grantPoolId;
+          const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
+          result.totalFunding += fundingUSD;
+          result.systemMetrics.fundingByRound.set(poolName, (result.systemMetrics.fundingByRound.get(poolName) || 0) + fundingUSD);
+          result.systemMetrics.applicationsByRound.set(poolName, (result.systemMetrics.applicationsByRound.get(poolName) || 0) + 1);
+        }
+      }
     } catch (error) {
       console.error('Error fetching Octant data:', error);
       return this.getOctantFallbackData();
     }
 
     // Calculate overall metrics
+    result.systemMetrics.totalPools = result.pools.length;
     result.systemMetrics.totalApplications = result.applications.length;
     result.systemMetrics.totalFunding = result.totalFunding;
-    
-    const approvedApps = result.applications.filter(app => 
+
+    const approvedApps = result.applications.filter((app: any) =>
       ['funded', 'approved'].includes(app.status?.toLowerCase())
     );
-    result.systemMetrics.avgApprovalRate = result.applications.length > 0 
-      ? (approvedApps.length / result.applications.length) * 100 
+    result.systemMetrics.avgApprovalRate = result.applications.length > 0
+      ? (approvedApps.length / result.applications.length) * 100
       : 0;
 
     this.setCachedData(cacheKey, result);
@@ -105,15 +129,39 @@ export class IterativeDataFetcher {
     };
 
     try {
-      // For now, use fallback data to avoid CORS issues with external APIs
-      console.warn('Using sample applications data for giveth to avoid CORS errors');
-      return this.getGivethFallbackData();
+      const [poolsData, appsData] = await Promise.all([
+        this.fetchWithFallback('/api/v1/grantPools?system=giveth&limit=100'),
+        this.fetchWithFallback('/api/v1/grantApplications?system=giveth&limit=500')
+      ]);
+
+      if (poolsData?.data) {
+        result.pools = poolsData.data.map((pool: any) => ({
+          id: pool.id,
+          name: pool.name,
+          totalFunding: parseFloat(pool.totalGrantPoolSizeUSD || pool.extensions?.totalGrantPoolSizeUSD || '0'),
+          totalApplications: 0,
+          approvalRate: 100
+        }));
+      }
+
+      if (appsData?.data) {
+        result.applications = appsData.data;
+
+        for (const app of appsData.data) {
+          const poolName = app.grantPoolName || app.grantPoolId;
+          const fundingUSD = parseFloat(app.fundsApprovedInUSD || '0');
+          result.totalFunding += fundingUSD;
+          result.systemMetrics.fundingByRound.set(poolName, (result.systemMetrics.fundingByRound.get(poolName) || 0) + fundingUSD);
+          result.systemMetrics.applicationsByRound.set(poolName, (result.systemMetrics.applicationsByRound.get(poolName) || 0) + 1);
+        }
+      }
     } catch (error) {
       console.error('Error fetching Giveth data:', error);
       return this.getGivethFallbackData();
     }
 
     // Calculate overall metrics
+    result.systemMetrics.totalPools = result.pools.length;
     result.systemMetrics.totalApplications = result.applications.length;
     result.systemMetrics.totalFunding = result.totalFunding;
     result.systemMetrics.avgApprovalRate = 100; // Giveth is donation-based

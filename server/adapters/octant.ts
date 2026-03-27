@@ -133,7 +133,7 @@ export class OctantAdapter extends BaseAdapter {
             grantFundingMechanism: "Quadratic Funding",
             isOpen: epoch === currentEpoch,
             closeDate: closeDate,
-            applicationsURI: `./applications_epoch_${epoch}.json`,
+            applicationsURI: `/api/v1/grantApplications?system=octant&poolId=daoip5:octant:grantPool:${epoch}`,
             governanceURI: "https://docs.octant.app/how-it-works/mechanism",
             totalGrantPoolSize,
             extensions: {
