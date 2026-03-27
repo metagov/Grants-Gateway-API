@@ -354,12 +354,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grant Pools endpoints
   app.get('/api/v1/grantPools', async (req, res) => {
     try {
-      const { system, isOpen, mechanism, sortBy, sortOrder } = req.query;
+      const { system, isOpen, mechanism, phase, sortBy, sortOrder } = req.query;
       const { limit, offset } = parsePaginationParams(req.query);
 
       const filters = {
         isOpen: isOpen ? isOpen === 'true' : undefined,
         mechanism: mechanism as string,
+        phase: phase as string,
         limit,
         offset,
         sortBy: sortBy as 'id' | 'name' | 'closeDate' | undefined,
