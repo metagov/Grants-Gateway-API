@@ -7,7 +7,17 @@
       "Bash(pnpm add:*)",
       "Bash(npx tsc:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s --max-time 30 \"https://grants.daostar.org/api/v1/grantPools?system=scf&limit=3\")",
+      "Bash(python3 -m json.tool)",
+      "Read(//home/torch/Grants-Gateway-API/**)",
+      "Bash(curl -s --max-time 30 \"https://grants.daostar.org/api/v1/projects?system=scf&limit=3\")",
+      "Bash(curl -s --max-time 30 \"https://grants.daostar.org/api/v1/grantApplications?system=scf&limit=2\")",
+      "Bash(source /home/torch/Grants-Gateway-API/.env)",
+      "Bash(PGSSLROOTCERT=ca.crt psql \"$DATABASE_URL\" -c \"SELECT COUNT\\(*\\) FROM public.silver_scf_projects;\")",
+      "Bash(node:*)",
+      "Bash(curl -s --max-time 30 \"https://grants.daostar.org/api/v1/grantPools?system=scf&limit=3&sortBy=id&sortOrder=desc\")",
+      "Bash(curl -s --max-time 30 \"https://grants.daostar.org/api/v1/projects?system=scf&limit=5\")"
     ]
   }
 }
