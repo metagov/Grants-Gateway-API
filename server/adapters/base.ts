@@ -150,6 +150,10 @@ export abstract class BaseAdapter {
 
   // Paginated versions that return total count information
   abstract getPoolsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5GrantPool>>;
-
   abstract getApplicationsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Application>>;
+
+  // Projects — optional; adapters that don't have project data return empty results
+  async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> { return []; }
+  async getProject(id: string): Promise<DAOIP5Project | null> { return null; }
+  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> { return { data: [], totalCount: 0 }; }
 }

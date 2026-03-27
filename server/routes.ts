@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public endpoints for frontend (cached data, no auth required)
-  app.get('/api/public/daoip5/systems', async (req, res) => {
+  app.get('/api/public/daoip5/systems', async (_req, res) => {
     try {
       const { daoip5Service } = await import('./services/daoip5-service');
       const summaries = await daoip5Service.getAllSystemSummaries();
@@ -493,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/proxy', rateLimitMiddleware);
 
   // DAOIP5 API Proxy endpoints to handle CORS
-  app.get('/api/proxy/daoip5', async (req, res) => {
+  app.get('/api/proxy/daoip5', async (_req, res) => {
     try {
       const response = await fetch('https://daoip5.daostar.org/', {
         headers: { 'Accept': 'application/json' }
@@ -571,7 +571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Quick health check endpoint (no detailed checks, uses cache)
-  app.get('/api/v1/health-quick', async (req, res) => {
+  app.get('/api/v1/health-quick', async (_req, res) => {
     try {
       const { healthService } = await import('./services/health');
       const quickHealth = healthService.getQuickHealth();
@@ -669,8 +669,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- Projects endpoints ---
+
+  app.get('/api/v1/projects', async (req, res) => {
+    try {
+      const { system, sortBy, sortOrder } = req.query;
+      const { limit, offset } = parsePaginationParams(req.query);
+      const filters = {
+        limit,
+        offset,
+        sortBy: sortBy as 'id' | 'name' | 'closeDate' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
+      };
+
+      const selectedAdapters = getAdapter(system as string);
+      let allProjects: any[] = [];
+      let totalCount = 0;
+
+      for (const adapter of selectedAdapters) {
+        const result = await adapter.getProjectsPaginated(filters);
+        allProjects.push(...result.data);
+        totalCount += result.totalCount;
+      }
+
+      res.json({
+        "@context": "http://www.daostar.org/schemas",
+        data: allProjects,
+        pagination: createPaginationMeta(totalCount, limit, offset),
+      });
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      res.status(500).json({ error: "Internal server error", message: "Failed to fetch projects" });
+    }
+  });
+
+  app.get('/api/v1/projects/:id', async (req, res) => {
+    try {
+      const { system } = req.query;
+      const selectedAdapters = getAdapter(system as string);
+
+      for (const adapter of selectedAdapters) {
+        const project = await adapter.getProject(req.params.id);
+        if (project) return res.json(project);
+      }
+
+      res.status(404).json({ error: "Project not found", message: `Project with ID ${req.params.id} not found` });
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      res.status(500).json({ error: "Internal server error", message: "Failed to fetch project" });
+    }
+  });
+
   // Health check endpoint
-  app.get('/api/health', async (req, res) => {
+  app.get('/api/health', async (_req, res) => {
     try {
       const { healthService } = await import('./services/health.js');
       const health = await healthService.getSystemHealth(true);
@@ -689,15 +740,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // API documentation endpoint
-  app.get('/api/v1/docs', (req, res) => {
+  app.get('/api/v1/docs', (_req, res) => {
     res.json({
       name: "OpenGrants Gateway API",
       version: "1.0.0",
       description: "Unified interface for grant data using DAOIP-5 standard",
       endpoints: {
-        systems: "/api/v1/systems",
-        pools: "/api/v1/pools",
-        applications: "/api/v1/applications"
+        systems: "/api/v1/grantSystems",
+        pools: "/api/v1/grantPools",
+        applications: "/api/v1/grantApplications",
+        projects: "/api/v1/projects"
       },
       supportedSystems: Object.keys(adapters),
       documentation: "https://docs.daostar.org/"

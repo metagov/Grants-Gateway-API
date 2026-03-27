@@ -86,6 +86,17 @@ class ApiClient {
     return this.makeRequest(`/grantApplications/${id}${queryString}`);
   }
 
+  // Projects API
+  async getProjects(filters?: QueryFilters): Promise<ApiResponse<DAOIP5Project>> {
+    const queryString = filters ? this.buildQueryString(filters) : '';
+    return this.makeRequest(`/projects${queryString ? `?${queryString}` : ''}`);
+  }
+
+  async getProject(id: string, system?: string): Promise<DAOIP5Project> {
+    const queryString = system ? `?system=${system}` : '';
+    return this.makeRequest(`/projects/${id}${queryString}`);
+  }
+
   // Execute a custom query for the query builder
   async executeQuery(entityType: string, filters: QueryFilters): Promise<any> {
     switch (entityType) {
@@ -95,6 +106,8 @@ class ApiClient {
         return this.getPools(filters);
       case 'grantApplications':
         return this.getApplications(filters);
+      case 'projects':
+        return this.getProjects(filters);
       default:
         throw new Error(`Unknown entity type: ${entityType}`);
     }

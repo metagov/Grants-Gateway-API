@@ -128,6 +128,7 @@ export default function QueryBuilderPage() {
                 <SelectItem value="grantSystems">Grant Systems</SelectItem>
                 <SelectItem value="grantPools">Grant Pools</SelectItem>
                 <SelectItem value="grantApplications">Grant Applications</SelectItem>
+                <SelectItem value="projects">Projects</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -150,8 +151,8 @@ export default function QueryBuilderPage() {
             </Select>
           </div>
 
-          {/* Sorting options - only for Pools and Applications */}
-          {(entityType === "grantPools" || entityType === "grantApplications") && (
+          {/* Sorting options - for Pools, Applications, and Projects */}
+          {(entityType === "grantPools" || entityType === "grantApplications" || entityType === "projects") && (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="sortBy">Sort By</Label>

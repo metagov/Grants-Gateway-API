@@ -1,4 +1,4 @@
-import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
+import { BaseAdapter, DAOIP5System, DAOIP5GrantPool, DAOIP5Project, DAOIP5Application, QueryFilters, PaginatedResult } from "./base";
 import { pool } from "../db";
 
 export class SCFAdapter extends BaseAdapter {
@@ -28,6 +28,63 @@ export class SCFAdapter extends BaseAdapter {
   async getSystem(id: string): Promise<DAOIP5System | null> {
     const systems = await this.getSystems();
     return systems[0] || null;
+  }
+
+  // --- Projects ---
+
+  async getProjects(filters?: QueryFilters): Promise<DAOIP5Project[]> {
+    try {
+      const { sql, params } = this.buildProjectQuery(filters);
+      const result = await pool.query(sql, params);
+      return result.rows.map(row => this.mapRowToProject(row));
+    } catch (error) {
+      console.error("Error fetching SCF projects:", error);
+      return [];
+    }
+  }
+
+  async getProject(id: string): Promise<DAOIP5Project | null> {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM public.silver_scf_projects WHERE id = $1',
+        [id]
+      );
+      if (result.rows.length === 0) return null;
+      return this.mapRowToProject(result.rows[0]);
+    } catch (error) {
+      console.error("Error fetching SCF project:", error);
+      return null;
+    }
+  }
+
+  async getProjectsPaginated(filters?: QueryFilters): Promise<PaginatedResult<DAOIP5Project>> {
+    try {
+      const sortBy = filters?.sortBy || 'id';
+      const sortOrder = filters?.sortOrder === 'asc' ? 'ASC' : 'DESC';
+      const sortColumnMap: Record<string, string> = {
+        id: 'id',
+        name: 'name',
+      };
+      const sortColumn = sortColumnMap[sortBy] || 'id';
+
+      const countResult = await pool.query('SELECT COUNT(*) FROM public.silver_scf_projects');
+      const totalCount = parseInt(countResult.rows[0].count, 10);
+
+      const limit = filters?.limit ?? 20;
+      const offset = filters?.offset ?? 0;
+      const dataResult = await pool.query(
+        `SELECT * FROM public.silver_scf_projects ORDER BY ${sortColumn} ${sortOrder} LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+
+      return {
+        data: dataResult.rows.map(row => this.mapRowToProject(row)),
+        totalCount
+      };
+    } catch (error) {
+      console.error("Error fetching paginated SCF projects:", error);
+      return { data: [], totalCount: 0 };
+    }
   }
 
   // --- Pools ---
@@ -61,11 +118,8 @@ export class SCFAdapter extends BaseAdapter {
     try {
       const { whereClause, whereParams } = this.buildPoolWhereClause(filters);
 
-      // Build ORDER BY clause
       const sortBy = filters?.sortBy || 'id';
       const sortOrder = filters?.sortOrder === 'asc' ? 'ASC' : 'DESC';
-      
-      // Map sortBy to database column names
       const sortColumnMap: Record<string, string> = {
         id: 'id',
         name: 'name',
@@ -74,14 +128,12 @@ export class SCFAdapter extends BaseAdapter {
       };
       const sortColumn = sortColumnMap[sortBy] || 'id';
 
-      // Count query
       const countResult = await pool.query(
         `SELECT COUNT(*) FROM public.silver_scf_grant_pools${whereClause}`,
         whereParams
       );
       const totalCount = parseInt(countResult.rows[0].count, 10);
 
-      // Data query with LIMIT/OFFSET and ORDER BY
       const limit = filters?.limit ?? 20;
       const offset = filters?.offset ?? 0;
       const dataParams = [...whereParams, limit, offset];
@@ -131,11 +183,8 @@ export class SCFAdapter extends BaseAdapter {
     try {
       const { whereClause, whereParams } = this.buildApplicationWhereClause(filters);
 
-      // Build ORDER BY clause
       const sortBy = filters?.sortBy || 'id';
       const sortOrder = filters?.sortOrder === 'asc' ? 'ASC' : 'DESC';
-      
-      // Map sortBy to database column names
       const sortColumnMap: Record<string, string> = {
         id: 'id',
         name: 'name',
@@ -281,6 +330,13 @@ export class SCFAdapter extends BaseAdapter {
     return { sql, params };
   }
 
+  private buildProjectQuery(filters?: QueryFilters): { sql: string; params: any[] } {
+    const limit = filters?.limit ?? 100;
+    const offset = filters?.offset ?? 0;
+    const sql = `SELECT * FROM public.silver_scf_projects ORDER BY id LIMIT $1 OFFSET $2`;
+    return { sql, params: [limit, offset] };
+  }
+
   private parseJsonField(value: any): any {
     if (value == null) return undefined;
     if (typeof value === 'string') {
@@ -314,6 +370,53 @@ export class SCFAdapter extends BaseAdapter {
         return 'in_review';
       default: return 'pending';
     }
+  }
+
+  private mapRowToProject(row: any): DAOIP5Project {
+    // silver_scf_projects follows DAOIP-5 schema with camelCase field names
+    const scfExtensions: Record<string, any> = {};
+    for (const [key, value] of Object.entries(row)) {
+      if (key.startsWith('org.stellar.communityfund.') && value != null) {
+        scfExtensions[key] = value;
+      }
+    }
+
+    let socials: Array<{ name: string; value: string }> | undefined;
+    const rawSocials = this.parseJsonField(row.socials);
+    if (Array.isArray(rawSocials)) {
+      socials = rawSocials.map((item: any) => ({
+        name: item.name ?? item.platform ?? "unknown",
+        value: item.value ?? item.url ?? ""
+      }));
+    }
+
+    let relevantTo: string[] | undefined;
+    const rawRelevantTo = this.parseJsonField(row.relevantTo);
+    if (Array.isArray(rawRelevantTo)) {
+      relevantTo = rawRelevantTo;
+    }
+
+    const extensions: Record<string, any> = {};
+    if (Object.keys(scfExtensions).length > 0) {
+      extensions["org.stellar.communityfund"] = scfExtensions;
+    }
+
+    return {
+      type: "Project",
+      id: row.id,
+      name: row.name || "",
+      description: row.description || "",
+      contentURI: row.contentURI || undefined,
+      email: row.email || undefined,
+      membersURI: row.membersURI || undefined,
+      attestationIssuersURI: row.attestationIssuersURI || undefined,
+      relevantTo,
+      image: row.image || undefined,
+      coverImage: row.coverImage || undefined,
+      licenseURI: row.licenseURI || undefined,
+      socials,
+      extensions: Object.keys(extensions).length > 0 ? extensions : undefined
+    };
   }
 
   private mapRowToPool(row: any): DAOIP5GrantPool {

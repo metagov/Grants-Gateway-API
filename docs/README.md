@@ -37,10 +37,10 @@ GET /api/v1/grantApplications?poolId=daoip5:octant:grantPool:7
 
 - **Octant** - Quadratic funding for Ethereum public goods through ETH staking proceeds
 - **Giveth** - Donation platform for public goods and social impact projects
+- **Stellar Community Fund (SCF)** - Community grants for Stellar ecosystem projects
 
 ### Coming Soon
 
-- **Stellar** - Cross-border payments and financial inclusion platform
 - **Questbook** - Decentralized grants orchestration platform
 
 ## API Reference
@@ -51,7 +51,7 @@ GET /api/v1/grantApplications?poolId=daoip5:octant:grantPool:7
 |----------|-------------|------------|
 | `GET /api/v1/grantSystems` | List all grant systems | `system` (optional) |
 | `GET /api/v1/grantPools` | List grant pools | `system`, `limit`, `offset`, `isOpen` |
-| `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `search` |
+| `GET /api/v1/projects` | List projects | `system`, `limit`, `offset`, `sortBy`, `sortOrder` |
 | `GET /api/v1/grantApplications` | List applications | `system`, `poolId`, `limit`, `offset` |
 | `GET /api/v1/health` | API health status | `refresh` (optional) |
 
@@ -68,8 +68,8 @@ All responses follow the DAOIP-5 standard with JSON-LD context:
 
 ## Rate Limits
 
-- **Authenticated requests**: 1000 requests per hour
-- **Anonymous requests**: 100 requests per hour
+- **Authenticated requests**: 100 requests per minute
+- **Anonymous requests**: 20 requests per minute
 
 ## Error Handling
 
