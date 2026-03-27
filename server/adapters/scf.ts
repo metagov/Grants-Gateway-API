@@ -379,13 +379,6 @@ export class SCFAdapter extends BaseAdapter {
     }
   }
 
-  // Airtable attachments are stored as "filename (https://url)" — extract just the URL
-  private extractImageUrl(value: any): string | undefined {
-    if (!value) return undefined;
-    const match = String(value).match(/\(([^)]+)\)\s*$/);
-    return match ? match[1] : String(value);
-  }
-
   private mapRowToProject(row: any): DAOIP5Project {
     // silver_scf_projects follows DAOIP-5 schema with camelCase field names
     const scfExtensions: Record<string, any> = {};
@@ -427,8 +420,8 @@ export class SCFAdapter extends BaseAdapter {
       membersURI: row.membersURI || undefined,
       attestationIssuersURI: row.attestationIssuersURI || undefined,
       relevantTo,
-      image: this.extractImageUrl(row.image),
-      coverImage: this.extractImageUrl(row.coverImage),
+      image: row.image || undefined,
+      coverImage: row.coverImage || undefined,
       licenseURI: row.licenseURI || undefined,
       socials,
       extensions: Object.keys(extensions).length > 0 ? extensions : undefined
@@ -487,17 +480,17 @@ export class SCFAdapter extends BaseAdapter {
   }
 
   private mapRowToApplication(row: any): DAOIP5Application {
-    // Collect io.scf.* columns into extensions
+    // Collect org.stellar.communityfund.* columns into extensions
     const scfExtensions: Record<string, any> = {};
     for (const [key, value] of Object.entries(row)) {
-      if (key.startsWith('io.scf.') && value != null) {
+      if (key.startsWith('org.stellar.communityfund.') && value != null) {
         scfExtensions[key] = value;
       }
     }
 
     const extensions: Record<string, any> = {};
     if (Object.keys(scfExtensions).length > 0) {
-      extensions["io.scf"] = scfExtensions;
+      extensions["org.stellar.communityfund"] = scfExtensions;
     }
 
     // Parse socials — stored as JSON string
