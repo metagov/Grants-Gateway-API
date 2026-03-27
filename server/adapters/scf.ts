@@ -384,10 +384,12 @@ export class SCFAdapter extends BaseAdapter {
     let socials: Array<{ name: string; value: string }> | undefined;
     const rawSocials = this.parseJsonField(row.socials);
     if (Array.isArray(rawSocials)) {
-      socials = rawSocials.map((item: any) => ({
-        name: item.name ?? item.platform ?? "unknown",
-        value: item.value ?? item.url ?? ""
-      }));
+      socials = rawSocials
+        .filter((item: any) => item != null)
+        .map((item: any) => ({
+          name: item.name ?? item.platform ?? "unknown",
+          value: item.value ?? item.url ?? ""
+        }));
     }
 
     let relevantTo: string[] | undefined;
