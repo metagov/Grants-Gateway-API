@@ -64,7 +64,9 @@ export class OctantAdapter extends BaseAdapter {
 
   async getPools(filters?: QueryFilters): Promise<DAOIP5GrantPool[]> {
     try {
-      const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
+      const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`, {
+        signal: AbortSignal.timeout(10000)
+      });
       if (!currentEpochResponse.ok) {
         throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
       }
@@ -79,7 +81,9 @@ export class OctantAdapter extends BaseAdapter {
 
       for (let epoch = minEpoch; epoch <= maxEpoch; epoch++) {
         try {
-          const epochInfoResponse = await fetch(`${this.baseUrl}/epochs/info/${epoch}`);
+          const epochInfoResponse = await fetch(`${this.baseUrl}/epochs/info/${epoch}`, {
+            signal: AbortSignal.timeout(10000)
+          });
           if (!epochInfoResponse.ok) continue;
           
           const epochInfo = await epochInfoResponse.json();
@@ -175,7 +179,8 @@ export class OctantAdapter extends BaseAdapter {
 
       return pools.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || pools.length));
     } catch (error) {
-      console.error("Error fetching Octant pools:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`[OctantAdapter] getPools failed: ${msg}`);
       return [];
     }
   }
@@ -189,7 +194,9 @@ export class OctantAdapter extends BaseAdapter {
 
   async getApplications(filters?: QueryFilters): Promise<DAOIP5Application[]> {
     try {
-      const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`);
+      const currentEpochResponse = await fetch(`${this.baseUrl}/epochs/current`, {
+        signal: AbortSignal.timeout(10000)
+      });
       if (!currentEpochResponse.ok) {
         throw new Error(`Failed to fetch current epoch: ${currentEpochResponse.status}`);
       }
@@ -208,7 +215,9 @@ export class OctantAdapter extends BaseAdapter {
       const projectsMap = new Map<string, any>();
       for (const epoch of epochsToQuery) {
         try {
-          const projectDetailsResponse = await fetch(`${this.baseUrl}/projects/details?epochs=${epoch}&searchPhrases=`);
+          const projectDetailsResponse = await fetch(`${this.baseUrl}/projects/details?epochs=${epoch}&searchPhrases=`, {
+            signal: AbortSignal.timeout(10000)
+          });
           if (projectDetailsResponse.ok) {
             const projectDetailsData = await projectDetailsResponse.json();
             for (const project of projectDetailsData.projectsDetails || []) {
@@ -228,7 +237,9 @@ export class OctantAdapter extends BaseAdapter {
       for (const epoch of epochsToQuery) {
         try {
           // Fetch project rewards for each epoch - focusing on approved applications with funding
-          const rewardsResponse = await fetch(`${this.baseUrl}/rewards/projects/epoch/${epoch}`);
+          const rewardsResponse = await fetch(`${this.baseUrl}/rewards/projects/epoch/${epoch}`, {
+            signal: AbortSignal.timeout(10000)
+          });
           
           if (rewardsResponse.ok) {
             const rewardsData = await rewardsResponse.json();
@@ -340,7 +351,8 @@ export class OctantAdapter extends BaseAdapter {
 
       return applications.slice(filters?.offset || 0, (filters?.offset || 0) + (filters?.limit || 20));
     } catch (error) {
-      console.error("Error fetching Octant applications:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`[OctantAdapter] getApplications failed: ${msg}`);
       return [];
     }
   }
