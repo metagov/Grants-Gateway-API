@@ -33,6 +33,7 @@ export default function GetApiAccess() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [duration, setDuration] = useState<number>(365);
 
   const { data: keysData } = useQuery({
     queryKey: ["/api/auth/keys"],
@@ -94,9 +95,77 @@ export default function GetApiAccess() {
     },
   });
 
+  // Renew: generate an additional key for an already-registered account.
+  // Calls POST /api/auth/keys — the endpoint that previously had no UI control,
+  // which is why registered users were locked out (issue #3).
+  const renewMutation = useMutation({
+    mutationFn: async (): Promise<RegistrationResponse> => {
+      const token = await getAccessToken();
+      const response = await fetch('/api/auth/keys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ durationDays: duration }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Could not generate a new key');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setApiKey(data.apiKey);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/keys"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "New API key generated",
+        description: "Please save it securely — it won't be shown again.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Could not generate key",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getAccessToken();
+      const response = await fetch(`/api/auth/keys/${id}`, {
+        method: 'DELETE',
+        headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Could not revoke key');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/keys"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({ title: "API key revoked" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Could not revoke key",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: RegistrationData) => {
     registrationMutation.mutate(data);
   };
+
+  const durationLabel = (days: number) =>
+    days === 365 ? "1 year" : days === 180 ? "6 months" : "3 months";
 
   const copyApiKey = () => {
     if (apiKey) {
@@ -196,9 +265,9 @@ export default function GetApiAccess() {
                 <div className="flex items-start space-x-3">
                   <Clock className="w-5 h-5 text-orange-600 mt-0.5" />
                   <div>
-                    <h4 className="font-medium">Expires in 3 Months</h4>
+                    <h4 className="font-medium">Expires in {durationLabel(duration)}</h4>
                     <p className="text-sm text-gray-600 ">
-                      Your key expires on {new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                      Your key expires on {new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -259,6 +328,7 @@ export default function GetApiAccess() {
               </div>
             </div>
 
+            {!registered && (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -304,10 +374,25 @@ export default function GetApiAccess() {
                   )}
                 />
 
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="duration-register">Key lifetime</label>
+                  <select
+                    id="duration-register"
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-full border rounded-md p-2 text-sm bg-white"
+                    data-testid="select-duration"
+                  >
+                    <option value={90}>3 months</option>
+                    <option value={180}>6 months</option>
+                    <option value={365}>1 year</option>
+                  </select>
+                </div>
+
                 <div className="border-t pt-4">
                   <h3 className="font-semibold mb-2">API Key Terms</h3>
                   <ul className="text-sm text-gray-600  space-y-1">
-                    <li>- API keys expire after 3 months</li>
+                    <li>- Keys expire after the lifetime you choose (up to 1 year)</li>
                     <li>- Rate limits apply to protect external APIs</li>
                     <li>- Keys cannot be recovered if lost</li>
                     <li>- Use for legitimate research and development only</li>
@@ -324,6 +409,41 @@ export default function GetApiAccess() {
                 </Button>
               </form>
             </Form>
+            )}
+
+            {/* Registered users: generate an additional / replacement key */}
+            {registered && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Generate a new API key</h3>
+                  <p className="text-sm text-gray-600">
+                    Create a replacement or additional key (up to 5 active). Revoke an old one below if you hit the limit.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="duration-renew">Key lifetime</label>
+                  <select
+                    id="duration-renew"
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-full border rounded-md p-2 text-sm bg-white"
+                    data-testid="select-duration-renew"
+                  >
+                    <option value={90}>3 months</option>
+                    <option value={180}>6 months</option>
+                    <option value={365}>1 year</option>
+                  </select>
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={() => renewMutation.mutate()}
+                  disabled={renewMutation.isPending}
+                  data-testid="button-generate-key"
+                >
+                  {renewMutation.isPending ? "Generating API Key..." : "Generate new API key"}
+                </Button>
+              </div>
+            )}
 
             {/* Show existing API keys */}
             {registered && keysData?.keys && keysData.keys.length > 0 && (
@@ -342,13 +462,31 @@ export default function GetApiAccess() {
                             {key.status}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(key.expiresAt) > new Date() ? (
-                            <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>
-                          ) : (
-                            <span className="text-red-600 flex items-center">
-                              <AlertCircle className="h-3 w-3 mr-1" /> Expired
-                            </span>
+                        <div className="flex items-center space-x-3">
+                          <div className="text-sm text-gray-500">
+                            {new Date(key.expiresAt) > new Date() ? (
+                              <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>
+                            ) : (
+                              <span className="text-red-600 flex items-center">
+                                <AlertCircle className="h-3 w-3 mr-1" /> Expired
+                              </span>
+                            )}
+                          </div>
+                          {key.status === 'active' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              disabled={revokeMutation.isPending}
+                              onClick={() => {
+                                if (window.confirm(`Revoke key ...${key.keyPreview}? This cannot be undone and any integration using it will stop working.`)) {
+                                  revokeMutation.mutate(key.id);
+                                }
+                              }}
+                              data-testid={`button-revoke-${key.id}`}
+                            >
+                              Revoke
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -361,7 +499,7 @@ export default function GetApiAccess() {
                   ))}
                 </div>
                 <p className="text-sm text-gray-500 mt-4">
-                  Generate a new key above to replace expired or revoked keys.
+                  Generate a new key above to replace expired or revoked keys. Revoke keys you no longer use.
                 </p>
               </div>
             )}
