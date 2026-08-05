@@ -15,6 +15,29 @@ import { PaginatedResponse, registrationSchema } from "../shared/schema";
 import cors from "cors";
 import crypto from "crypto";
 
+// Selectable API-key lifetimes. Default is 1 year so integrators aren't forced
+// into a 3-month renewal treadmill (requested in issue #3).
+const API_KEY_DURATIONS_DAYS = [90, 180, 365] as const;
+const DEFAULT_API_KEY_DURATION_DAYS = 365;
+
+// Maximum simultaneously-active keys per user (expired/revoked keys don't count).
+const MAX_ACTIVE_API_KEYS = 5;
+
+// Resolve an expiry date from an optional client-supplied duration.
+// Returns null if the requested duration isn't in the allow-list, so callers
+// can reject it with a 400 rather than minting an arbitrarily long-lived key.
+function resolveKeyExpiry(durationDays: unknown): Date | null {
+  const days = durationDays === undefined || durationDays === null
+    ? DEFAULT_API_KEY_DURATION_DAYS
+    : Number(durationDays);
+  if (!API_KEY_DURATIONS_DAYS.includes(days as typeof API_KEY_DURATIONS_DAYS[number])) {
+    return null;
+  }
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + days);
+  return expiresAt;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // CORS configuration
   app.use(cors({
@@ -101,11 +124,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Generate API key
+      const expiresAt = resolveKeyExpiry(req.body?.durationDays);
+      if (!expiresAt) {
+        return res.status(400).json({
+          error: "Invalid duration",
+          message: `durationDays must be one of ${API_KEY_DURATIONS_DAYS.join(', ')}`,
+        });
+      }
       const rawKey = crypto.randomBytes(32).toString('hex');
       const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
       const keyPreview = rawKey.slice(-4);
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
 
       await storage.createApiKey({
         userId: apiUser.id,
@@ -176,15 +204,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const existingKeys = await storage.getApiKeysByUserId(apiUser.id);
       const activeKeys = existingKeys.filter(k => k.status === 'active' && new Date(k.expiresAt) > new Date());
-      if (activeKeys.length >= 3) {
-        return res.status(400).json({ error: "Maximum of 3 active API keys allowed" });
+      if (activeKeys.length >= MAX_ACTIVE_API_KEYS) {
+        return res.status(400).json({ error: `Maximum of ${MAX_ACTIVE_API_KEYS} active API keys allowed` });
       }
 
+      const expiresAt = resolveKeyExpiry(req.body?.durationDays);
+      if (!expiresAt) {
+        return res.status(400).json({
+          error: "Invalid duration",
+          message: `durationDays must be one of ${API_KEY_DURATIONS_DAYS.join(', ')}`,
+        });
+      }
       const rawKey = crypto.randomBytes(32).toString('hex');
       const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
       const keyPreview = rawKey.slice(-4);
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
 
       const newKey = await storage.createApiKey({
         userId: apiUser.id,
@@ -203,6 +236,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error creating key:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Revoke one of the caller's own API keys
+  app.delete('/api/auth/keys/:id', verifyPrivyToken, async (req, res) => {
+    const privyUser = (req as PrivyAuthenticatedRequest).privyUser!;
+    try {
+      const oauthUser = await storage.getOAuthUser(privyUser.userId);
+      if (!oauthUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const apiUser = await storage.getApiUserByOAuthId(oauthUser.id);
+      if (!apiUser) {
+        return res.status(401).json({ error: "Not registered" });
+      }
+
+      // Ownership check: only consider keys that belong to the caller, so a key
+      // owned by anyone else is indistinguishable from a non-existent one (404)
+      // and can never be revoked across accounts.
+      const keys = await storage.getApiKeysByUserId(apiUser.id);
+      const target = keys.find(k => k.id === req.params.id);
+      if (!target) {
+        return res.status(404).json({ error: "API key not found" });
+      }
+
+      if (target.status === 'revoked') {
+        return res.json({ id: target.id, status: 'revoked', message: "API key already revoked" });
+      }
+
+      await storage.revokeApiKey(target.id);
+      res.json({ id: target.id, status: 'revoked', message: "API key revoked" });
+    } catch (error) {
+      console.error('Error revoking key:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
