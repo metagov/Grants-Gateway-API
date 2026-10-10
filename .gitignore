@@ -12,3 +12,7 @@ DEV
 =.claude/
 AGENT.md
 .gstack/
+
+# MCP server (Python)
+__pycache__/
+.pytest_cache/

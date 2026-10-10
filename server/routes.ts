@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { openApiSpec } from "./openapi";
 import { authenticateApiKey, AuthenticatedRequest, adminRouteGuard, requestLoggingMiddleware } from "./middleware/auth";
 import { verifyPrivyToken, PrivyAuthenticatedRequest } from "./middleware/privyAuth";
 import { rateLimitMiddleware } from "./middleware/rateLimit";
@@ -308,6 +309,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Admin user detail error:', error);
       res.status(500).json({ error: "Failed to fetch user detail" });
     }
+  });
+
+  // OpenAPI description of the public API (also the source the MCP server is generated from).
+  // Registered before the /api/v1 middleware so it is never rate-limited or logged.
+  app.get('/api/v1/openapi.json', (_req, res) => {
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json(openApiSpec);
   });
 
   // API v1 routes - API key optional (anonymous gets 20 req/min, authenticated gets 100 req/min)
@@ -662,8 +670,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
       
-      // If no poolId is provided, fetch the latest grant pool
-      if (!poolId) {
+      // With neither poolId nor projectId, default to one grant pool (the adapter's first by
+      // ID, not necessarily the latest). A projectId alone must search every round, or a
+      // project's earlier awards would be silently dropped.
+      if (!poolId && !projectId) {
         const latestPools = [];
         for (const adapter of selectedAdapters) {
           const pools = await adapter.getPools({ limit: 1, offset: 0 });
@@ -822,6 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       version: "1.0.0",
       description: "Unified interface for grant data using DAOIP-5 standard",
       endpoints: {
+        openapi: "/api/v1/openapi.json",
         systems: "/api/v1/grantSystems",
         pools: "/api/v1/grantPools",
         applications: "/api/v1/grantApplications",
