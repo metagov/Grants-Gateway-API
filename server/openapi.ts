@@ -159,7 +159,7 @@ export const openApiSpec = {
         tags: ["applications"],
         summary: "List grant applications (awards)",
         description:
-          "List grant applications with amounts awarded and paid. Filter by round (poolId) or project (projectId) — e.g. all SCF awards to one project: system=scf&projectId=daoip-5:scf:project:stellar_light. Always pass poolId or projectId: with neither, results come from a single default round, which is not necessarily the most recent.",
+          "List grant applications with amounts awarded and paid. Filter by round (poolId) or project (projectId) — e.g. all SCF awards to one project: system=scf&projectId=daoip-5:scf:project:stellar_light. To get every award for a project, pass system together with projectId. Otherwise always pass poolId: without it, results come from a single default round, which is not necessarily the most recent.",
         parameters: [
           systemParam,
           { name: "poolId", in: "query", required: false, description: "Only applications to this grant pool (round) ID.", schema: { type: "string" } },

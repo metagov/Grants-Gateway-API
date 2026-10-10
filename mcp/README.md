@@ -67,5 +67,6 @@ After changing `server/openapi.ts`, refresh the fixture with
 ## Known limitations
 
 - `list_grant_pools` sorts SCF rounds by name as text ("SCF #9" before "SCF #45").
-- `list_grant_applications` without `poolId` or `projectId` returns one default round, not the
-  most recent; the tool description tells agents to always pass one.
+- `list_grant_applications` without `poolId` returns one default round, not the most recent,
+  unless it is given `projectId` together with `system`; the tool description tells agents to
+  pass one of those.

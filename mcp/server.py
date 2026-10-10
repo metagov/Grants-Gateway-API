@@ -28,7 +28,7 @@ IDs are DAOIP-5 URIs such as "daoip-5:scf:project:stellar_light".
 Typical flow: list_grant_pools(system="scf") to find a round, then
 list_grant_applications(system="scf", poolId=...) for its awards; or
 list_grant_applications(system="scf", projectId=...) for one project's full funding history.
-Always pass poolId or projectId to list_grant_applications. List tools are paginated
+Always pass poolId, or system together with projectId, to list_grant_applications. List tools are paginated
 (limit <= 100, offset) and return pagination.totalCount. SCF-specific fields (round,
 category, totalAwardedUSD, totalPaidUSD, trancheCompletionPercent) are under
 extensions["org.stellar.communityfund"]."""

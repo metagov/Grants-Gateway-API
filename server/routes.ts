@@ -312,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // OpenAPI description of the public API (also the source the MCP server is generated from).
-  // Registered before the /api/v1 middleware so it is never rate-limited or logged.
+  // Registered before the /api/v1 middleware, so it is not API-key-checked or rate-limited.
   app.get('/api/v1/openapi.json', (_req, res) => {
     res.set('Cache-Control', 'public, max-age=300');
     res.json(openApiSpec);
@@ -670,10 +670,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const selectedAdapters = getAdapter(system as string);
       let finalPoolId = poolId as string;
       
-      // With neither poolId nor projectId, default to one grant pool (the adapter's first by
-      // ID, not necessarily the latest). A projectId alone must search every round, or a
-      // project's earlier awards would be silently dropped.
-      if (!poolId && !projectId) {
+      // Without a poolId, default to one grant pool (the adapter's first by ID, not necessarily
+      // the latest). The exception is projectId with a single system: then search every round of
+      // that system, or a project's earlier awards would be silently dropped. projectId without a
+      // system keeps the default pool, so one request can't fan out to every adapter's rounds.
+      if (!poolId && !(projectId && system)) {
         const latestPools = [];
         for (const adapter of selectedAdapters) {
           const pools = await adapter.getPools({ limit: 1, offset: 0 });
